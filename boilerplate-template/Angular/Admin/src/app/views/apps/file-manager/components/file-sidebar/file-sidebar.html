@@ -1,0 +1,29 @@
+<ngx-simplebar class="card h-100 mb-0 rounded-end-0">
+  <div class="card-body">
+    <a [routerLink]="[]" class="btn btn-danger fw-medium w-100">Upload Files</a>
+
+    <div class="list-group list-group-flush list-custom mt-3">
+      @for (item of sidebarMenuItemData; track $index; let first = $first) {
+      <a [routerLink]="[]" class="list-group-item list-group-item-action" [class.active]="first">
+        <app-icon [icon]="item.icon" class="me-1 opacity-75 fs-lg align-middle"></app-icon>
+        <span class="align-middle ms-1">{{ item.name }}</span>
+
+        @if (item.badge) {
+        <span class="badge align-middle {{item.badge.className}} float-end fs-xxs"> {{ item.badge.label }} </span>
+        }
+      </a>
+      }
+
+      <div class="list-group-item mt-2">
+        <span class="align-middle">Categories</span>
+      </div>
+
+      @for (category of categoryData; track $index) {
+      <a [routerLink]="[]" class="list-group-item list-group-item-action">
+        <app-icon [icon]="category.icon" class="me-1 align-middle fs-sm" [ngClass]="category.iconClassName"></app-icon>
+        <span class="align-middle ms-1">{{ category.name }}</span>
+      </a>
+      }
+    </div>
+  </div>
+</ngx-simplebar>

@@ -1,0 +1,25 @@
+<div class="card">
+  <div class="card-header">
+    <h4 class="card-title">Timeline with Icons</h4>
+  </div>
+
+  <div class="card-body">
+    <div class="timeline timeline-icon-based" card-body>
+      @for (item of iconTimelineData; track $index; let last = $last; let i = $index) {
+      <div class="timeline-item d-flex align-items-stretch">
+        <div class="timeline-time pe-3 text-muted">{{ item.time }}</div>
+        <div class="timeline-dot" [class]="item.className">
+          @if (item.icon) {
+          <app-icon [icon]="item.icon" class="fs-xl"></app-icon>
+          }
+        </div>
+        <div class="timeline-content ps-3 {{!last ? 'pb-4' : ''}}">
+          <h5 class="mb-1">{{ item.title }}</h5>
+          <p class="mb-1 text-muted">{{ item.description }}</p>
+          <span class="text-primary fw-semibold">By {{ item.name }}</span>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+</div>

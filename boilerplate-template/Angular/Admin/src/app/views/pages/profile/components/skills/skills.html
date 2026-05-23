@@ -1,0 +1,13 @@
+<div class="card">
+  <div class="card-header">
+    <h4 class="card-title">Skills</h4>
+  </div>
+
+  <div class="card-body">
+    <div class="d-flex flex-wrap gap-1">
+      @for (skill of skillData; track $index) {
+      <a class="btn btn-light btn-sm" [routerLink]="[]">{{ skill }}</a>
+      }
+    </div>
+  </div>
+</div>

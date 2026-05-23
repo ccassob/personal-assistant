@@ -1,0 +1,86 @@
+<div class="card">
+  <div class="card-header">
+    <h4 class="card-title">Custom Table with Search</h4>
+  </div>
+
+  <div class="card-header">
+    <div class="app-search">
+      <input [(ngModel)]="tableService.searchTerm" type="search" class="form-control" placeholder="Search product name..." />
+      <app-icon icon="search" class="app-search-icon text-muted"></app-icon>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-custom table-centered table-select table-hover w-100 mb-0">
+      <thead class="bg-light align-middle bg-opacity-25 thead-sm">
+        <tr class="text-uppercase fs-xxs">
+          <th>Product</th>
+          <th>SKU</th>
+          <th>Category</th>
+          <th>Stock</th>
+          <th data-column="price">Price</th>
+          <th>Orders</th>
+          <th>Rating</th>
+          <th>Status</th>
+          <th>Published</th>
+          <th class="text-center" style="width: 1%">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if ((total$ | async)! > 0) { @for (product of (customTableData$ | async); track $index) {
+        <tr>
+          <td>
+            <div class="d-flex">
+              <div class="avatar-md me-3">
+                <img [src]="product.product.image" alt="Product" class="img-fluid rounded" />
+              </div>
+              <div>
+                <h5 class="mb-1">
+                  <a [routerLink]="[]" class="link-reset">{{ product.product.name }}</a>
+                </h5>
+                <p class="text-muted mb-0 fs-xxs">by: {{ product.product.manufacturer }}</p>
+              </div>
+            </div>
+          </td>
+          <td>{{ product.sku }}</td>
+          <td>{{ product.category }}</td>
+          <td>
+            <h5 class="fs-base mb-0 fw-medium">{{ product.stock }}</h5>
+          </td>
+          <td>{{ product.price }}</td>
+          <td>{{ product.orders }}</td>
+          <td>
+            <span class="text-warning">
+              <app-rating [rate]="product.rating" />
+            </span>
+            <span class="ms-1">
+              <a [routerLink]="[]" class="link-reset fw-semibold">({{ product.reviews }})</a>
+            </span>
+          </td>
+          <td>
+            <span class="badge fs-xxs" [class]="product.status === 'published' ? 'badge-soft-success' : product.status === 'pending' ? 'badge-soft-warning' : 'badge-soft-danger'">{{ toPascalCase(product.status) }}</span>
+          </td>
+          <td>{{ product.date }} <small class="text-muted">{{ product.time }}</small></td>
+          <td>
+            <div class="d-flex justify-content-center gap-1">
+              <button class="btn btn-light btn-icon btn-sm rounded-circle">
+                <app-icon icon="eye" class="fs-lg"></app-icon>
+              </button>
+              <button class="btn btn-light btn-icon btn-sm rounded-circle">
+                <app-icon icon="edit" class="fs-lg"></app-icon>
+              </button>
+              <button class="btn btn-light btn-icon btn-sm rounded-circle">
+                <app-icon icon="trash" class="fs-lg"></app-icon>
+              </button>
+            </div>
+          </td>
+        </tr>
+        } } @else {
+        <tr class="no-results">
+          <td colspan="11" class="text-center text-muted py-3">Nothing found.</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

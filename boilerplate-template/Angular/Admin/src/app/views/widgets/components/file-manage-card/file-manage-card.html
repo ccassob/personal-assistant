@@ -1,0 +1,30 @@
+<div class="card">
+  <div class="card-header justify-content-between">
+    <h4 class="card-title">File Manage</h4>
+    <a [routerLink]="[]" class="btn btn-light btn-sm btn-icon rounded-circle"><iconify-icon icon="tabler:plus"></iconify-icon></a>
+  </div>
+
+  <div class="card-body">
+    @for(item of fileItemData;track $index;let last = $last){
+    <div class="d-flex justify-content-between align-items-center {{ !last ? ' pb-2' : '' }}">
+      <div class="d-flex align-items-center py-1 gap-2">
+        <div class="flex-shrink-0 avatar-md bg-light bg-opacity-50 text-muted rounded-2">
+          <iconify-icon [icon]="item.icon" class="fs-xl avatar-title"></iconify-icon>
+        </div>
+        <div class="flex-grow-1">
+          <h5 class="mb-1 fs-base"><a [routerLink]="[]" class="link-reset">{{item.name}}</a></h5>
+          <p class="text-muted mb-0 fs-xs">{{formatBytes(item.size)}}</p>
+        </div>
+      </div>
+      <div class="avatar-group avatar-group-xs">
+        @for (image of item.images; track $index) {
+        <div class="avatar"><img [src]="image" class="rounded-circle avatar-xs" alt="" /></div>
+        }
+      </div>
+      <div>
+        <a [routerLink]="[]" class="btn btn-sm btn-icon btn-default" title="Download"><iconify-icon icon="tabler:download" class="fs-lg"></iconify-icon></a>
+      </div>
+    </div>
+    }
+  </div>
+</div>

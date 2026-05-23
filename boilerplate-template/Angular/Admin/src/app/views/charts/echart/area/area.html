@@ -1,0 +1,59 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Area Echart" subTitle="Charts" />
+  <div class="row">
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Area Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="areaChart" height="300px" />
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Stacked Area Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="stackedArrea" height="300px" />
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Area with Marker</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="marker" height="300px" />
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Dynamic Area</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="dynamicChart" (chartInit)="onChartReady($event)" height="300px"></app-echart>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Step Area</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="stepArea" height="300px" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

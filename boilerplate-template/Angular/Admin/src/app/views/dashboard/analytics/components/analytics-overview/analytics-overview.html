@@ -1,0 +1,54 @@
+<div class="card">
+  <div class="card-body p-0">
+    <div class="row g-0">
+      <div class="col-xxl-3 order-2 order-xxl-1">
+        <div class="row g-0">
+          @for (item of overviewData; track $index;let first = $first) {
+          <div class="col-lg-6 col-xl-6 col-xxl-12">
+            <div class="p-3 rounded m-1 border border-dashed" [class]="!first ? 'mt-xxl-0' : ''">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h3 class="mb-1">
+                    <span
+                      [countUp]="item.value"
+                      [countUpOptions]="{
+                          suffix: item.suffix || '',
+                          decimalPlaces: Number.isInteger(item.value) ? 0 : 2,
+                        }"
+                    >
+                    </span>
+                    <span [class]="item.isPositive ? 'text-success' : 'text-danger'" class="fs-base">
+                      {{item.isPositive ? '+' : '-'}}{{ item.change }}%
+                      <iconify-icon [icon]="item.changeIcon"></iconify-icon>
+                    </span>
+                  </h3>
+                  <p class="mb-0 text-muted">{{ item.title }}</p>
+                </div>
+                <div class="avatar-xl">
+                  <span class="avatar-title text-bg-light rounded-circle">
+                    <iconify-icon [icon]="item.icon" class="fs-2 text-muted"></iconify-icon>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+
+      <div class="col-xxl-9 order-1 order-xxl-2 border-start border-dashed">
+        <div class="card-header justify-content-between border-dashed">
+          <h4 class="card-title mb-0">Analytics Overview</h4>
+          <div class="d-flex flex-wrap gap-1">
+            <a [routerLink]="[]" class="btn btn-sm btn-primary"> <iconify-icon icon="tabler:download" class="me-1"></iconify-icon> Export CSV </a>
+          </div>
+        </div>
+        <div class="card-body">
+          <div dir="ltr">
+            <app-apexchart [getOptions]="analyticChartOptions" class="apex-charts"></app-apexchart>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

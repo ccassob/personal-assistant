@@ -1,0 +1,85 @@
+<div class="card">
+  <div class="card-header border-dashed card-tabs d-flex align-items-center">
+    <div class="flex-grow-1">
+      <h4 class="card-title">Orders Statics</h4>
+    </div>
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav nav-tabs nav-justified card-header-tabs nav-bordered">
+      <li ngbNavItem="today" class="nav-item">
+        <a ngbNavLink href="#today-ct">
+          <iconify-icon icon="tabler:home" class="d-md-none d-block"></iconify-icon>
+          <span class="d-none d-md-block">Today</span>
+        </a>
+        <ng-template ngbNavContent></ng-template>
+      </li>
+      <li ngbNavItem="monthly" class="nav-item">
+        <a ngbNavLink href="#monthly-ct">
+          <iconify-icon icon="tabler:user-circle" class="d-md-none d-block"></iconify-icon>
+          <span class="d-none d-md-block">Monthly</span>
+        </a>
+        <ng-template ngbNavContent></ng-template>
+      </li>
+      <li ngbNavItem="annual" class="nav-item">
+        <a ngbNavLink href="#annual-ct">
+          <iconify-icon icon="tabler:settings" class="d-md-none d-block"></iconify-icon>
+          <span class="d-none d-md-block">Annual</span>
+        </a>
+        <ng-template ngbNavContent></ng-template>
+      </li>
+    </ul>
+  </div>
+  <div class="card-body p-0">
+    <div class="row g-0">
+      <div class="col-xxl-8 border-end border-dashed">
+        <app-echart [getOptions]="orderStatisticsChartOptions" height="405px"></app-echart>
+      </div>
+
+      <div class="col-xxl-4">
+        <div [ngbNavOutlet]="nav"></div>
+
+        <div class="p-3 bg-light-subtle border-bottom border-dashed">
+          <div class="row">
+            <div class="col">
+              <h4 class="fs-sm mb-1">Would you like the full report?</h4>
+              <small class="text-muted fs-xs mb-0"> All 120 orders have been successfully delivered </small>
+            </div>
+            <div class="col-auto align-self-center">
+              <button type="button" class="btn btn-sm btn-default rounded-circle btn-icon" placement="top" ngbTooltip="Download">
+                <iconify-icon icon="tabler:download" class="fs-xl"></iconify-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="row row-cols-xxl-2 row-cols-md-2 row-cols-1 g-1 p-1">
+          @for (item of orderStatisticData; track $index) {
+          <div class="col">
+            <div class="card rounded-0 border shadow-none border-dashed mb-0">
+              <div class="card-body">
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                  <h5 class="fs-xl mb-0">{{ item.prefix }}{{ item.value }} <small class="fs-6">{{ item.suffix }}</small></h5>
+                  <span
+                    >{{ item.change }}% @if (item.change > 20) {
+                    <iconify-icon icon="tabler:bolt" class="text-primary"></iconify-icon>
+                    } @if (item.change > 0 && item.change < 20) {
+                    <iconify-icon icon="tabler:arrow-up" class="text-success"></iconify-icon>
+                    } @if (item.change < 0) {
+                    <iconify-icon icon="tabler:arrow-down" class="text-danger"></iconify-icon>
+                    }
+                  </span>
+                </div>
+                <p class="text-muted mb-2">
+                  <span>{{ item.title }}</span>
+                </p>
+                <ngb-progressbar height="5px" type="secondary" [value]="Math.abs(item.change)" class="mb-0" />
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+
+        <div class="text-center my-3">
+          <a routerLink="/apps/chat" class="link-reset text-decoration-underline fw-semibold link-offset-3"> View all Reports <iconify-icon icon="tabler:send-2"></iconify-icon> </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

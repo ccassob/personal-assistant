@@ -1,0 +1,33 @@
+<app-card-with-action title="Top 10 Countries" [isCloseable]="true" [isTogglable]="true" [isReloadable]="true">
+  <div card-body>
+    @for (item of topCountryData; track $index; let i = $index; let last = $last) {
+    <div class="d-flex align-items-center gap-2 {{ !last ? 'mb-3' : '' }}">
+      <span class="fs-sm fw-medium fst-italic text-muted">{{ (i + 1).toString().padStart(2, '0') }}.</span>
+      <img [src]="item.image" [alt]="item.name" class="avatar-xxs rounded" />
+      <h5 class="mb-0 fw-medium">
+        <a [routerLink]="[]" class="link-reset">{{ item.name }}</a>
+      </h5>
+      <div class="ms-auto">
+        <div class="d-flex align-items-center gap-3">
+          <p class="mb-0 fw-medium">{{ item.value }}</p>
+          <p
+            class="badge badge-label fs-xxs mb-0"
+            [class]="
+                item.change > 0
+                  ? 'badge-soft-success'
+                  : item.change < 0
+                    ? 'badge-soft-danger'
+                    : 'badge-soft-warning'
+              "
+          >
+            {{ item.change > 0 ? '+' : '' }}{{ item.change }}%
+          </p>
+        </div>
+      </div>
+    </div>
+    }
+    <div class="text-center mt-2">
+      <a routerLink="/apps/chat" class="link-reset text-decoration-underline fw-semibold link-offset-3"> View all Countries <iconify-icon icon="tabler:world"></iconify-icon> </a>
+    </div>
+  </div>
+</app-card-with-action>

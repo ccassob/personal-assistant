@@ -1,0 +1,30 @@
+<div class="p-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="mb-0 fw-semibold fs-sm">Today's Schedule</p>
+    <a [routerLink]="[]" class="text-muted d-flex align-items-center fs-xs fw-semibold"> <iconify-icon icon="tabler:calendar" class="me-1"></iconify-icon><span>Invite</span> </a>
+  </div>
+  @for (meeting of meetingData; track $index; let last = $last) {
+  <div class="{{ last ? 'py-2' : 'pb-2' }} border-bottom border-light border-dashed">
+    <div class="mb-2">
+      <p class="mb-0 text-truncate fs-base fw-medium">{{ meeting.title }}</p>
+      <span [class]="'text-' + meeting.variant + ' fs-xs'">{{ meeting.subtitle }}</span>
+    </div>
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="avatar-group avatar-group-xs">
+        @for (item of meeting.user; track $index) {
+        <div class="avatar avatar-xs">
+          @if (item.image) {
+          <img [src]="item.image" [alt]="item.name" class="avatar-xs rounded-circle" />
+          } @else {
+          <span class="avatar-title bg-primary-subtle text-primary rounded-circle fw-bold"> {{ item.name }} </span>
+          }
+        </div>
+        }
+      </div>
+      <button type="button" class="btn btn-sm btn-soft-secondary rounded-circle btn-icon">
+        <iconify-icon [icon]="meeting.icon" class="fs-lg" />
+      </button>
+    </div>
+  </div>
+  }
+</div>

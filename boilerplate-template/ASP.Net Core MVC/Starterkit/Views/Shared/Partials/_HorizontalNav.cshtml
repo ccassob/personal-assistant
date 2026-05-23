@@ -1,0 +1,166 @@
+<header class="topnav">
+<nav class="navbar navbar-expand-lg">
+<nav class="container-fluid">
+<div class="collapse navbar-collapse" id="topnav-menu">
+<ul class="navbar-nav">
+<li class="nav-item dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-main" role="button">
+<span class="menu-icon"><i class="ti ti-dashboard fs-xl"></i></span>
+<span class="menu-text" data-lang="main">Main</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-main" class="dropdown-menu">
+<a class="dropdown-item" href="/dashboard-projects.html"><span data-lang="dashboard-projects">Projects</span></a>
+</div>
+</li>
+<li class="nav-item dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-custom-pages" role="button">
+<span class="menu-icon"><i class="ti ti-files fs-xl"></i></span>
+<span class="menu-text" data-lang="custom-pages">Custom Pages</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-custom-pages" class="dropdown-menu">
+<a asp-action="PagesEmpty" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-empty">Empty Page</span></a>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-authentication" role="button">
+<span data-lang="authentication">Authentication</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-authentication" class="dropdown-menu">
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-auth-basic" role="button">
+<span data-lang="auth-basic">Basic</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-auth-basic" class="dropdown-menu">
+<a asp-action="SignIn" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-sign-in">Sign In</span></a>
+<a asp-action="SignUp" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-sign-up">Sign Up</span></a>
+<a asp-action="ResetPass" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-reset-pass">Reset Password</span></a>
+<a asp-action="NewPass" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-new-pass">New Password</span></a>
+<a asp-action="TwoFactor" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-two-factor">Two Factor</span></a>
+<a asp-action="LockScreen" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-lock-screen">Lock Screen</span></a>
+<a asp-action="SuccessMail" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-success-mail">Success Mail</span></a>
+<a asp-action="LoginPin" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-login-pin">Login with PIN</span></a>
+<a asp-action="DeleteAccount" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-delete-account">Delete Account</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-auth-card" role="button">
+<span data-lang="auth-card">Card</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-auth-card" class="dropdown-menu">
+<a asp-action="SignIn" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-sign-in">Sign In</span></a>
+<a asp-action="SignUp" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-sign-up">Sign Up</span></a>
+<a asp-action="ResetPass" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-reset-pass">Reset Password</span></a>
+<a asp-action="NewPass" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-new-pass">New Password</span></a>
+<a asp-action="TwoFactor" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-two-factor">Two Factor</span></a>
+<a asp-action="LockScreen" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-lock-screen">Lock Screen</span></a>
+<a asp-action="SuccessMail" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-success-mail">Success Mail</span></a>
+<a asp-action="LoginPin" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-login-pin">Login with PIN</span></a>
+<a asp-action="DeleteAccount" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-delete-account">Delete Account</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-auth-split" role="button">
+<span data-lang="auth-split">Split</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-auth-split" class="dropdown-menu">
+<a asp-action="SignIn" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-sign-in">Sign In</span></a>
+<a asp-action="SignUp" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-sign-up">Sign Up</span></a>
+<a asp-action="ResetPass" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-reset-pass">Reset Password</span></a>
+<a asp-action="NewPass" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-new-pass">New Password</span></a>
+<a asp-action="TwoFactor" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-two-factor">Two Factor</span></a>
+<a asp-action="LockScreen" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-lock-screen">Lock Screen</span></a>
+<a asp-action="SuccessMail" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-success-mail">Success Mail</span></a>
+<a asp-action="LoginPin" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-login-pin">Login with PIN</span></a>
+<a asp-action="DeleteAccount" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-delete-account">Delete Account</span></a>
+</div>
+</div>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-error-pages" role="button">
+<span data-lang="error-pages">Error Pages</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-error-pages" class="dropdown-menu">
+<a asp-action="Error400" asp-controller="Error" class="dropdown-item"><span data-lang="error-400">400 Bad Request</span></a>
+<a asp-action="Error401" asp-controller="Error" class="dropdown-item"><span data-lang="error-401">401 Unauthorized</span></a>
+<a asp-action="Error403" asp-controller="Error" class="dropdown-item"><span data-lang="error-403">403 Forbidden</span></a>
+<a asp-action="Error404" asp-controller="Error" class="dropdown-item"><span data-lang="error-404">404 Not Found</span></a>
+<a asp-action="Error408" asp-controller="Error" class="dropdown-item"><span data-lang="error-408">408 Request Timeout</span></a>
+<a asp-action="Error500" asp-controller="Error" class="dropdown-item"><span data-lang="error-500">500 Internal Server</span></a>
+<a asp-action="Maintenance" asp-controller="Error" class="dropdown-item"><span data-lang="error-maintenance">Maintenance</span></a>
+</div>
+</div>
+</div>
+</li>
+<li class="nav-item dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-layouts" role="button">
+<span class="menu-icon"><i class="ti ti-table-column fs-xl"></i></span>
+<span class="menu-text" data-lang="layouts">Layouts</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-layouts" class="dropdown-menu">
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-layout-options" role="button">
+<span data-lang="layout-options">Layout Options</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-layout-options" class="dropdown-menu">
+<a asp-action="Scrollable" asp-controller="Layouts" class="dropdown-item" target="_blank"><span data-lang="layouts-scrollable">Scrollable</span></a>
+<a asp-action="Compact" asp-controller="Layouts" class="dropdown-item" target="_blank"><span data-lang="layouts-compact">Compact</span></a>
+<a asp-action="Boxed" asp-controller="Layouts" class="dropdown-item" target="_blank"><span data-lang="layouts-boxed">Boxed</span></a>
+<a asp-action="Horizontal" asp-controller="Layouts" class="dropdown-item" target="_blank"><span data-lang="layouts-horizontal">Horizontal</span></a>
+<a asp-action="Preloader" asp-controller="Layouts" class="dropdown-item" target="_blank"><span data-lang="layouts-preloader">Preloader</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-sidebars" role="button">
+<span data-lang="sidebars">Sidebars</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-sidebars" class="dropdown-menu">
+<a asp-action="Light" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-light">Light Menu</span></a>
+<a asp-action="Gradient" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-gradient">Gradient Menu</span></a>
+<a asp-action="Gray" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-gray">Gray Menu</span></a>
+<a asp-action="Image" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-image">Image Menu</span></a>
+<a asp-action="Compact" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-compact">Compact Menu</span></a>
+<a asp-action="OnHover" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-on-hover">On Hover Menu</span></a>
+<a asp-action="OnHoverActive" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-on-hover-active">On Hover Active</span></a>
+<a asp-action="Offcanvas" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-offcanvas">Offcanvas Menu</span></a>
+<a asp-action="NoIcons" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-no-icons">No Icons with Lines</span></a>
+<a asp-action="WithLines" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-with-lines">Sidebar with Lines</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-topbar" role="button">
+<span data-lang="topbar">Topbar</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-topbar" class="dropdown-menu">
+<a asp-action="Dark" asp-controller="Topbar" class="dropdown-item" target="_blank"><span data-lang="layouts-topbar-dark">Dark Topbar</span></a>
+<a asp-action="Gray" asp-controller="Topbar" class="dropdown-item" target="_blank"><span data-lang="layouts-topbar-gray">Gray Topbar</span></a>
+<a asp-action="Gradient" asp-controller="Topbar" class="dropdown-item" target="_blank"><span data-lang="layouts-topbar-gradient">Gradient Topbar</span></a>
+</div>
+</div>
+</div>
+</li>
+<li class="nav-item dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-components" role="button">
+<span class="menu-icon"><i class="ti ti-components fs-xl"></i></span>
+<span class="menu-text" data-lang="components">Components</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-components" class="dropdown-menu">
+<a asp-action="Tabler" asp-controller="Icons" class="dropdown-item"><span data-lang="icons-tabler">Tabler</span></a>
+</div>
+</li>
+</ul>
+</div>
+</nav>
+</nav>
+</header>
+<!-- Horizontal Menu End -->

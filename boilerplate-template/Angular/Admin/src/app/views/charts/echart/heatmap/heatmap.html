@@ -1,0 +1,44 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Heatmap Echart" subTitle="Charts" />
+  <div class="row">
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Basic Heatmap Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="basicHeatmapChart" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Heatmap Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="heatMapChart" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Heatmap - 20K Data Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="heatMapDataChart" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+  </div>
+  <!-- end row -->
+</div>

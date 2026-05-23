@@ -1,0 +1,163 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Search Results" subTitle="Pages" />
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-block">
+          <div class="text-center w-md-75 w-xl-50 mx-auto py-3">
+            <div class="app-search app-search-pill input-group mb-3 rounded-pill">
+              <input type="text" class="form-control bg-light-subtle border-light py-2 fw-semibold" value="AI Tools" placeholder="Search AI products..." />
+              <app-icon icon="search" class="app-search-icon text-muted"></app-icon>
+              <button class="btn btn-secondary" type="button">Explore</button>
+            </div>
+            <div class="d-flex justify-content-center align-items-center gap-1">
+              <h5 class="text-muted mb-0">Popular Searches :</h5>
+              <a [routerLink]="[]" class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1 fs-6">AI Dashboard</a>
+              <a [routerLink]="[]" class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1 fs-6">Chatbot</a>
+              <a [routerLink]="[]" class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1 fs-6">Machine Learning</a>
+              <a [routerLink]="[]" class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1 fs-6">Generative AI</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-header border-light justify-content-between">
+          <h4 class="fst-italic text-muted mb-0">
+            Found
+            <span class="fw-bold badge badge-soft-danger">42</span>
+            results for
+            <span class="text-dark">"AI Tools"</span>
+          </h4>
+
+          <div class="d-flex flex-wrap align-items-center gap-3">
+            <span class="fw-semibold">Filter By:</span>
+
+            <!-- Template Type Filter -->
+            <div class="app-search">
+              <select class="form-select form-control my-1 my-md-0">
+                <option selected>Tool Type</option>
+                <option value="chatbot">Chatbot</option>
+                <option value="analytics">Analytics</option>
+                <option value="image">Image Generator</option>
+                <option value="voice">Voice AI</option>
+                <option value="automation">Automation</option>
+              </select>
+              <app-icon icon="cpu" class="app-search-icon text-muted"></app-icon>
+            </div>
+
+            <!-- Pricing Filter -->
+            <div class="app-search">
+              <select class="form-select form-control my-1 my-md-0">
+                <option selected>Pricing</option>
+                <option value="free">Free</option>
+                <option value="pro">Pro</option>
+                <option value="enterprise">Enterprise</option>
+              </select>
+              <app-icon icon="wallet" class="app-search-icon text-muted"></app-icon>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          @for(item of searchResultData; track $index) {
+          <div class="border-bottom border-dashed px-4 py-3">
+            <h4 class="fs-md mb-1">
+              <a [routerLink]="[]" target="_blank" class="text-reset">{{ item.title }}</a>
+            </h4>
+            <p class="text-success mb-2">{{ item.href }}</p>
+            <p class="text-muted mb-2">{{ item.description }}</p>
+            <p class="d-flex flex-wrap gap-3 text-muted mb-1 align-items-center fs-base">
+              <span class="d-flex align-items-center gap-1">
+                <img [src]="item.user.image" [alt]="item.user.name" class="img-fluid avatar-xs rounded-circle" />
+                <a [routerLink]="[]" class="link-reset fw-semibold">{{ item.user.name }}</a>
+              </span>
+              <span>
+                <app-icon icon="calendar"></app-icon>
+                Published on: {{ item.publishedDate }}
+              </span>
+              <span>
+                <app-icon icon="users"></app-icon>
+                Users: {{item.users}}+
+              </span>
+              <span>
+                <app-icon icon="message-circle"></app-icon>
+                <a [routerLink]="[]" class="link-reset"> Feedback: {{ item.feedback }}</a>
+              </span>
+              <span>
+                <app-icon icon="star"></app-icon>
+                Rating: {{ item.rating }}
+              </span>
+            </p>
+          </div>
+          }
+          <div class="border-bottom border-dashed px-4 py-3">
+            <h4 class="fs-md mb-3">Featured AI Creators:</h4>
+
+            <div class="d-flex gap-2">
+              <div class="avatar">
+                <img src="assets/images/users/user-4.jpg" alt="" class="rounded avatar-xl" />
+              </div>
+              <div class="avatar">
+                <img src="assets/images/users/user-5.jpg" alt="" class="rounded avatar-xl" />
+              </div>
+              <div class="avatar">
+                <img src="assets/images/users/user-3.jpg" alt="" class="rounded avatar-xl" />
+              </div>
+              <div class="avatar">
+                <img src="assets/images/users/user-8.jpg" alt="" class="rounded avatar-xl" />
+              </div>
+              <div class="avatar">
+                <img src="assets/images/users/user-2.jpg" alt="" class="rounded avatar-xl" />
+              </div>
+            </div>
+          </div>
+
+          <div class="border-bottom border-dashed px-4 py-3">
+            <h4 class="fs-md mb-3">People also search for:</h4>
+
+            <div class="d-flex gap-2 flex-wrap">
+              <div class="px-3 py-2 bg-light bg-opacity-50 rounded">
+                <a [routerLink]="[]" class="text-reset fs-md fw-semibold">
+                  AI SaaS Platforms
+                  <app-icon icon="search" class="ms-2 align-middle"></app-icon>
+                </a>
+              </div>
+              <div class="px-3 py-2 bg-light bg-opacity-50 rounded">
+                <a [routerLink]="[]" class="text-reset fs-md fw-semibold">
+                  AI Code Generators
+                  <app-icon icon="search" class="ms-2 align-middle"></app-icon>
+                </a>
+              </div>
+              <div class="px-3 py-2 bg-light bg-opacity-50 rounded">
+                <a [routerLink]="[]" class="text-reset fs-md fw-semibold">
+                  AI Productivity Tools
+                  <app-icon icon="search" class="ms-2 align-middle"></app-icon>
+                </a>
+              </div>
+              <div class="px-3 py-2 bg-light bg-opacity-50 rounded">
+                <a [routerLink]="[]" class="text-reset fs-md fw-semibold">
+                  AI for Marketing
+                  <app-icon icon="search" class="ms-2 align-middle"></app-icon>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <ul class="pagination pagination-rounded pagination-boxed justify-content-center mb-0 py-3">
+            <ngb-pagination [collectionSize]="60" [page]="1" [maxSize]="3" [ellipses]="true">
+              <ng-template ngbPaginationPrevious>
+                <app-icon icon="chevron-left"></app-icon>
+              </ng-template>
+              <ng-template ngbPaginationNext>
+                <app-icon icon="chevron-right"></app-icon>
+              </ng-template>
+            </ngb-pagination>
+          </ul>
+        </div>
+        <!-- end card-body-->
+      </div>
+      <!-- end card-->
+    </div>
+    <!-- end col-->
+  </div>
+  <!-- end row-->
+</div>

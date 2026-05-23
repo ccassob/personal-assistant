@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_evaluate",
+      "PowerShell(Start-Sleep -Seconds 3; \"done\")",
+      "mcp__playwright__browser_navigate"
+    ]
+  }
+}

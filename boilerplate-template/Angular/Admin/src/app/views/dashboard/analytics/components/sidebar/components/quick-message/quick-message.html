@@ -1,0 +1,38 @@
+<div class="p-3 border-bottom">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <p class="mb-0 fw-semibold fs-sm">Quick Message</p>
+    <p class="fw-semibold text-success mb-0 fs-xs">
+      <iconify-icon icon="tabler:circle-filled"></iconify-icon>
+      Online
+    </p>
+  </div>
+  @for (chat of quickMessageData; track $index) {
+  <a [routerLink]="[]" class="d-block py-2">
+    @if (chat.totalMessages) {
+    <span class="badge text-bg-{{ chat.totalMessages.variant }} rounded-circle float-end"> {{ chat.totalMessages.value }} </span>
+    } @if (chat.time && !chat.totalMessages) {
+    <span class="text-muted float-end fs-10"> {{ chat.time }} </span>
+    }
+
+    <span class="d-flex align-items-center">
+      <span class="flex-shrink-0">
+        @if (chat.image) {
+        <img [src]="chat.image" [alt]="chat.name" class="avatar-sm rounded-circle" />
+        } @else {
+        <span class="avatar avatar-sm d-block">
+          <span class="avatar-title bg-info-subtle text-info rounded-circle fw-bold"> {{ chat.name.charAt(0) }} </span>
+        </span>
+        }
+      </span>
+      <span class="flex-grow-1 ms-2 text-truncate">
+        <span class="mb-0 lh-base d-block fw-medium text-body fs-base">{{ chat.name }}</span>
+        <span [class]="chat.isOnline ? 'text-success' : 'text-muted'" class="fs-xxs mb-0"> {{ chat.message }} </span>
+      </span>
+    </span>
+  </a>
+  }
+
+  <div class="text-center mt-2">
+    <a routerLink="/apps/chat" class="link-reset text-decoration-underline fw-semibold link-offset-3"> Go to Chat <iconify-icon icon="tabler:message"></iconify-icon> </a>
+  </div>
+</div>

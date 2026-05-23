@@ -1,0 +1,82 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Gauge Echart" subTitle="Charts" />
+  <div class="row">
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Basic Gauge Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="gaugeChart" height="300px"></app-echart>
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Speed Stage Gauge Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="stageChart" height="300px" (chartInit)="onChartInit($event)"></app-echart>
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Ring Gauge Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="ringGauge" height="300px"></app-echart>
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Temperature Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="temperature" height="300px" (chartInit)="onTemperatureChartInit($event)"></app-echart>
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Multi Ring Gauge Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="multiRing" height="300px"></app-echart>
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Multi Gauge Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="MultiGaugeChart" (chartInit)="onChartReady($event)" height="300px"></app-echart>
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+  </div>
+  <!-- end row -->
+</div>

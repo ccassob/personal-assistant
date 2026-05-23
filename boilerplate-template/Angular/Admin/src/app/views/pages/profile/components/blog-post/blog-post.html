@@ -1,0 +1,55 @@
+<article class="card rounded-3">
+  <!-- Badge -->
+  <div class="badge text-bg-dark badge-label position-absolute top-0 start-0 m-3">{{ blog.category }}</div>
+
+  <!-- Card image -->
+  <img class="card-img-top rounded-top-3" [src]="blog.image" alt="Tech Innovations" />
+
+  <!-- Card Body -->
+  <div class="card-body">
+    <!-- Title -->
+    <h6 class="card-title fs-lg lh-base mb-2">
+      <a [routerLink]="[]" class="link-reset">{{ blog.title }}</a>
+    </h6>
+    <p class="mb-3 text-muted">{{ blog.description }}</p>
+
+    <div>
+      @for (tag of blog.tags; track $index) {
+      <a [routerLink]="[]" class="badge badge-label badge-default me-1">{{ tag }}</a>
+      }
+    </div>
+
+    <p class="d-flex flex-wrap gap-3 text-muted mb-0 mt-3 align-items-center fs-base">
+      <span class="d-flex align-items-center gap-1">
+        <app-icon icon="calendar" class="fs-md"></app-icon>
+        {{ blog.date }}
+      </span>
+      <span class="d-flex align-items-center gap-1">
+        <app-icon icon="message-circle" class="fs-md"></app-icon>
+        <a [routerLink]="[]" class="link-reset">{{ blog.comments }}</a>
+      </span>
+      <span class="d-flex align-items-center gap-1">
+        <app-icon icon="eye" class="fs-md"></app-icon>
+        {{ blog.views }}
+      </span>
+    </p>
+  </div>
+
+  <!-- Card footer -->
+  <div class="card-footer bg-transparent d-flex justify-content-between">
+    <div class="d-flex justify-content-start align-items-center gap-2">
+      <div class="avatar avatar-xs">
+        <img [src]="blog.author.image" alt="avatar-4" class="img-fluid rounded-circle" />
+      </div>
+      <div>
+        <h5 class="text-nowrap fs-sm mb-0 lh-base">
+          <a [routerLink]="[]" class="link-reset">{{ blog.author.name }}</a>
+        </h5>
+      </div>
+    </div>
+    <a class="link-primary fw-semibold d-flex align-items-center gap-1" [routerLink]="[]">
+      Read more
+      <app-icon icon="arrow-right"></app-icon>
+    </a>
+  </div>
+</article>

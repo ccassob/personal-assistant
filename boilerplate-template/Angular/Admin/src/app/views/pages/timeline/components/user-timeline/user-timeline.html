@@ -1,0 +1,22 @@
+<div class="card">
+  <div class="card-header">
+    <h4 class="card-title">Timeline with Users</h4>
+  </div>
+
+  <div class="card-body">
+    <div class="timeline timeline-users">
+      @for (item of userTimeline; track $index; let last = $last) {
+      <div class="timeline-item d-flex align-items-stretch">
+        <div class="timeline-dot">
+          <img [src]="item.image" alt="avatar" class="img-fluid rounded-circle" />
+        </div>
+        <div class="timeline-content ps-3 {{!last ? 'pb-4' : ''}}">
+          <h5 class="mb-1">{{ item.title }}</h5>
+          <p class="mb-1 text-muted">{{ item.description }}</p>
+          <span class="text-primary fw-semibold">By {{ item.name }}</span>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+</div>

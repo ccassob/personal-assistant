@@ -1,0 +1,134 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Kanban Board" subTitle="Apps" />
+
+  <div class="outlook-box kanban-app">
+    <div class="card h-100 mb-0 flex-grow-1">
+      <div class="card-header border-light align-items-center gap-2">
+        <!-- Search Bar -->
+        <div class="app-search">
+          <input type="search" class="form-control" placeholder="Search tasks..." />
+          <app-icon icon="search" class="app-search-icon text-muted"></app-icon>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <!-- Department Filter -->
+          <div class="app-search">
+            <select class="form-select form-control">
+              <option selected>Department</option>
+              <option value="Design">Design</option>
+              <option value="Development">Development</option>
+              <option value="UI/UX">UI/UX</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Finance">Finance</option>
+              <option value="QA">QA</option>
+            </select>
+            <app-icon icon="briefcase" class="app-search-icon text-muted"></app-icon>
+          </div>
+
+          <!-- Due Date Filter -->
+          <div class="app-search">
+            <select class="form-select form-control">
+              <option selected>Due Date</option>
+              <option value="Today">Today</option>
+              <option value="This Week">This Week</option>
+              <option value="This Month">This Month</option>
+            </select>
+            <app-icon icon="calendar-clock" class="app-search-icon text-muted"></app-icon>
+          </div>
+        </div>
+
+        <!-- Add New Card Button -->
+        <button type="button" class="btn btn-secondary ms-lg-auto">
+          <app-icon icon="plus" class="me-1"></app-icon>
+          Add New Card
+        </button>
+      </div>
+
+      <div class="card-body p-0">
+        <div class="kanban-content bg-light bg-opacity-40" cdkDropListGroup>
+          <!-- TODO Data-->
+          <div class="kanban-board">
+            <div class="kanban-item py-2 px-3 d-flex align-items-center">
+              <h5 class="m-0">To Do ({{ todoTasks.length }})</h5>
+              <a [routerLink]="[]" class="ms-auto btn btn-sm btn-icon rounded-circle btn-primary">
+                <app-icon icon="plus"></app-icon>
+              </a>
+            </div>
+            <ngx-simplebar data-simplebar-md class="kanban-board-group px-3" (cdkDropListDropped)="drop($event)" cdkDropList [cdkDropListData]="todoTasks">
+              <ul data-plugins="sortable">
+                @for (item of todoTasks; track $index) {
+                <li class="kanban-item">
+                  <app-task-item [item]="item" cdkDrag />
+                </li>
+                }
+              </ul>
+            </ngx-simplebar>
+          </div>
+          <!-- end TODO Data-->
+
+          <!-- IN Progress Data-->
+          <div class="kanban-board">
+            <div class="py-2 px-3 d-flex align-items-center">
+              <h5 class="m-0">In Progress ({{ inprogressTasks.length }})</h5>
+              <a [routerLink]="[]" class="ms-auto btn btn-sm btn-icon rounded-circle btn-primary">
+                <app-icon icon="plus"></app-icon>
+              </a>
+            </div>
+            <ngx-simplebar data-simplebar-md class="kanban-board-group px-3" (cdkDropListDropped)="drop($event)" cdkDropList [cdkDropListData]="inprogressTasks">
+              <ul data-plugins="sortable">
+                @for (item of inprogressTasks; track $index) {
+                <li class="kanban-item">
+                  <app-task-item [item]="item" cdkDrag />
+                </li>
+                }
+              </ul>
+            </ngx-simplebar>
+          </div>
+          <!-- end IN Progress Data-->
+
+          <!-- In Review Data-->
+          <div class="kanban-board">
+            <div class="kanban-item py-2 px-3 d-flex align-items-center">
+              <h5 class="m-0">In Review ({{ inreviewTasks.length }})</h5>
+              <a [routerLink]="[]" class="ms-auto btn btn-sm btn-icon rounded-circle btn-primary">
+                <app-icon icon="plus"></app-icon>
+              </a>
+            </div>
+            <ngx-simplebar data-simplebar-md class="kanban-board-group px-3" (cdkDropListDropped)="drop($event)" cdkDropList [cdkDropListData]="inreviewTasks">
+              <ul data-plugins="sortable">
+                @for (item of inreviewTasks; track $index) {
+                <li class="kanban-item">
+                  <app-task-item [item]="item" cdkDrag />
+                </li>
+                }
+              </ul>
+            </ngx-simplebar>
+          </div>
+          <!-- end In Review Data-->
+
+          <!-- Done Data-->
+          <div class="kanban-board">
+            <div class="py-2 px-3 d-flex align-items-center">
+              <h5 class="m-0">Done ({{ completedTasks.length }})</h5>
+              <a [routerLink]="[]" class="ms-auto btn btn-sm btn-icon rounded-circle btn-primary">
+                <app-icon icon="plus"></app-icon>
+              </a>
+            </div>
+            <ngx-simplebar data-simplebar-md class="kanban-board-group px-3" (cdkDropListDropped)="drop($event)" cdkDropList [cdkDropListData]="completedTasks">
+              <ul data-plugins="sortable">
+                @for (item of completedTasks; track $index) {
+                <li class="kanban-item">
+                  <app-task-item [item]="item" cdkDrag />
+                </li>
+                }
+              </ul>
+            </ngx-simplebar>
+          </div>
+        </div>
+      </div>
+      <!-- end card-body-->
+    </div>
+    <!-- end card-->
+  </div>
+</div>

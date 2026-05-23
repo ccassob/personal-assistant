@@ -1,0 +1,31 @@
+<div class="card">
+  <div class="card-header">
+    <h4 class="card-title">Sortables List</h4>
+  </div>
+
+  <div class="card-body">
+    <p class="text-muted">Use <code>nested-sortable</code> classes on the <code>list-group</code> element to enable drag-and-drop sorting of hierarchical task items.</p>
+
+    <div cdkDropList [cdkDropListData]="tasks" class="list-group nested-sortable" (cdkDropListDropped)="drop($event)">
+      @for (task of tasks; track $index) {
+      <div cdkDrag class="list-group-item">
+        {{ task.title }} @if (task.children) {
+        <div cdkDropList [cdkDropListData]="task.children" class="list-group nested-sortable" (cdkDropListDropped)="drop($event, task)">
+          @for ( child of task.children; track $index) {
+          <div cdkDrag class="list-group-item">
+            {{ child.title }} @if (child.children) {
+            <div cdkDropList [cdkDropListData]="child.children" class="list-group nested-sortable" (cdkDropListDropped)="drop($event, child)">
+              @for (subChild of child.children; track $index) {
+              <div cdkDrag class="list-group-item">{{ subChild.title }}</div>
+              }
+            </div>
+            }
+          </div>
+          }
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+</div>

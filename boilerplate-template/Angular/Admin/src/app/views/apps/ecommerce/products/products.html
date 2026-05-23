@@ -1,0 +1,16 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Products" subTitle="Ecommerce" />
+  <div class="row row-cols-xxl-5 row-cols-md-3 row-cols-1 align-items-center g-1">
+    @for(stats of statData;track $index){
+    <div class="col">
+      <app-products-widget [stats]="stats" />
+    </div>
+    }
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <app-products-table />
+    </div>
+  </div>
+</div>

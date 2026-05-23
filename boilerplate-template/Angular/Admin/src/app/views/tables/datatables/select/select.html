@@ -1,0 +1,129 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Select" subTitle="DataTables" />
+  <div class="row justify-content-center">
+    <div class="col-xxl-10">
+      <div class="card">
+        <div class="card-header justify-content-between">
+          <h4 class="card-title">Single Item Select</h4>
+          <a href="https://datatables.net/reference/option/select" target="_blank" class="icon-link icon-link-hover link-primary fw-semibold">
+            View Docs
+            <app-icon icon="arrow-right" class="bi align-middle fs-lg"></app-icon>
+          </a>
+        </div>
+
+        <div class="card-body">
+          @if(showAlert){
+          <ngb-alert type="warning" [dismissible]="true" (closed)="showAlert = false" class="mb-4">
+            <strong>Note:</strong>
+            This is a jQuery-based plugin, so you need to include jQuery for it to work.
+          </ngb-alert>
+          }
+
+          <table datatable [dtOptions]="dtOptions" class="table dt-responsive align-middle mb-0">
+            <thead class="thead-sm text-uppercase fs-xxs">
+              <tr>
+                @for (header of basicData.header; track $index; let last = $last) {
+                <th>{{ header }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of basicData.body.slice(0, 16); track $index) {
+              <tr>
+                <td>{{ item.company }}</td>
+                <td>{{ item.symbol }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.change }}%</td>
+                <td>{{ item.volume }}</td>
+                <td>{{ item.marketCap }}</td>
+                <td>{{ item.rating }} ★</td>
+                <td><span class="badge badge-label  {{item.status==='bullish' ? 'badge-soft-success' : 'badge-soft-danger'}} ">{{ toPascalCase(item.status) }}</span></td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <!-- end card-body-->
+      </div>
+      <!-- end card-->
+
+      <div class="card">
+        <div class="card-header justify-content-between">
+          <h4 class="card-title">Multi Item Selection</h4>
+          <a href="https://datatables.net/reference/option/select" target="_blank" class="icon-link icon-link-hover link-primary fw-semibold">
+            View Docs
+            <app-icon icon="arrow-right" class="bi align-middle fs-lg"></app-icon>
+          </a>
+        </div>
+
+        <div class="card-body">
+          <table datatable [dtOptions]="multiDtOptions" class="table dt-responsive align-middle mb-0">
+            <thead class="thead-sm text-uppercase fs-xxs">
+              <tr>
+                @for (header of basicData.header; track $index; let last = $last) {
+                <th>{{ header }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of basicData.body.slice(0, 16); track $index) {
+              <tr>
+                <td>{{ item.company }}</td>
+                <td>{{ item.symbol }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.change }}%</td>
+                <td>{{ item.volume }}</td>
+                <td>{{ item.marketCap }}</td>
+                <td>{{ item.rating }} ★</td>
+                <td><span class="badge badge-label  {{item.status==='bullish' ? 'badge-soft-success' : 'badge-soft-danger'}} ">{{ toPascalCase(item.status) }}</span></td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <!-- end card-body-->
+      </div>
+      <!-- end card-->
+
+      <div class="card">
+        <div class="card-header justify-content-between">
+          <h4 class="card-title">Cell Selection</h4>
+          <a href="https://datatables.net/reference/option/select" target="_blank" class="icon-link icon-link-hover link-primary fw-semibold">
+            View Docs
+            <app-icon icon="arrow-right" class="bi align-middle fs-lg"></app-icon>
+          </a>
+        </div>
+
+        <div class="card-body">
+          <table datatable [dtOptions]="cellDtOptions" class="table dt-responsive align-middle mb-0">
+            <thead class="thead-sm text-uppercase fs-xxs">
+              <tr>
+                @for (header of basicData.header; track $index; let last = $last) {
+                <th>{{ header }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of basicData.body.slice(0, 16); track $index) {
+              <tr>
+                <td>{{ item.company }}</td>
+                <td>{{ item.symbol }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.change }}%</td>
+                <td>{{ item.volume }}</td>
+                <td>{{ item.marketCap }}</td>
+                <td>{{ item.rating }} ★</td>
+                <td><span class="badge badge-label  {{item.status==='bullish' ? 'badge-soft-success' : 'badge-soft-danger'}} ">{{ toPascalCase(item.status) }}</span></td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <!-- end card-body-->
+      </div>
+      <!-- end card-->
+    </div>
+    <!-- end col-->
+  </div>
+  <!-- end row-->
+</div>

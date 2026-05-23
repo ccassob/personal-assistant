@@ -1,0 +1,73 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Video Player" subTitle="Plugins"></app-page-breadcrumb>
+  <div class="container-xxl">
+    <div class="row">
+      <!-- Basic MP4 -->
+      <div class="col-12 col-xl-6">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Basic MP4 Video Player</h4>
+          </div>
+          <div class="card-body">
+            <video #player1 class="plyr w-100" playsinline controls poster="https://media.w3.org/2010/05/sintel/poster.png" style="--plyr-color-main: #1ac266">
+              <source src="https://media.w3.org/2010/05/sintel/trailer_hd.mp4" type="video/mp4" />
+            </video>
+          </div>
+        </div>
+      </div>
+
+      <!-- Autoplay muted loop -->
+      <div class="col-12 col-xl-6">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Autoplay (muted), Loop Video Player</h4>
+          </div>
+          <div class="card-body">
+            <video #player2 class="plyr w-100" playsinline controls muted autoplay loop poster="https://media.w3.org/2010/05/sintel/poster.png" style="--plyr-color-main: #1c84c6">
+              <source src="https://media.w3.org/2010/05/sintel/trailer_hd.mp4" type="video/mp4" />
+            </video>
+          </div>
+        </div>
+      </div>
+
+      <!-- YouTube -->
+      <div class="col-12 col-xl-6">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">YouTube Video Player</h4>
+          </div>
+          <div class="card-body">
+            <div #yt1 class="plyr w-100" data-plyr-provider="youtube" data-plyr-embed-id="bTqVqk7FSmY" style="--plyr-color-main: #f8ac59"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vimeo -->
+      <div class="col-12 col-xl-6">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Vimeo Video Player</h4>
+          </div>
+          <div class="card-body">
+            <div #vimeo1 class="plyr w-100" data-plyr-provider="vimeo" data-plyr-embed-id="76979871" style="--plyr-color-main: #ed5565"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audio -->
+      <div class="col-xl-6">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Audio Player</h4>
+          </div>
+          <div class="card-body">
+            <audio #audioPlayer class="w-100" controls style="--plyr-color-main: #7b70ef">
+              <source src="https://cdn.plyr.io/static/demo/Kishi_Bashi_-_It_All_Began_With_a_Burst.mp3" type="audio/mp3" />
+              <source src="https://cdn.plyr.io/static/demo/Kishi_Bashi_-_It_All_Began_With_a_Burst.ogg" type="audio/ogg" />
+            </audio>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

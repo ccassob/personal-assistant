@@ -1,0 +1,73 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Fixed Columns" subTitle="Datatables" />
+  <div class="row justify-content-center">
+    <div class="col-xxl-10">
+      <div class="card">
+        <div class="card-header justify-content-between">
+          <h4 class="card-title">Example</h4>
+          <a href="https://datatables.net/extensions/fixedcolumns/examples/initialisation/left_right_columns.html" target="_blank" class="icon-link icon-link-hover link-primary fw-semibold">
+            View Docs
+            <app-icon icon="arrow-right" class="bi align-middle fs-lg"></app-icon>
+          </a>
+        </div>
+
+        <div class="card-body">
+          @if(showAlert){
+          <ngb-alert type="warning" [dismissible]="true" (closed)="showAlert = false" class="mb-4">
+            <strong>Note:</strong>
+            This is a jQuery-based plugin, so you need to include jQuery for it to work. </ngb-alert
+          >}
+
+          <table datatable [dtOptions]="dtOptions" id="fixed-columns" class="table table-striped stripe row-border nowrap order-column align-middle mb-0">
+            <thead class="thead-sm text-uppercase fs-xxs">
+              <tr>
+                <th>Company</th>
+                <th>Symbol</th>
+                <th>Price</th>
+                <th>Change</th>
+                <th>Volume</th>
+                <th>Market Cap</th>
+                <th>Rating</th>
+                <th>Status</th>
+                <th>Sector</th>
+                <th>Industry</th>
+                <th>Employees</th>
+                <th>Founded</th>
+                <th>P/E Ratio</th>
+                <th>Dividend</th>
+                <th>52W High</th>
+                <th>52W Low</th>
+                <th>CEO</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of CompanyData; track $index) {
+              <tr>
+                <td>{{ row.company }}</td>
+                <td>{{ row.symbol }}</td>
+                <td>{{ row.price }}</td>
+                <td>{{ row.change }}</td>
+                <td>{{ row.volume }}</td>
+                <td>{{ row.marketCap }}</td>
+                <td>{{ row.rating }}</td>
+                <td>
+                  <span class="badge badge-label {{ row.status === 'Bullish' ? 'badge-soft-success' : 'badge-soft-danger' }}"> {{ row.status }} </span>
+                </td>
+                <td>{{ row.sector }}</td>
+                <td>{{ row.industry }}</td>
+                <td>{{ row.employees }}</td>
+                <td>{{ row.founded }}</td>
+                <td>{{ row.peRatio }}</td>
+                <td>{{ row.dividend }}</td>
+                <td>{{ row.high52W }}</td>
+                <td>{{ row.low52W }}</td>
+                <td>{{ row.ceo }}</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

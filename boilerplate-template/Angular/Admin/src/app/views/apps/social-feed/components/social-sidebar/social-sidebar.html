@@ -1,0 +1,69 @@
+<div class="card card-top-sticky">
+  <div class="card-body">
+    <div class="d-flex align-items-center mb-3">
+      <div class="me-2 position-relative">
+        <img src="assets/images/users/user-3.jpg" alt="avatar" class="rounded" width="42" height="42" />
+      </div>
+      <div>
+        <h5 class="mb-0 d-flex align-items-center">
+          <a [routerLink]="[]" class="link-reset">{{ username }}</a>
+          <img src="assets/images/flags/us.svg" alt="US" class="ms-2 rounded-circle" height="16" />
+        </h5>
+        <p class="text-muted mb-0">Content Creator</p>
+      </div>
+      <div class="ms-auto" ngbDropdown placement="bottom-end">
+        <div class="dropdown">
+          <a [routerLink]="[]" class="btn btn-icon btn-ghost-light text-muted drop-arrow-none" ngbDropdownToggle>
+            <app-icon icon="dots-vertical" class="fs-24"></app-icon>
+          </a>
+          <ul ngbDropdownMenu class="dropdown-menu-end">
+            <li>
+              <a ngbDropdownItem [routerLink]="[]">View Profile</a>
+            </li>
+            <li>
+              <a ngbDropdownItem [routerLink]="[]">Send Message</a>
+            </li>
+            <li>
+              <a ngbDropdownItem [routerLink]="[]">Copy Profile Link</a>
+            </li>
+            <li>
+              <hr class="dropdown-divider" />
+            </li>
+            <li>
+              <a ngbDropdownItem [routerLink]="[]">Edit Profile</a>
+            </li>
+            <li>
+              <a ngbDropdownItem class="dropdown-item text-danger" [routerLink]="[]">Block User</a>
+            </li>
+            <li>
+              <a ngbDropdownItem class="dropdown-item text-danger" [routerLink]="[]">Report User</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="list-group list-group-flush list-custom mt-3">
+      @for (item of profileMainMenuData; track $index) {
+      <a [routerLink]="item.href" class="list-group-item list-group-item-action" [class]="{ 'active': $index === 0 }">
+        <app-icon [icon]="item.icon" class="me-1 opacity-75 fs-lg align-middle"></app-icon>
+        <span class="align-middle ms-1">{{ item.label }}</span>
+        @if (item.badge) {
+        <span class="badge align-middle fs-xxs float-end {{item.badge.className}}"> {{ item.badge.label }} </span>
+        }
+      </a>
+      }
+
+      <div class="list-group-item mt-2">
+        <span class="align-middle">Categories</span>
+      </div>
+
+      @for (category of categoryData; track $index) {
+      <a [routerLink]="category.href" class="list-group-item list-group-item-action">
+        <app-icon icon="tag" class="me-1 fs-lg align-middle" [ngClass]="category.iconClassName"></app-icon>
+        <span class="align-middle ms-1">{{ category.label }}</span>
+      </a>
+      }
+    </div>
+  </div>
+</div>

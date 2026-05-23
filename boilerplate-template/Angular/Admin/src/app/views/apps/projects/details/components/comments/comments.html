@@ -1,0 +1,64 @@
+<form action="#" class="mb-3">
+  <div class="mb-3">
+    <textarea class="form-control" id="form-control-textarea" rows="4" placeholder="Enter your messages..."></textarea>
+  </div>
+  <div class="text-end">
+    <button type="submit" class="btn btn-secondary btn-sm">
+      Comment
+      <app-icon icon="send-2" class="align-baseline ms-1"></app-icon>
+    </button>
+  </div>
+</form>
+
+<h4 class="mb-3 fs-md">Comments (15)</h4>
+
+@for (comment of commentData; track $index;let last = $last) {
+<div class="d-flex border border-dashed rounded p-3 {{last ? 'mb-3' : 'mb-2'}}">
+  <div class="flex-shrink-0">
+    <img [src]="comment.user.image" alt="" class="avatar-sm rounded-circle shadow-sm" />
+  </div>
+  <div class="flex-grow-1 ms-2">
+    <h5 class="mb-1">
+      {{ comment.user.name }}
+      <small class="text-muted">{{ comment.date }} · {{ comment.time }}</small>
+    </h5>
+    <p [class.mb-2]="!last">{{ comment.message }}</p>
+
+    <a [routerLink]="[]" class="badge bg-light text-muted d-inline-flex align-items-center gap-1">
+      <app-icon icon="corner-up-left" class="fs-lg"></app-icon>
+      Reply
+    </a>
+
+    @if(comment.reply) { @for(reply of comment.reply; track $index;) {
+    <div class="d-flex mt-4">
+      <div class="flex-shrink-0">
+        <img [src]="reply.user.image" alt="" class="avatar-sm rounded-circle shadow-sm" />
+      </div>
+      <div class="flex-grow-1 ms-2">
+        <h5 class="mb-1">
+          {{ reply.user.name }}
+          <small class="text-muted">{{ reply.date }} · {{ reply.time }}</small>
+        </h5>
+        <p [class.mb-2]="!last">{{ reply.message }}</p>
+
+        <a [routerLink]="[]" class="badge bg-light text-muted d-inline-flex align-items-center gap-1">
+          <app-icon icon="corner-up-left" class="fs-lg"></app-icon>
+          Reply
+        </a>
+      </div>
+    </div>
+    } }
+  </div>
+</div>
+}
+
+<ul class="pagination pagination-rounded pagination-boxed justify-content-center mb-0">
+  <ngb-pagination [collectionSize]="60" [(page)]="page" [maxSize]="4" [ellipses]="true">
+    <ng-template ngbPaginationPrevious>
+      <app-icon icon="chevron-left"></app-icon>
+    </ng-template>
+    <ng-template ngbPaginationNext>
+      <app-icon icon="chevron-right"></app-icon>
+    </ng-template>
+  </ngb-pagination>
+</ul>

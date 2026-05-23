@@ -1,0 +1,57 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Radar Echart" subTitle="Charts" />
+  <div class="row">
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Basic Radar Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="radarChart" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Proportion of Browsers</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="browserChart" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Customized Radar Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="customizeChart" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Multiple Radar Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="multipleChart" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+  </div>
+  <!-- end row -->
+</div>

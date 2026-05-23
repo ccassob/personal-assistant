@@ -1,0 +1,184 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="File Manager" subTitle="Apps" />
+
+  <div class="outlook-box">
+    <ng-template #content let-offcanvas>
+      <ngx-simplebar style="height: 100%">
+        <app-file-sidebar />
+      </ngx-simplebar>
+    </ng-template>
+
+    <app-file-sidebar class="d-none d-lg-block outlook-left-menu outlook-left-menu-md" />
+
+    <div class="card h-100 mb-0 rounded-start-0 flex-grow-1 border-start-0">
+      <div class="card-header justify-content-between">
+        <div class="d-flex gap-2">
+          <div class="d-lg-none d-inline-flex gap-2">
+            <button class="btn btn-default btn-icon" (click)="openFileSidebar(content)" type="button">
+              <app-icon icon="menu-4" class="fs-lg"></app-icon>
+            </button>
+          </div>
+
+          <div class="app-search">
+            <input [(ngModel)]="tableService.searchTerm" type="search" class="form-control" placeholder="Search files..." />
+            <app-icon icon="search" class="app-search-icon text-muted"></app-icon>
+          </div>
+          @if (hasSelection) {
+          <button class="btn btn-danger" (click)="deleteSelected()">Delete</button>
+          }
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <span class="me-2 fw-semibold">Filter By:</span>
+          <div class="app-search">
+            <select [(ngModel)]="fileTypeFilter" (ngModelChange)="tableService.setFilter('type', fileTypeFilter)" class="form-select form-control my-1 my-md-0">
+              <option value="" selected>File Type</option>
+              <option value="Folder">Folder</option>
+              <option value="MySQL">MySQL</option>
+              <option value="MP4">MP4</option>
+              <option value="Audio">Audio</option>
+              <option value="Figma">Figma</option>
+            </select>
+            <app-icon icon="file" class="app-search-icon text-muted"></app-icon>
+          </div>
+
+          <div>
+            <select [(ngModel)]="tableService.pageSize" class="form-select form-control my-1 my-md-0">
+              <option [ngValue]="5">5</option>
+              <option [ngValue]="8">8</option>
+              <option [ngValue]="10">10</option>
+              <option [ngValue]="15">15</option>
+              <option [ngValue]="20">20</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <ngx-simplebar class="card-body" style="height: calc(100% - 100px)" data-simplebar-md>
+        <div class="row">
+          @for (folder of folderData; track $index) {
+          <div class="col-md-6 col-lg-4 col-xxl-3">
+            <app-folder-card [item]="folder" />
+          </div>
+          }
+        </div>
+
+        <div class="table-responsive-sm">
+          <table class="table table-custom table-select mb-0">
+            <thead class="bg-light bg-opacity-25 thead-sm border-top border-light">
+              <tr class="text-uppercase align-middle fs-xxs">
+                <th class="ps-3" style="width: 1%">
+                  <input [(ngModel)]="selectAll" (change)="toggleAllSelection()" class="form-check-input form-check-input-light fs-14 mt-0" type="checkbox" value="option" />
+                </th>
+                <th sortable="name" (sort)="tableService.setSort($event.column, $event.direction)">Name</th>
+                <th sortable="type" (sort)="tableService.setSort($event.column, $event.direction)">Type</th>
+                <th sortable="modifiedDate" (sort)="tableService.setSort($event.column, $event.direction)">Modified</th>
+                <th sortable="user.email" (sort)="tableService.setSort($event.column, $event.direction)" class="w-auto">Owner</th>
+                <th class="w-auto">Shared with</th>
+                <th class="text-end pe-3">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if ((total$ | async)! > 0) { @for (file of (fileRecordData$ | async); track $index) {
+              <tr>
+                <td class="ps-3">
+                  <input class="form-check-input form-check-input-light fs-14 file-item-check" type="checkbox" value="option" [(ngModel)]="file.selected" (change)="toggleSingleSelection()" />
+                </td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="flex-shrink-0 avatar-md d-flex justify-content-center align-items-center bg-light bg-opacity-50 text-muted rounded-2">
+                      <app-icon [icon]="file.icon" class="fs-xl avatar-title"></app-icon>
+                    </div>
+                    <div class="flex-grow-1">
+                      <h5 class="mb-1 fs-base">
+                        <a [routerLink]="[]" class="link-reset">{{ file.name }}</a>
+                      </h5>
+                      <p class="text-muted mb-0 fs-xs">{{ formatBytes(file.size) }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ file.type }}</td>
+                <td>{{ file.modifiedDate }}</td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="flex-shrink-0 bg-light bg-opacity-50 text-muted d-inline-flex align-items-center justify-content-center rounded-2">
+                      <img [src]="file.user.image" alt="" class="avatar-xs rounded-circle" />
+                    </div>
+                    <h5 class="mb-0 fs-base">
+                      <a [routerLink]="[]" class="link-reset">{{ file.user.email }}</a>
+                    </h5>
+                  </div>
+                </td>
+                <td>
+                  <div class="avatar-group avatar-group-xs">
+                    @for (item of file.sharedWith; track $index) {
+                    <div class="avatar">
+                      <img [src]="item.image" alt="" class="rounded-circle avatar-xs" />
+                    </div>
+                    }
+                  </div>
+                </td>
+                <td class="text-end pe-3">
+                  <div class="d-flex align-items-center justify-content-end gap-2">
+                    <span (click)="file.isFavorite = !file.isFavorite">
+                      @if (file.isFavorite) {
+                      <a [routerLink]="[]">
+                        <app-icon icon="star-filled" class="text-warning fs-lg"></app-icon>
+                      </a>
+                      } @else {
+                      <a [routerLink]="[]">
+                        <app-icon icon="star-filled" class="text-muted fs-lg"></app-icon>
+                      </a>
+                      }
+                    </span>
+                    <div ngbDropdown class="flex-shrink-0 text-muted">
+                      <a [routerLink]="[]" ngbDropdownToggle class="drop-arrow-none fs-xxl link-reset p-0">
+                        <app-icon icon="dots-vertical"></app-icon>
+                      </a>
+                      <div ngbDropdownMenu class="dropdown-menu-end">
+                        <a [routerLink]="[]" ngbDropdownItem>
+                          <app-icon icon="share" class="me-1"></app-icon>
+                          Share</a
+                        >
+                        <a [routerLink]="[]" ngbDropdownItem>
+                          <app-icon icon="link" class="me-1"></app-icon>
+                          Get Sharable Link</a
+                        >
+                        <a [routerLink]="[]" ngbDropdownItem>
+                          <app-icon icon="download" class="me-1"></app-icon>
+                          Download
+                        </a>
+                        <a [routerLink]="[]" ngbDropdownItem>
+                          <app-icon icon="pin" class="me-1"></app-icon>
+                          Pin</a
+                        >
+                        <a [routerLink]="[]" ngbDropdownItem>
+                          <app-icon icon="edit" class="me-1"></app-icon>
+                          Edit</a
+                        >
+                        <a [routerLink]="[]" (click)="tableService.deleteItem(file)" ngbDropdownItem>
+                          <app-icon icon="trash" class="me-1"></app-icon>
+                          Delete</a
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              } } @else {
+              <tr class="no-results">
+                <td colspan="11" class="text-center text-muted py-3">Nothing found.</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-center gap-2 p-3">
+          <strong>Loading...</strong>
+          <div class="spinner-border spinner-border-sm text-danger" role="status" aria-hidden="true"></div>
+        </div>
+      </ngx-simplebar>
+    </div>
+  </div>
+</div>

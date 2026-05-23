@@ -1,0 +1,51 @@
+<div class="card">
+  <div class="card-header justify-content-between align-items-center border-dashed d-flex">
+    <h5 class="mb-0">Requests</h5>
+
+    <div ngbDropdown>
+      <a [routerLink]="[]" ngbDropdownToggle class="btn btn-link text-muted drop-arrow-none card-drop p-0">
+        <app-icon icon="dots-vertical" class="fs-lg"></app-icon>
+      </a>
+      <div ngbDropdownMenu class="dropdown-menu-end">
+        <a [routerLink]="[]" ngbDropdownItem>
+          <app-icon icon="check" class="me-2"></app-icon>
+          Mark All as Read
+        </a>
+        <a [routerLink]="[]" ngbDropdownItem>
+          <app-icon icon="trash" class="me-2"></app-icon>
+          Clear All
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    @for (item of requestData; track $index; let last = $last) {
+    <div class="d-flex justify-content-between align-items-center {{!last ? 'mb-3' : ''}}">
+      <div class="d-flex align-items-start" [class]="{ 'gap-2': item.icon }">
+        @if (item.image) {
+        <img [src]="item.image" [alt]="item.title" width="32" height="32" class="avatar-xs rounded-circle me-2" />
+        } @else {
+        <div class="avatar-xs flex-shrink-0">
+          <span class="avatar-title rounded-circle" [class]="item.iconClassName">
+            @if(item.icon){
+            <app-icon [icon]="item.icon"></app-icon>
+            }
+          </span>
+        </div>
+        }
+
+        <div>
+          <p class="mb-1">
+            <strong>{{ item.title }}</strong> {{ item.description }}
+            <span class="badge ms-1" [class]="item.badge.className"> {{ item.badge.label }} </span>
+          </p>
+          <small class="text-muted">{{ item.time }}</small>
+        </div>
+      </div>
+
+      <button class="btn btn-sm py-0 px-1 btn-default">{{ item.action }}</button>
+    </div>
+    }
+  </div>
+</div>

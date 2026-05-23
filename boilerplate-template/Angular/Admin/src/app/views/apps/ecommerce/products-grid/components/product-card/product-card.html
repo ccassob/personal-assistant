@@ -1,0 +1,36 @@
+<article class="card h-100 mb-2">
+  @if (product.discount) {
+  <div class="badge badge-label fs-base rounded position-absolute top-0 start-0 m-3" [class]="product.discount > 20 ? 'text-bg-success' : 'text-bg-danger'">{{ product.discount }}% OFF</div>
+  }
+  <div class="card-body">
+    <div class="bg-light-subtle p-3 mb-3 border border-light rounded">
+      <img [src]="product.image" alt="funky-shoes" class="img-fluid" />
+    </div>
+    <h6 class="card-title fs-sm lh-base mb-2">
+      <a routerLink="/apps/ecommerce/product-details" class="link-reset">{{ product.name }}</a>
+    </h6>
+
+    <div>
+      <span class="text-warning">
+        <app-rating [rate]="product.rating" />
+      </span>
+      <span class="ms-1">
+        <a routerLink="/apps/ecommerce/reviews" class="link-reset fw-semibold">({{ product.reviews }})</a>
+      </span>
+    </div>
+  </div>
+
+  <!-- Card footer -->
+  <div class="card-footer bg-transparent d-flex justify-content-between">
+    <div class="d-flex justify-content-start align-items-center gap-2">
+      <h4 class="d-flex align-items-center gap-2 mb-0" [class]="product.discount && product.discount > 20 ? 'text-success' : 'text-danger'">
+        <span class="text-muted text-decoration-line-through"> ${{ product.price.toFixed(2) }} </span>
+
+        ${{ (product.price - (product.price * (product.discount ?? 10)) / 100).toFixed(2) }}
+      </h4>
+    </div>
+    <a class="btn btn-sm btn-icon btn-primary" [routerLink]="[]">
+      <app-icon icon="basket" class="fs-lg"></app-icon>
+    </a>
+  </div>
+</article>

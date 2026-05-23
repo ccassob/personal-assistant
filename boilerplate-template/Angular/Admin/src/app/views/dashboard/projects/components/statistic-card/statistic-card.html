@@ -1,0 +1,28 @@
+<div class="card">
+  <div class="card-body">
+    <a [routerLink]="[]" class="text-muted float-end mt-n1 fs-xl"><iconify-icon icon="tabler:external-link"></iconify-icon></a>
+    <h5 title="Number of Tasks">{{item.title}}</h5>
+    <div class="d-flex align-items-center gap-2 my-3">
+      <div class="avatar-md flex-shrink-0">
+        <span class="avatar-title text-bg-light rounded-circle fs-22">
+          <iconify-icon [icon]="item.icon"></iconify-icon>
+        </span>
+      </div>
+      <h3 class="mb-0">{{item.count.prefix}}<span [countUp]="item.count.value" [countUpOptions]="{decimalPlaces: Number.isInteger(item.count.value) ? 0 : 2}">0</span>{{item.count.suffix}}</h3>
+      <span
+        class="badge fw-medium ms-2 fs-xs ms-auto"
+        [class]="
+                item.badgeVariant === 'light'
+                  ? 'text-bg-light'
+                  : 'badge-soft-' + item.badgeVariant
+              "
+        >{{item.badge}}</span
+      >
+    </div>
+    <p class="mb-0">
+      <span class="text-{{item.variant}} me-1"><iconify-icon icon="tabler:point-filled"></iconify-icon></span>
+      <span class="text-nowrap text-muted">{{item.description}}</span>
+      <span class="float-end"><b>{{ item.totalCount.prefix }}{{ item.totalCount.value }}{{ item.totalCount.suffix }}</b></span>
+    </p>
+  </div>
+</div>

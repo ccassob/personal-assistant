@@ -1,0 +1,56 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Checkout" subTitle="Ecommerce" />
+  <div class="container-xxl">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-body">
+            <div class="ins-wizard" data-wizard>
+              <ul class="nav nav-tabs nav-justified wizard-tabs" data-wizard-nav role="tablist">
+                @for (step of checkoutStepsData; track $index; let i = $index) {
+                <li class="nav-item">
+                  <a
+                    class="nav-link py-2"
+                    [class]="i < currentStep ? 'wizard-item-done' :
+                                 i === currentStep ? 'active' : ''"
+                    (click)="goToStep(i)"
+                  >
+                    <span class="d-flex align-items-center justify-content-center">
+                      <app-icon [icon]="step.icon" class="fs-24"></app-icon>
+                      <span class="ms-2 text-truncate">
+                        <span class="mb-0 lh-base d-block fw-semibold text-body fs-md">{{ step.title }}</span>
+                      </span>
+                    </span>
+                  </a>
+                </li>
+                }
+              </ul>
+
+              <div class="tab-content pt-3">
+                <ng-container *ngComponentOutlet="checkoutStepsData[currentStep].content"></ng-container>
+                <div class="d-flex justify-content-between mt-3">
+                  @if(currentStep > 0){
+                  <button type="button" class="btn btn-secondary" (click)="previousStep()">← Back: {{ checkoutStepsData[currentStep - 1].title }}</button>
+                  }
+                  <button class="btn ms-auto" [class]="currentStep === checkoutStepsData.length - 1 ? 'btn-success' : 'btn-primary'" (click)="nextStep()">
+                    {{ currentStep === checkoutStepsData.length - 1 ? 'Save All Settings' : 'Next: ' + checkoutStepsData[currentStep + 1].title + ' →' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="col-lg-4">
+        <app-order-summary />
+        <div class="card">
+          <div class="card-body">
+            <p class="text-muted mb-0">🎉 Congratulations! You’ve earned <span class="fw-bold text-success">239 bonus points</span>!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

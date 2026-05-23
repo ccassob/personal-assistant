@@ -1,0 +1,85 @@
+<div class="card">
+  <div class="card-header">
+    <h4 class="card-title">My Tasks</h4>
+  </div>
+  <!-- end card-header-->
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-centered table-custom table-sm table-nowrap table-hover mb-0">
+        <thead class="bg-light bg-opacity-25 thead-sm">
+          <tr class="text-uppercase fs-xxs">
+            <th>Task</th>
+            <th>Status</th>
+            <th>Assigned By</th>
+            <th>Start Date</th>
+            <th>Priority</th>
+            <th>Progress</th>
+            <th>Total Time Spent</th>
+            <th style="width: 30px"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (task of taskData; track $index) {
+          <tr>
+            <td>
+              <h5 class="fs-sm my-1">
+                <a [routerLink]="[]" class="text-body">{{task.title}}</a>
+              </h5>
+              <span class="text-muted fs-xs">Due in {{ task.dueDays }} days</span>
+            </td>
+            <td>
+              <span
+                class="badge"
+                [class]="
+                                        task.status === 'in-progress'
+                                            ? 'badge-soft-warning'
+                                            : task.status === 'on-hold'
+                                            ? 'badge-soft-dark'
+                                            : task.status === 'out-dated'
+                                            ? 'badge-soft-danger'
+                                            : 'badge-soft-success'
+                                    "
+                >{{ toPascalCase(task.status) }}</span
+              >
+            </td>
+            <td>
+              <div class="d-flex justify-content-start align-items-center gap-2">
+                <div class="avatar avatar-sm">
+                  <img [src]="task.assignBy.image" [alt]="task.assignBy.name" class="img-fluid rounded-circle" />
+                </div>
+                <div>
+                  <h5 class="text-nowrap fs-sm mb-0 lh-base">{{ task.assignBy.name }}</h5>
+                  <p class="text-muted fs-xs mb-0">{{ task.assignBy.email }}</p>
+                </div>
+              </div>
+            </td>
+            <td>{{ task.startDate }}</td>
+            <td>
+              <span
+                class="badge"
+                [class]="
+                                        task.priority === 'high'
+                                            ? 'badge-soft-danger'
+                                            : task.priority === 'medium'
+                                            ? 'badge-soft-primary'
+                                            : 'badge-soft-success'
+                                    "
+                >{{toPascalCase(task.priority)}}</span
+              >
+            </td>
+            <td>{{ task.progress }}%</td>
+            <td>{{ task.time }}</td>
+            <td>
+              <a [routerLink]="[]" class="text-muted fs-xxl">
+                <app-icon icon="edit" class="align-middle"></app-icon>
+              </a>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- end card-body-->
+</div>

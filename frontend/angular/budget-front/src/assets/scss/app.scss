@@ -1,0 +1,47 @@
+/**
+ * BudgetApp — Inspinia Theme (minimal, MVP)
+ */
+
+// Bootstrap core
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+
+// Inspinia variables (must come before bootstrap to override)
+@import "variables";
+@import "variables-dark";
+
+@import "bootstrap/scss/bootstrap";
+
+// Inspinia theme config
+@import "config/root";
+@import "config/theme-default";
+
+// Structure
+@import "structure/topbar";
+@import "structure/sidenav";
+@import "structure/layout";
+@import "structure/footer";
+
+// Core components
+@import "components/background";
+@import "components/accordions";
+@import "components/alert";
+@import "components/avatar";
+@import "components/breadcrumb";
+@import "components/buttons";
+@import "components/badge";
+@import "components/card";
+@import "components/dropdown";
+@import "components/forms";
+@import "components/modal";
+@import "components/nav";
+@import "components/pagination";
+@import "components/progress";
+@import "components/reboot";
+@import "components/tables";
+@import "components/preloader";
+@import "components/list-group";
+@import "components/widgets";
+
+// ApexCharts
+@import "plugins/apexcharts";

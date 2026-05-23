@@ -1,0 +1,84 @@
+<div class="card">
+  <div class="card-header justify-content-between align-items-center border-dashed">
+    <h4 class="card-title mb-0">Product Inventory</h4>
+    <div class="d-flex gap-2">
+      <a [routerLink]="[]" class="btn btn-sm btn-soft-secondary">
+        <iconify-icon icon="tabler:plus" class="me-1"></iconify-icon>
+        Add Product
+      </a>
+      <a [routerLink]="[]" class="btn btn-sm btn-primary">
+        <iconify-icon icon="tabler:file-export" class="me-1"></iconify-icon>
+        Export CSV
+      </a>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-centered table-custom table-sm table-nowrap table-hover mb-0">
+        <tbody>
+          @if ((total$ | async)! > 0) { @for (product of productData$ | async; track $index) {
+          <tr>
+            <td>
+              <div class="d-flex align-items-center">
+                <img [src]="product.image" alt="" class="avatar-sm rounded-circle me-2" />
+                <div>
+                  <h5 class="fs-base my-1">
+                    <a [routerLink]="[]" class="text-body">{{ product.name }}</a>
+                  </h5>
+                  <span class="text-muted fs-xs">{{ product.category }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="text-muted fs-xs">Stock</span>
+              <h5 class="fs-base mt-1 fw-normal">{{ product.stock }} units</h5>
+            </td>
+            <td>
+              <span class="text-muted fs-xs">Price</span>
+              <h5 class="fs-base mt-1 fw-normal">${{ product.price }}</h5>
+            </td>
+            <td>
+              <span class="text-muted fs-xs">Ratings</span>
+              <h5 class="fs-base mt-1 fw-normal">
+                <span class="text-warning">
+                  <app-rating [rate]="product.ratings"></app-rating>
+                </span>
+                <span class="ms-1"> <a [routerLink]="[]" class="link-reset fw-semibold">({{ product.reviews }})</a></span>
+              </h5>
+            </td>
+            <td>
+              <span class="text-muted fs-xs">Status</span>
+              <h5 class="fs-base mt-1 fw-normal">
+                <iconify-icon icon="tabler:circle-filled" [class]="`fs-xs text-${product.variant}`"></iconify-icon>
+                {{ toTitleCase(product.status) }}
+              </h5>
+            </td>
+            <td style="width: 30px">
+              <div ngbDropdown class="dropdown" placement="bottom-end">
+                <button ngbDropdownToggle class="dropdown-toggle text-muted drop-arrow-none card-drop p-0 bg-transparent border-0">
+                  <iconify-icon icon="tabler:dots-vertical" class="fs-lg"></iconify-icon>
+                </button>
+                <div ngbDropdownMenu class="dropdown-menu dropdown-menu-end">
+                  <a [routerLink]="[]" ngbDropdownItem class="dropdown-item">Edit Product</a>
+                  <a [routerLink]="[]" ngbDropdownItem class="dropdown-item">Remove</a>
+                </div>
+              </div>
+            </td>
+          </tr>
+          } } @else {
+          <tr class="no-results">
+            <td colspan="11" class="text-center text-muted py-3">Nothing found.</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card-footer border-0">
+    @if ((total$ | async)! > 0) {
+    <app-custom-pagination itemsName="products" [showingRange]="tableService.showingRange" [collectionSize]="(total$ | async)!" [(page)]="tableService.page" [pageSize]="tableService.pageSize"> </app-custom-pagination>
+    }
+  </div>
+</div>

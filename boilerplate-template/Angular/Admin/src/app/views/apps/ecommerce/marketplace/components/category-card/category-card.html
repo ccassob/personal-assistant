@@ -1,0 +1,16 @@
+<div class="card bg-opacity-10 bg-gradient" [class]="category.className">
+  <div class="card-body pb-0 d-flex align-items-center justify-content-between">
+    <div>
+      <h5 class="fw-semibold mb-3">{{category.title}}</h5>
+      <ul class="list-unstyled mb-0 text-body">
+        @for(link of category.links; track $index){
+        <li>
+          <a [routerLink]="link.href ? link.href : []" class="text-reset d-block py-1"> {{ link.label }} </a>
+        </li>
+        }
+      </ul>
+      <a routerLink="/apps/ecommerce/products-grid" class="fw-semibold link-reset d-inline-block my-3"> View All <app-icon icon="arrow-right" class="bi align-middle fs-lg"></app-icon> </a>
+    </div>
+    <img [src]="category.image" [alt]="category.title" class="img-fluid mt-auto" style="max-height: 220px" />
+  </div>
+</div>

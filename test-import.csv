@@ -1,0 +1,3 @@
+Date,Description,Amount,Type,Category,Notes,IsExecuted
+2026-11-15,Test Income Import,1000,Income,Salario,Test note,false
+2026-11-15,Test Expense Import,250,Expense,Apartamento,,false

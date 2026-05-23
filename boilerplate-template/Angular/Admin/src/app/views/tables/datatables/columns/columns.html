@@ -1,0 +1,68 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Show & Hide Columns" subTitle="DataTables" />
+  <div class="row justify-content-center">
+    <div class="col-xxl-10">
+      <div class="card">
+        <div class="card-header justify-content-between">
+          <h4 class="card-title">Example</h4>
+          <a href="https://datatables.net/examples/api/show_hide.html" target="_blank" class="icon-link icon-link-hover link-primary fw-semibold">
+            View Docs
+            <app-icon icon="arrow-right" class="bi align-middle fs-lg"></app-icon>
+          </a>
+        </div>
+
+        <div class="card-body">
+          @if(showAlert){
+          <ngb-alert type="warning" [dismissible]="true" (closed)="showAlert = false" class="mb-4">
+            <strong>Note:</strong>
+            This is a jQuery-based plugin, so you need to include jQuery for it to work.
+          </ngb-alert>
+          }
+          <div class="column-toggle">
+            <div ngbDropdown autoClose="outside" class="d-inline-flex">
+              <button class="btn btn-sm btn-secondary drop-arrow-none" type="button" ngbDropdownToggle>Show/Hide Columns</button>
+              <ul ngbDropdownMenu>
+                @for (col of columnLabels; track i; let i = $index) {
+                <li ngbDropdownItem>
+                  <div class="form-check">
+                    <input class="form-check-input form-check-input-light fs-14 mt-0" type="checkbox" [id]="'colToggle' + i" [(ngModel)]="columnVisibility[i]" (change)="toggleColumn(i,columnVisibility[i])" />
+                    <label class="form-check-label fw-medium" [for]="'colToggle' + i"> {{ col }} </label>
+                  </div>
+                </li>
+                }
+              </ul>
+            </div>
+          </div>
+
+          <table datatable [dtOptions]="columnsOptions" class="table table-striped dt-responsive align-middle mb-0">
+            <thead class="thead-sm text-uppercase fs-xxs">
+              <tr>
+                @for (header of tableData.header; track $index; let last = $last) {
+                <th>{{ header }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of tableData.body; track $index) {
+              <tr>
+                <td>{{ item.company }}</td>
+                <td>{{ item.symbol }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.change }}%</td>
+                <td>{{ item.volume }}</td>
+                <td>{{ item.marketCap }}</td>
+                <td>{{ item.rating }} ★</td>
+                <td><span class="badge badge-label  {{item.status==='bullish' ? 'badge-soft-success' : 'badge-soft-danger'}} ">{{ toPascalCase(item.status) }}</span></td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <!-- end card-body-->
+      </div>
+      <!-- end card-->
+    </div>
+    <!-- end col-->
+  </div>
+  <!-- end row -->
+</div>

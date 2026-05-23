@@ -1,0 +1,85 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Scroll" subTitle="DataTables" />
+  <div class="row justify-content-center">
+    <div class="col-xxl-10">
+      <div class="card">
+        <div class="card-header justify-content-between">
+          <h4 class="card-title">Vertical Scroll</h4>
+          <a href="https://datatables.net/examples/basic_init/scroll_y.html" target="_blank" class="icon-link icon-link-hover link-primary fw-semibold">
+            View Docs
+            <app-icon icon="arrow-right" class="bi align-middle fs-lg"></app-icon>
+          </a>
+        </div>
+
+        <div class="card-body">
+          @if(showAlert){
+          <ngb-alert type="warning" [dismissible]="true" (closed)="showAlert = false" class="mb-4">
+            <strong>Note:</strong>
+            This is a jQuery-based plugin, so you need to include jQuery for it to work.
+          </ngb-alert>
+          }
+
+          <table datatable [dtOptions]="verticalScrollOptions" class="table table-striped w-100 align-middle mb-0">
+            <thead class="thead-sm text-uppercase fs-xxs">
+              <tr>
+                @for (header of tableData.header; track $index; let last = $last) {
+                <th>{{ header }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of tableData.body; track $index) {
+              <tr>
+                <td>{{ item.company }}</td>
+                <td>{{ item.symbol }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.change }}%</td>
+                <td>{{ item.volume }}</td>
+                <td>{{ item.marketCap }}</td>
+                <td>{{ item.rating }} ★</td>
+                <td><span class="badge badge-label  {{item.status==='bullish' ? 'badge-soft-success' : 'badge-soft-danger'}} ">{{ toPascalCase(item.status) }}</span></td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header justify-content-between">
+          <h4 class="card-title">Horizontal Scroll</h4>
+          <a href="https://datatables.net/examples/basic_init/scroll_x.html" target="_blank" class="icon-link icon-link-hover link-primary fw-semibold">
+            View Docs
+            <app-icon icon="arrow-right" class="bi align-middle fs-lg"></app-icon>
+          </a>
+        </div>
+
+        <div class="card-body">
+          <table datatable [dtOptions]="horizontalScrollOptions" class="table table-striped align-middle mb-0">
+            <thead class="thead-sm text-uppercase fs-xxs">
+              <tr>
+                @for (header of tableData.header; track $index; let last = $last) {
+                <th>{{ header }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of tableData.body; track $index) {
+              <tr>
+                <td>{{ item.company }}</td>
+                <td>{{ item.symbol }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.change }}%</td>
+                <td>{{ item.volume }}</td>
+                <td>{{ item.marketCap }}</td>
+                <td>{{ item.rating }} ★</td>
+                <td><span class="badge badge-label  {{item.status==='bullish' ? 'badge-soft-success' : 'badge-soft-danger'}} ">{{ toPascalCase(item.status) }}</span></td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,7 @@
+<div class="card">
+  <div class="card-body">
+    <h3 class="mb-3 fw-bold">$<span [countUp]="12.5" [countUpOptions]="{decimalPlaces: 2}">0</span>k<span class="text-muted ms-1 fs-sm">Profit</span></h3>
+    <p class="mb-3">Your total profit reached $12,500 this month, showing stable and positive business growth.</p>
+    <app-echart id="profit-chart" [getOptions]="getprofitChartOptions" height="120px" />
+  </div>
+</div>

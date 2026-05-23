@@ -1,0 +1,43 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Other Echart" subTitle="Charts" />
+  <div class="row">
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header border-0">
+          <h4 class="card-title mb-0">Pictorialbar Dotted Chart</h4>
+        </div>
+        <div class="card-body p-2 pt-0">
+          <app-echart [getOptions]="dottedChart" height="400px" class="rounded-3 overflow-hidden" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Basic Sunburst Chart</h4>
+        </div>
+        <div class="card-body p-2 pt-0">
+          <app-echart [getOptions]="subburstChart" height="399px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Nested Pie Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart id="chart-pie-nest" [getOptions]="pieChart" height="600px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+  </div>
+  <!-- end row -->
+</div>

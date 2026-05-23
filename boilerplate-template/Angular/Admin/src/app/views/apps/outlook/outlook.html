@@ -1,0 +1,27 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Outlook View" subTitle="Apps"></app-page-breadcrumb>
+
+  <div class="outlook-box">
+    <div class="outlook-left-menu d-none d-lg-block" tabindex="-1">
+      <app-outlook-nav [activeId]="activeId"></app-outlook-nav>
+    </div>
+
+    <ng-template #contentRef>
+      <app-outlook-nav class="vh-100" [(activeId)]="activeId" />
+    </ng-template>
+
+    <ngx-simplebar class="card h-100 mb-0 rounded-0 border-0 flex-grow-1">
+      <div class="card-header d-lg-none d-flex">
+        <button class="btn btn-sm btn-default btn-icon" (click)="open(contentRef)" type="button">
+          <app-icon icon="menu-4" class="fs-lg"></app-icon>
+        </button>
+      </div>
+
+      <div class="card-body">
+        @if (navReady) {
+        <div class="tab-content" [ngbNavOutlet]="navComponent.nav"></div>
+        }
+      </div>
+    </ngx-simplebar>
+  </div>
+</div>

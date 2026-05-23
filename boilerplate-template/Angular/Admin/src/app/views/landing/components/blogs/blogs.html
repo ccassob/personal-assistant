@@ -1,0 +1,54 @@
+<section class="section-custom bg-light bg-opacity-30 border-top border-bottom border-light" id="blog">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <span class="text-muted rounded-3 d-inline-block">📝 Insights & Resources</span>
+        <h2 class="mt-3 fw-bold mb-5">Explore Our <mark class="fst-italic">Latest</mark> Articles and Updates</h2>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      @for (item of blogData; track $index) {
+      <div class="col-lg-4">
+        <article class="card rounded-3 border-0 shadow-sm">
+          <!-- Badge -->
+          <div class="badge text-bg-dark badge-label position-absolute top-0 start-0 m-3">{{ item.status }}</div>
+
+          <!-- Card image -->
+          <img class="card-img-top rounded-top-3" [src]="item.image" [alt]="item.name" />
+
+          <!-- Card Body -->
+          <div class="card-body">
+            <!-- Title -->
+            <h6 class="card-title fs-lg lh-base mb-2">
+              <a routerLink="/article" class="link-reset">{{ item.title }}</a>
+            </h6>
+            <p class="mb-3 text-muted">{{ item.description }}</p>
+
+            <p class="d-flex flex-wrap gap-3 text-muted mb-0 mt-3 align-items-center fs-base">
+              <span><iconify-icon icon="tabler:calendar" class="fs-md"></iconify-icon> {{ item.date }}</span>
+              <span><iconify-icon icon="tabler:message-circle" class="fs-md"></iconify-icon> <a [routerLink]="[]" class="link-reset">{{ item.comments }}</a></span>
+              <span><iconify-icon icon="tabler:eye" class="fs-md"></iconify-icon> {{ item.views }}</span>
+            </p>
+          </div>
+
+          <!-- Card footer -->
+          <div class="card-footer bg-transparent d-flex justify-content-between border-0">
+            <div class="d-flex justify-content-start align-items-center gap-2">
+              <div class="avatar avatar-xs">
+                <img [src]="item.author.image" alt="avatar-4" class="img-fluid rounded-circle" />
+              </div>
+              <div>
+                <h5 class="text-nowrap fs-sm mb-0 lh-base">
+                  <a [routerLink]="[]" class="link-reset">{{ item.author.name }}</a>
+                </h5>
+              </div>
+            </div>
+            <a class="link-primary fw-semibold" routerLink="/article">Read more <iconify-icon icon="tabler:arrow-right"></iconify-icon></a>
+          </div>
+        </article>
+      </div>
+      }
+    </div>
+  </div>
+</section>

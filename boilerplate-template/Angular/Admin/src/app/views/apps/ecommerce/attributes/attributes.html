@@ -1,0 +1,178 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Attributes" subTitle="Ecommerce" />
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header border-light justify-content-between">
+          <div class="d-flex gap-2">
+            <div class="app-search">
+              <input [(ngModel)]="tableService.searchTerm" type="search" class="form-control" placeholder="Search attributes..." />
+              <app-icon icon="search" class="app-search-icon text-muted"></app-icon>
+            </div>
+            @if (hasSelection) {
+            <button class="btn btn-danger" (click)="deleteSelected()">Delete</button>
+            }
+          </div>
+
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="me-2 fw-semibold">Filter By:</span>
+
+            <!-- Attribute Type Filter -->
+            <div class="app-search">
+              <select [(ngModel)]="filterstatus" (ngModelChange)="tableService.setFilter('inputType', filterstatus)" class="form-select form-control my-1 my-md-0">
+                <option value="All">Type</option>
+                <option value="Dropdown">Dropdown</option>
+                <option value="Text">Text</option>
+                <option value="Number">Number</option>
+              </select>
+              <app-icon icon="wand" class="app-search-icon text-muted"></app-icon>
+            </div>
+
+            <!-- Records Per Page -->
+            <div>
+              <select [(ngModel)]="tableService.pageSize" class="form-select form-control my-1 my-md-0">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="8">8</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="15">15</option>
+                <option [ngValue]="20">20</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="d-flex gap-1">
+            <a (click)="addAttributeModal(content)" class="btn btn-danger ms-1">
+              <app-icon icon="plus" class="fs-sm me-2"></app-icon>
+              Add Attribute
+            </a>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-custom table-centered table-select table-hover w-100 mb-0">
+            <thead class="bg-light align-middle bg-opacity-25 thead-sm">
+              <tr class="text-uppercase fs-xxs">
+                <th class="ps-3" style="width: 1%">
+                  <input [checked]="selectAll" (change)="toggleAllSelection($event.target.checked)" class="form-check-input form-check-input-light fs-14 mt-0" type="checkbox" id="select-all-attributes" />
+                </th>
+                <th sortable="attribute" (sort)="tableService.setSort($event.column, $event.direction)">Attribute Name</th>
+                <th sortable="inputType" (sort)="tableService.setSort($event.column, $event.direction)">Type</th>
+                <th sortable="options" (sort)="tableService.setSort($event.column, $event.direction)">Values</th>
+                <th>Status</th>
+                <th sortable="createdDate" (sort)="tableService.setSort($event.column, $event.direction)">Created Date</th>
+                <th sortable="updatedDate" (sort)="tableService.setSort($event.column, $event.direction)">Last Updated</th>
+                <th sortable="user.name" (sort)="tableService.setSort($event.column, $event.direction)">Last Modified By</th>
+                <th class="text-center" style="width: 1%">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if ((total$ | async)! > 0) { @for (attribute of (attributeData$ | async); track $index ;let i = $index) {
+              <tr>
+                <td class="ps-3">
+                  <input (change)="toggleSingleSelection(i)" [checked]="selectedIds.has(i)" class="form-check-input form-check-input-light fs-14 mt-0" type="checkbox" />
+                </td>
+                <td>
+                  <h6 class="mb-0 fw-medium fs-base">{{ attribute.attribute }}</h6>
+                </td>
+                <td>{{ attribute.inputType }}</td>
+                <td><span class="text-muted">{{ attribute.options.join(', ') }}</span></td>
+                <td>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" [checked]="attribute.isActive" />
+                  </div>
+                </td>
+                <td>{{ attribute.createdDate }} <small class="text-muted">{{ attribute.createdTime }}</small></td>
+                <td>{{ attribute.updatedDate }} <small class="text-muted">{{ attribute.updatedTime }}</small></td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar avatar-sm">
+                      <img [src]="attribute.user.image" [alt]="attribute.user.name" class="img-fluid rounded-circle" />
+                    </div>
+                    <div>
+                      <h6 class="mb-0 fw-semibold">{{ attribute.user.name }}</h6>
+                      <p class="text-muted fs-xs mb-0">{{ attribute.user.role }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex justify-content-center gap-1">
+                    <a [routerLink]="[]" class="btn btn-light btn-icon btn-sm rounded-circle">
+                      <app-icon icon="eye" class="fs-lg"></app-icon>
+                    </a>
+                    <a [routerLink]="[]" class="btn btn-light btn-icon btn-sm rounded-circle">
+                      <app-icon icon="edit" class="fs-lg"></app-icon>
+                    </a>
+                    <a [routerLink]="[]" (click)="tableService.deleteItem(attribute)" class="btn btn-light btn-icon btn-sm rounded-circle">
+                      <app-icon icon="trash" class="fs-lg"></app-icon>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              } } @else {
+              <tr class="no-results">
+                <td colspan="11" class="text-center text-muted py-3">Nothing found.</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer border-0">
+          @if ((total$ | async)! > 0) {
+          <app-custom-pagination itemsName="products" [showingRange]="tableService.showingRange" [collectionSize]="(total$ | async)!" [(page)]="tableService.page" [pageSize]="tableService.pageSize"> </app-custom-pagination>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add New Attribute Modal -->
+  <ng-template #content let-modal>
+    <div class="modal-header">
+      <h5 class="modal-title fw-semibold"><app-icon icon="circle-dashed-plus" class="me-2"></app-icon> Add New Attribute</h5>
+      <button type="button" class="btn-close" (click)="modal.dismiss()" aria-label="Close"></button>
+    </div>
+
+    <form>
+      <div class="modal-body">
+        <div class="row g-3">
+          <!-- Attribute Name -->
+          <div class="col-md-6">
+            <label for="attributeName" class="form-label fw-semibold">Attribute Name</label>
+            <input type="text" id="attributeName" class="form-control" placeholder="e.g. Color, Size, Material" required />
+          </div>
+
+          <!-- Attribute Type -->
+          <div class="col-md-6">
+            <label for="attributeType" class="form-label fw-semibold">Type</label>
+            <select id="attributeType" class="form-select" required>
+              <option value="">Select Type</option>
+              <option value="Dropdown">Dropdown</option>
+              <option value="Text">Text</option>
+              <option value="Number">Number</option>
+            </select>
+          </div>
+
+          <!-- Attribute Values -->
+          <div class="col-12">
+            <label for="attributeValues" class="form-label fw-semibold">Values</label>
+            <textarea id="attributeValues" class="form-control" rows="2" placeholder="Separate multiple values with commas (e.g. Red, Blue, Green)"></textarea>
+            <small class="text-muted d-block mt-1">Applicable only for Dropdown or selectable attributes.</small>
+          </div>
+
+          <!-- Status Switch -->
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="attributeStatus" checked />
+              <label class="form-check-label fw-semibold" for="attributeStatus">Active</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+        <button type="submit" class="btn btn-danger"><app-icon icon="device-floppy" class="me-1"></app-icon> Save Attribute</button>
+      </div>
+    </form>
+  </ng-template>
+</div>

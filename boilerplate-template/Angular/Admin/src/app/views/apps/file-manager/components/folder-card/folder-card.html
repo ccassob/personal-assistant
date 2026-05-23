@@ -1,0 +1,46 @@
+<div class="card">
+  <div class="card-body p-2">
+    <div class="d-flex align-items-center justify-content-between gap-2">
+      <div class="flex-shrink-0 avatar-md d-flex justify-content-center align-items-center bg-light bg-opacity-50 text-muted rounded-2">
+        <app-icon icon="folder" class="fs-24 avatar-title"></app-icon>
+      </div>
+      <div class="flex-grow-1">
+        <h5 class="mb-1 fs-sm">
+          <a [routerLink]="[]" class="link-reset">{{ item.name }}</a>
+        </h5>
+        <p class="text-muted mb-0 fs-xs">{{ formatBytes(item.size) }}</p>
+      </div>
+      <div ngbDropdown class="flex-shrink-0 text-muted">
+        <a [routerLink]="[]" ngbDropdownToggle class="drop-arrow-none fs-xxl link-reset p-0">
+          <app-icon icon="dots-vertical"></app-icon>
+        </a>
+        <div class="dropdown-menu-end" ngbDropdownMenu>
+          <a [routerLink]="[]" ngbDropdownItem>
+            <app-icon icon="share" class="me-1"></app-icon>
+            Share
+          </a>
+          <a [routerLink]="[]" ngbDropdownItem>
+            <app-icon icon="link" class="me-1"></app-icon>
+            Get Sharable Link
+          </a>
+          <a href="assets/images/users/user-1.jpg" ngbDropdownItem>
+            <app-icon icon="download" class="me-1"></app-icon>
+            Download
+          </a>
+          <a [routerLink]="[]" ngbDropdownItem>
+            <app-icon icon="pin" class="me-1"></app-icon>
+            Pin
+          </a>
+          <a [routerLink]="[]" ngbDropdownItem>
+            <app-icon icon="edit" class="me-1"></app-icon>
+            Edit
+          </a>
+          <a [routerLink]="[]" ngbDropdownItem>
+            <app-icon icon="trash" class="me-1"></app-icon>
+            Delete
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

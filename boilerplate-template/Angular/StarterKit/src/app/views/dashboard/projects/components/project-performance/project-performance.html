@@ -1,0 +1,18 @@
+<app-card-with-action title="Project Performance" [isCloseable]="true" [isTogglable]="true" [isReloadable]="true">
+  <div card-body>
+    @for (item of projectStatusData; track $index; let first = $first) {
+    <div [class]="first ? '' : 'mt-4'">
+      <div class="d-flex justify-content-between">
+        <h5 class="fs-base mb-2">{{ item.title }}</h5>
+        <div>
+          <span>+ {{ item.value }}</span>
+          <span><iconify-icon icon="tabler:circle-filled" class="text-light mx-3 fs-10"></iconify-icon> {{ item.progress | number:'1.2-2' }}%</span>
+        </div>
+      </div>
+      <div class="mb-1">
+        <ngb-progressbar class="progress-sm" [type]="item.variant" [value]="item.progress" aria-valuemin="0" aria-valuemax="100"></ngb-progressbar>
+      </div>
+    </div>
+    }
+  </div>
+</app-card-with-action>

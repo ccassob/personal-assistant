@@ -1,0 +1,59 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Marketplace" subTitle="Ecommerce" />
+  <div class="container-xxl">
+    <div class="row pt-3">
+      @for(category of categoryData; track $index){
+      <div class="col-md-4">
+        <app-category-card [category]="category" />
+      </div>
+      }
+    </div>
+
+    <div class="row pt-4">
+      <div class="col-12 text-center">
+        <span class="text-muted rounded-3 d-inline-block">👕 Discover styles tailored for everyone</span>
+        <h3 class="mt-2 fw-bold mb-4">Find Your <mark>Perfect Style</mark></h3>
+        <div class="d-flex pt-1 justify-content-center align-items-center gap-1">
+          <a [routerLink]="[]" class="badge badge-default rounded-pill px-3 py-2 fs-6 text-primary">Best Sellers</a>
+          <a [routerLink]="[]" class="badge badge-default rounded-pill px-3 py-2 fs-6 text-muted">New Arrived</a>
+          <a [routerLink]="[]" class="badge badge-default rounded-pill px-3 py-2 fs-6 text-muted">Sale Items</a>
+          <a [routerLink]="[]" class="badge badge-default rounded-pill px-3 py-2 fs-6 text-muted">Top Rated</a>
+        </div>
+      </div>
+    </div>
+    <div class="row row-cols-xxl-4 row-cols-lg-3 row-cols-sm-2 row-col-1 mt-3">
+      @for (product of productData; track $index) {
+      <div class="col">
+        <app-product-card [product]="product" />
+      </div>
+      }
+    </div>
+
+    <div class="row">
+      <div class="col-12 text-end">
+        <a routerLink="/apps/ecommerce/products-grid" class="btn btn-success mt-3"> View More Products <app-icon icon="arrow-right" class="bi align-middle fs-lg"></app-icon> </a>
+      </div>
+    </div>
+
+    <div class="row pt-4">
+      <div class="col-12 text-center">
+        <h3 class="fw-bold mb-2">Shop by <mark>Brand</mark></h3>
+        <span class="text-muted rounded-3 d-inline-block"> 🏷️ Discover trusted names loved by millions </span>
+      </div>
+    </div>
+
+    <div class="row justify-content-center mb-5 mt-3">
+      <div class="col-xxl-9">
+        <div class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-4">
+          @for (client of brands; track $index) {
+          <div class="border rounded p-3">
+            <a [routerLink]="[]" class="d-block">
+              <img [src]="client.image" alt="logo" height="42" />
+            </a>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

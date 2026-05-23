@@ -1,0 +1,40 @@
+<div class="card">
+  <div class="card-header">
+    <h4 class="card-title">Sortables List with Handle</h4>
+  </div>
+
+  <div class="card-body">
+    <p class="text-muted">
+      Use
+      <code>nested-sortable-handle</code>
+      class to list-group class to set a nested list with sortable items.
+    </p>
+
+    <div cdkDropList [cdkDropListData]="tasks" class="list-group fw-medium nested-sortable-handle" (cdkDropListDropped)="drop($event)">
+      @for (task of tasks; track $index) {
+      <div cdkDrag class="list-group-item nested-1">
+        <app-icon cdkDragHandle icon="grip-horizontal" class="align-middle sort-handle"></app-icon>
+        {{ task.title }} @if (task.children) {
+        <div cdkDropList [cdkDropListData]="task.children" class="list-group nested-sortable-handle" (cdkDropListDropped)="drop($event, task)">
+          @for (child of task.children; track $index) {
+          <div cdkDrag class="list-group-item nested-2">
+            <app-icon cdkDragHandle icon="grip-horizontal" class="align-middle sort-handle"></app-icon>
+            {{ child.title }} @if (child.children) {
+            <div cdkDropList [cdkDropListData]="child.children" class="list-group nested-sortable-handle" (cdkDropListDropped)="drop($event, child)">
+              @for (subChild of child.children; track $index) {
+              <div cdkDrag class="list-group-item nested-3">
+                <app-icon cdkDragHandle icon="grip-horizontal" class="align-middle sort-handle"></app-icon>
+                {{ subChild.title }}
+              </div>
+              }
+            </div>
+            }
+          </div>
+          }
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+</div>

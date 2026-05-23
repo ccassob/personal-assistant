@@ -1,0 +1,72 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Sales Reports" subTitle="Ecommerce" />
+  <div class="row justify-content-center">
+    <div class="col-xxl-10">
+      <div class="card">
+        <div class="card-header border-light justify-content-between">
+          <h5 class="card-title mb-0">Products - 2025</h5>
+          <div class="d-flex align-items-center gap-2">
+            <div class="app-search">
+              <input [(ngModel)]="tableService.searchTerm" type="search" class="form-control" placeholder="Search reports..." />
+              <app-icon icon="search" class="app-search-icon text-muted"></app-icon>
+            </div>
+
+            <div class="app-search">
+              <input mwlFlatpickr [options]="flatpickrOptions" class="form-control" style="min-width: 250px" type="text" />
+
+              <app-icon icon="calendar" class="app-search-icon text-muted"></app-icon>
+            </div>
+
+            <button type="submit" class="btn btn-secondary"><app-icon icon="download" class="me-2"></app-icon> Export Report</button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <app-apexchart [getOptions]="getSalesChartOptions" id="salesMixChart" />
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-custom table-centered table-select table-hover w-100 mb-0">
+            <thead class="bg-light align-middle bg-opacity-25 thead-sm">
+              <tr class="text-uppercase fs-xxs">
+                <th class="ps-3" style="width: 1%">
+                  <input [checked]="selectAll" (change)="toggleAllSelection($event.target.checked)" class="form-check-input form-check-input-light fs-14 mt-0" type="checkbox" id="select-all-products" value="option" />
+                </th>
+                <th sortable="date" (sort)="tableService.setSort($event.column, $event.direction)">Date</th>
+                <th sortable="orders" (sort)="tableService.setSort($event.column, $event.direction)">Orders</th>
+                <th sortable="refunds" (sort)="tableService.setSort($event.column, $event.direction)">Refunds</th>
+                <th sortable="averageRevenue" (sort)="tableService.setSort($event.column, $event.direction)">Avr. Revenue per Order</th>
+                <th sortable="tax" (sort)="tableService.setSort($event.column, $event.direction)">Tax</th>
+                <th sortable="revenue" (sort)="tableService.setSort($event.column, $event.direction)">Revenue</th>
+                <th sortable="balance" (sort)="tableService.setSort($event.column, $event.direction)">Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if ((total$ | async)! > 0) { @for (sales of (saleData$ | async); track $index;let i = $index) {
+              <tr>
+                <td class="ps-3"><input (change)="toggleSingleSelection(i)" [checked]="selectedIds.has(i)" class="form-check-input form-check-input-light fs-14 product-item-check mt-0" type="checkbox" value="option" /></td>
+                <td>{{sales.date}}</td>
+                <td>{{sales.orders}}</td>
+                <td>{{sales.refunds}}</td>
+                <td>{{sales.averageRevenue}}</td>
+                <td>{{sales.tax}}</td>
+                <td>{{sales.revenue}}</td>
+                <td>{{sales.balance}}</td>
+              </tr>
+              } } @else {
+              <tr class="no-results">
+                <td colspan="11" class="text-center text-muted py-3">Nothing found.</td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer border-0">
+          @if ((total$ | async)! > 0) {
+          <app-custom-pagination itemsName="entries" [showingRange]="tableService.showingRange" [collectionSize]="(total$ | async)!" [(page)]="tableService.page" [pageSize]="tableService.pageSize"> </app-custom-pagination>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

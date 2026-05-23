@@ -1,0 +1,552 @@
+<header class="topnav">
+<nav class="navbar navbar-expand-lg">
+<nav class="container-fluid">
+<div class="collapse navbar-collapse" id="topnav-menu">
+<ul class="navbar-nav">
+<li class="nav-item dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-main" role="button">
+<span class="menu-icon"><i class="ti ti-dashboard fs-xl"></i></span>
+<span class="menu-text" data-lang="main">Main</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-main" class="dropdown-menu">
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-dashboards" role="button">
+<span data-lang="dashboards">Dashboards</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-dashboards" class="dropdown-menu">
+<a asp-action="Ecommerce" asp-controller="Dashboard" class="dropdown-item"><span data-lang="dashboard-ecommerce">Ecommerce</span></a>
+<a asp-action="Analytics" asp-controller="Dashboard" class="dropdown-item"><span data-lang="dashboard-analytics">Analytics</span></a>
+<a class="dropdown-item" href="/dashboard-projects.html"><span data-lang="dashboard-projects">Projects</span></a>
+</div>
+</div>
+<a class="dropdown-item" href="/landing.html"><span data-lang="landing">Landing</span></a>
+</div>
+</li>
+<li class="nav-item dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-apps" role="button">
+<span class="menu-icon"><i class="ti ti-apps fs-xl"></i></span>
+<span class="menu-text" data-lang="apps">Apps</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-apps" class="dropdown-menu">
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-ecommerce" role="button">
+<span data-lang="ecommerce">Ecommerce</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-ecommerce" class="dropdown-menu dropdown-menu-columns">
+<a asp-action="Marketplace" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-marketplace">Marketplace</span></a>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-products" role="button">
+<span data-lang="products">Products</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-products" class="dropdown-menu">
+<a asp-action="Products" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-products">Products</span></a>
+<a asp-action="ProductsGrid" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-products-grid">Products Grid</span></a>
+<a asp-action="ProductDetails" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-product-details">Product Details</span></a>
+<a asp-action="ProductAdd" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-product-add">Add Product</span></a>
+</div>
+</div>
+<a asp-action="Categories" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-categories">Categories</span></a>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-orders" role="button">
+<span data-lang="orders">Orders</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-orders" class="dropdown-menu">
+<a asp-action="Orders" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-orders">Orders</span></a>
+<a asp-action="OrderDetails" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-order-details">Order Details</span></a>
+<a asp-action="OrderAdd" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-order-add">Add/Edit Order</span></a>
+</div>
+</div>
+<a asp-action="Customers" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-customers">Customers</span></a>
+<a asp-action="Cart" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-cart">Cart</span></a>
+<a asp-action="Checkout" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-checkout">Checkout</span></a>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-sellers" role="button">
+<span data-lang="sellers">Sellers</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-sellers" class="dropdown-menu">
+<a asp-action="Sellers" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-sellers">Sellers</span></a>
+<a asp-action="SellerDetails" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-seller-details">Sellers Details</span></a>
+</div>
+</div>
+<a asp-action="Refunds" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-refunds">Refunds</span></a>
+<a asp-action="Reviews" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-reviews">Reviews</span></a>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-inventory" role="button">
+<span data-lang="inventory">Inventory</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-inventory" class="dropdown-menu">
+<a asp-action="Warehouse" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-warehouse">Warehouse</span></a>
+<a asp-action="ProductStocks" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-product-stocks">Product Stocks</span></a>
+<a asp-action="PurchasedOrders" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-purchased-orders">Purchased Orders</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-reports" role="button">
+<span data-lang="reports">Reports</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-reports" class="dropdown-menu">
+<a asp-action="ProductViews" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-product-views">Product Views</span></a>
+<a asp-action="Sales" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-sales">Sales</span></a>
+</div>
+</div>
+<a asp-action="Attributes" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-attributes">Attributes</span></a>
+<a asp-action="Settings" asp-controller="Ecommerce" class="dropdown-item"><span data-lang="apps-ecommerce-settings">Settings</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-email" role="button">
+<span data-lang="email">Email</span><span class="badge bg-danger text-white">New</span>
+</a>
+<div aria-labelledby="topnav-submenu-email" class="dropdown-menu">
+<a asp-action="Inbox" asp-controller="Email" class="dropdown-item"><span data-lang="apps-email-inbox">Inbox</span></a>
+<a asp-action="Details" asp-controller="Email" class="dropdown-item"><span data-lang="apps-email-details">Details</span></a>
+<a asp-action="Compose" asp-controller="Email" class="dropdown-item"><span data-lang="apps-email-compose">Compose</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-users" role="button">
+<span data-lang="users">Users</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-users" class="dropdown-menu">
+<a asp-action="Contacts" asp-controller="Users" class="dropdown-item"><span data-lang="apps-users-contacts">Contacts</span></a>
+<a asp-action="Roles" asp-controller="Users" class="dropdown-item"><span data-lang="apps-users-roles">Roles</span></a>
+<a asp-action="RoleDetails" asp-controller="Users" class="dropdown-item"><span data-lang="apps-users-role-details">Role Details</span></a>
+<a asp-action="Permissions" asp-controller="Users" class="dropdown-item"><span data-lang="apps-users-permissions">Permissions</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-projects" role="button">
+<span data-lang="projects">Projects</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-projects" class="dropdown-menu">
+<a asp-action="Grid" asp-controller="Projects" class="dropdown-item"><span data-lang="apps-projects-grid">My Projects</span></a>
+<a asp-action="List" asp-controller="Projects" class="dropdown-item"><span data-lang="apps-projects-list">Projects List</span></a>
+<a asp-action="Details" asp-controller="Projects" class="dropdown-item"><span data-lang="apps-projects-details">View Project</span></a>
+<a asp-action="Kanban" asp-controller="Projects" class="dropdown-item"><span data-lang="apps-projects-kanban">Kanban Board</span></a>
+<a asp-action="TeamBoard" asp-controller="Projects" class="dropdown-item"><span data-lang="apps-projects-team-board">Team Board</span></a>
+<a asp-action="Activity" asp-controller="Projects" class="dropdown-item"><span data-lang="apps-projects-activity">Activity Steam</span></a>
+</div>
+</div>
+<a asp-action="FileManager" asp-controller="Apps" class="dropdown-item"><span data-lang="apps-file-manager">File Manager</span></a>
+<a asp-action="Chat" asp-controller="Apps" class="dropdown-item"><span data-lang="apps-chat">Chat</span></a>
+<a asp-action="Calendar" asp-controller="Apps" class="dropdown-item"><span data-lang="apps-calendar">Calendar</span></a>
+<a asp-action="SocialFeed" asp-controller="Apps" class="dropdown-item"><span data-lang="apps-social-feed">Social Feed</span></a>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-invoice" role="button">
+<span data-lang="invoice">Invoice</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-invoice" class="dropdown-menu">
+<a asp-action="List" asp-controller="Invoice" class="dropdown-item"><span data-lang="apps-invoice-list">Invoices</span></a>
+<a asp-action="Details" asp-controller="Invoice" class="dropdown-item"><span data-lang="apps-invoice-details">Single Invoice</span></a>
+<a asp-action="Create" asp-controller="Invoice" class="dropdown-item"><span data-lang="apps-invoice-create">New Invoice</span></a>
+</div>
+</div>
+<a asp-action="Companies" asp-controller="Apps" class="dropdown-item"><span data-lang="apps-companies">Companies</span></a>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-more-apps" role="button">
+<span data-lang="more-apps">More Apps</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-more-apps" class="dropdown-menu">
+<a asp-action="Clients" asp-controller="Apps" class="dropdown-item"><span data-lang="apps-clients">Clients</span></a>
+<a asp-action="Outlook" asp-controller="Apps" class="dropdown-item"><span data-lang="apps-outlook">Outlook View</span></a>
+<a asp-action="VoteList" asp-controller="Apps" class="dropdown-item"><span data-lang="apps-vote-list">Vote List</span></a>
+<a asp-action="IssueTracker" asp-controller="Apps" class="dropdown-item"><span data-lang="apps-issue-tracker">Issue Tracker</span></a>
+<a asp-action="ApiKeys" asp-controller="Apps" class="dropdown-item"><span data-lang="apps-api-keys">API Keys</span></a>
+<a asp-action="Manage" asp-controller="Apps" class="dropdown-item"><span data-lang="apps-manage">Manage Apps</span></a>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-blog" role="button">
+<span data-lang="blog">Blog</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-blog" class="dropdown-menu">
+<a asp-action="List" asp-controller="Blog" class="dropdown-item"><span data-lang="apps-blog-list">Blog List</span></a>
+<a asp-action="Grid" asp-controller="Blog" class="dropdown-item"><span data-lang="apps-blog-grid">Blog Grid</span></a>
+<a asp-action="Article" asp-controller="Blog" class="dropdown-item"><span data-lang="apps-blog-article">Article</span></a>
+<a asp-action="Add" asp-controller="Blog" class="dropdown-item"><span data-lang="apps-blog-add">Add Article</span></a>
+</div>
+</div>
+<a asp-action="PinBoard" asp-controller="Apps" class="dropdown-item"><span data-lang="apps-pin-board">Pin Board</span></a>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-forum" role="button">
+<span data-lang="forum">Forum</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-forum" class="dropdown-menu">
+<a asp-action="ForumView" asp-controller="Forum" class="dropdown-item"><span data-lang="apps-forum-view">Forum View</span></a>
+<a asp-action="Post" asp-controller="Forum" class="dropdown-item"><span data-lang="apps-forum-post">Forum Post</span></a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</li>
+<li class="nav-item dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-custom-pages" role="button">
+<span class="menu-icon"><i class="ti ti-files fs-xl"></i></span>
+<span class="menu-text" data-lang="custom-pages">Custom Pages</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-custom-pages" class="dropdown-menu">
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-pages" role="button">
+<span data-lang="pages">Pages</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-pages" class="dropdown-menu dropdown-menu-columns">
+<a asp-action="Profile" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-profile">Profile</span></a>
+<a asp-action="AccountSettings" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-account-settings">Account Settings</span></a>
+<a asp-action="Faq" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-faq">FAQ</span></a>
+<a asp-action="Pricing" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-pricing">Pricing</span></a>
+<a asp-action="PagesEmpty" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-empty">Empty Page</span></a>
+<a asp-action="Timeline" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-timeline">Timeline</span></a>
+<a asp-action="Gallery" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-gallery">Gallery</span></a>
+<a asp-action="Sitemap" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-sitemap">Sitemap</span></a>
+<a asp-action="SearchResults" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-search-results">Search Results</span></a>
+<a asp-action="ComingSoon" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-coming-soon">Coming Soon</span></a>
+<a asp-action="PrivacyPolicy" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-privacy-policy">Privacy Policy</span></a>
+<a asp-action="TermsConditions" asp-controller="Pages" class="dropdown-item"><span data-lang="pages-terms-conditions">Terms &amp; Conditions</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-plugins" role="button">
+<span data-lang="plugins">Plugins</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-plugins" class="dropdown-menu dropdown-menu-columns">
+<a asp-action="Sortable" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-sortable">Sortable List</span></a>
+<a asp-action="TextDiff" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-text-diff">Text Diff</span></a>
+<a asp-action="PdfViewer" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-pdf-viewer">PDF Viewer</span></a>
+<a asp-action="I18" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-i18">i18 Support</span></a>
+<a asp-action="SweetAlerts" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-sweet-alerts">Sweet Alerts</span></a>
+<a asp-action="IdleTimer" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-idle-timer">Idle Timer</span></a>
+<a asp-action="PassMeter" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-pass-meter">Password Meter</span></a>
+<a asp-action="LiveFavicon" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-live-favicon">Live Favicon</span></a>
+<a asp-action="Clipboard" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-clipboard">Clipboard</span></a>
+<a asp-action="TreeView" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-tree-view">Tree View</span></a>
+<a asp-action="LoadingButtons" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-loading-buttons">Loading Buttons</span></a>
+<a asp-action="Masonry" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-masonry">Masonry</span></a>
+<a asp-action="Tour" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-tour">Tour</span></a>
+<a asp-action="Animation" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-animation">Animation</span></a>
+<a asp-action="VideoPlayer" asp-controller="Plugins" class="dropdown-item"><span data-lang="plugins-video-player">Video Player</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-authentication" role="button">
+<span data-lang="authentication">Authentication</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-authentication" class="dropdown-menu">
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-auth-basic" role="button">
+<span data-lang="auth-basic">Basic</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-auth-basic" class="dropdown-menu">
+<a asp-action="SignIn" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-sign-in">Sign In</span></a>
+<a asp-action="SignUp" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-sign-up">Sign Up</span></a>
+<a asp-action="ResetPass" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-reset-pass">Reset Password</span></a>
+<a asp-action="NewPass" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-new-pass">New Password</span></a>
+<a asp-action="TwoFactor" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-two-factor">Two Factor</span></a>
+<a asp-action="LockScreen" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-lock-screen">Lock Screen</span></a>
+<a asp-action="SuccessMail" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-success-mail">Success Mail</span></a>
+<a asp-action="LoginPin" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-login-pin">Login with PIN</span></a>
+<a asp-action="DeleteAccount" asp-controller="Auth" class="dropdown-item"><span data-lang="auth-delete-account">Delete Account</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-auth-card" role="button">
+<span data-lang="auth-card">Card</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-auth-card" class="dropdown-menu">
+<a asp-action="SignIn" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-sign-in">Sign In</span></a>
+<a asp-action="SignUp" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-sign-up">Sign Up</span></a>
+<a asp-action="ResetPass" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-reset-pass">Reset Password</span></a>
+<a asp-action="NewPass" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-new-pass">New Password</span></a>
+<a asp-action="TwoFactor" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-two-factor">Two Factor</span></a>
+<a asp-action="LockScreen" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-lock-screen">Lock Screen</span></a>
+<a asp-action="SuccessMail" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-success-mail">Success Mail</span></a>
+<a asp-action="LoginPin" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-login-pin">Login with PIN</span></a>
+<a asp-action="DeleteAccount" asp-controller="AuthCard" class="dropdown-item"><span data-lang="auth-card-delete-account">Delete Account</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-auth-split" role="button">
+<span data-lang="auth-split">Split</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-auth-split" class="dropdown-menu">
+<a asp-action="SignIn" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-sign-in">Sign In</span></a>
+<a asp-action="SignUp" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-sign-up">Sign Up</span></a>
+<a asp-action="ResetPass" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-reset-pass">Reset Password</span></a>
+<a asp-action="NewPass" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-new-pass">New Password</span></a>
+<a asp-action="TwoFactor" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-two-factor">Two Factor</span></a>
+<a asp-action="LockScreen" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-lock-screen">Lock Screen</span></a>
+<a asp-action="SuccessMail" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-success-mail">Success Mail</span></a>
+<a asp-action="LoginPin" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-login-pin">Login with PIN</span></a>
+<a asp-action="DeleteAccount" asp-controller="AuthSplit" class="dropdown-item"><span data-lang="auth-split-delete-account">Delete Account</span></a>
+</div>
+</div>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-error-pages" role="button">
+<span data-lang="error-pages">Error Pages</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-error-pages" class="dropdown-menu">
+<a asp-action="Error400" asp-controller="Error" class="dropdown-item"><span data-lang="error-400">400 Bad Request</span></a>
+<a asp-action="Error401" asp-controller="Error" class="dropdown-item"><span data-lang="error-401">401 Unauthorized</span></a>
+<a asp-action="Error403" asp-controller="Error" class="dropdown-item"><span data-lang="error-403">403 Forbidden</span></a>
+<a asp-action="Error404" asp-controller="Error" class="dropdown-item"><span data-lang="error-404">404 Not Found</span></a>
+<a asp-action="Error408" asp-controller="Error" class="dropdown-item"><span data-lang="error-408">408 Request Timeout</span></a>
+<a asp-action="Error500" asp-controller="Error" class="dropdown-item"><span data-lang="error-500">500 Internal Server</span></a>
+<a asp-action="Maintenance" asp-controller="Error" class="dropdown-item"><span data-lang="error-maintenance">Maintenance</span></a>
+</div>
+</div>
+</div>
+</li>
+<li class="nav-item dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-layouts" role="button">
+<span class="menu-icon"><i class="ti ti-table-column fs-xl"></i></span>
+<span class="menu-text" data-lang="layouts">Layouts</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-layouts" class="dropdown-menu">
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-layout-options" role="button">
+<span data-lang="layout-options">Layout Options</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-layout-options" class="dropdown-menu">
+<a asp-action="Scrollable" asp-controller="Layouts" class="dropdown-item" target="_blank"><span data-lang="layouts-scrollable">Scrollable</span></a>
+<a asp-action="Compact" asp-controller="Layouts" class="dropdown-item" target="_blank"><span data-lang="layouts-compact">Compact</span></a>
+<a asp-action="Boxed" asp-controller="Layouts" class="dropdown-item" target="_blank"><span data-lang="layouts-boxed">Boxed</span></a>
+<a asp-action="Horizontal" asp-controller="Layouts" class="dropdown-item" target="_blank"><span data-lang="layouts-horizontal">Horizontal</span></a>
+<a asp-action="Preloader" asp-controller="Layouts" class="dropdown-item" target="_blank"><span data-lang="layouts-preloader">Preloader</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-sidebars" role="button">
+<span data-lang="sidebars">Sidebars</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-sidebars" class="dropdown-menu">
+<a asp-action="Light" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-light">Light Menu</span></a>
+<a asp-action="Gradient" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-gradient">Gradient Menu</span></a>
+<a asp-action="Gray" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-gray">Gray Menu</span></a>
+<a asp-action="Image" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-image">Image Menu</span></a>
+<a asp-action="Compact" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-compact">Compact Menu</span></a>
+<a asp-action="OnHover" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-on-hover">On Hover Menu</span></a>
+<a asp-action="OnHoverActive" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-on-hover-active">On Hover Active</span></a>
+<a asp-action="Offcanvas" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-offcanvas">Offcanvas Menu</span></a>
+<a asp-action="NoIcons" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-no-icons">No Icons with Lines</span></a>
+<a asp-action="WithLines" asp-controller="Sidebar" class="dropdown-item" target="_blank"><span data-lang="layouts-sidebar-with-lines">Sidebar with Lines</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-topbar" role="button">
+<span data-lang="topbar">Topbar</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-topbar" class="dropdown-menu">
+<a asp-action="Dark" asp-controller="Topbar" class="dropdown-item" target="_blank"><span data-lang="layouts-topbar-dark">Dark Topbar</span></a>
+<a asp-action="Gray" asp-controller="Topbar" class="dropdown-item" target="_blank"><span data-lang="layouts-topbar-gray">Gray Topbar</span></a>
+<a asp-action="Gradient" asp-controller="Topbar" class="dropdown-item" target="_blank"><span data-lang="layouts-topbar-gradient">Gradient Topbar</span></a>
+</div>
+</div>
+</div>
+</li>
+<li class="nav-item dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="nav-link dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-components" role="button">
+<span class="menu-icon"><i class="ti ti-components fs-xl"></i></span>
+<span class="menu-text" data-lang="components">Components</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-components" class="dropdown-menu">
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-base-ui" role="button">
+<span data-lang="base-ui">Base UI</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-base-ui" class="dropdown-menu dropdown-menu-columns">
+<a asp-action="Accordions" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-accordions">Accordions</span></a>
+<a asp-action="Alerts" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-alerts">Alerts</span></a>
+<a asp-action="Images" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-images">Images</span></a>
+<a asp-action="Badges" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-badges">Badges</span></a>
+<a asp-action="Breadcrumb" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-breadcrumb">Breadcrumb</span></a>
+<a asp-action="Buttons" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-buttons">Buttons</span></a>
+<a asp-action="Cards" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-cards">Cards</span></a>
+<a asp-action="Carousel" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-carousel">Carousel</span></a>
+<a asp-action="Collapse" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-collapse">Collapse</span></a>
+<a asp-action="Colors" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-colors">Colors</span></a>
+<a asp-action="Dropdowns" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-dropdowns">Dropdowns</span></a>
+<a asp-action="Videos" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-videos">Videos</span></a>
+<a asp-action="Grid" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-grid">Grid Options</span></a>
+<a asp-action="Links" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-links">Links</span></a>
+<a asp-action="ListGroup" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-list-group">List Group</span></a>
+<a asp-action="Modals" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-modals">Modals</span></a>
+<a asp-action="Notifications" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-notifications">Notifications</span></a>
+<a asp-action="Offcanvas" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-offcanvas">Offcanvas</span></a>
+<a asp-action="Placeholders" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-placeholders">Placeholders</span></a>
+<a asp-action="Pagination" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-pagination">Pagination</span></a>
+<a asp-action="Popovers" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-popovers">Popovers</span></a>
+<a asp-action="Progress" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-progress">Progress</span></a>
+<a asp-action="Scrollspy" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-scrollspy">Scrollspy</span></a>
+<a asp-action="Spinners" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-spinners">Spinners</span></a>
+<a asp-action="Tabs" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-tabs">Tabs</span></a>
+<a asp-action="Tooltips" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-tooltips">Tooltips</span></a>
+<a asp-action="Typography" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-typography">Typography</span></a>
+<a asp-action="Utilities" asp-controller="Ui" class="dropdown-item"><span data-lang="ui-utilities">Utilities</span></a>
+</div>
+</div>
+<a class="dropdown-item" href="/widgets.html"><span data-lang="widgets">Widgets</span></a>
+<a class="dropdown-item" href="/metrics.html"><span data-lang="metrics">Metrics</span></a>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-charts" role="button">
+<span data-lang="charts">Charts</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-charts" class="dropdown-menu">
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-apex-charts" role="button">
+<span data-lang="apex-charts">Apex Charts</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-apex-charts" class="dropdown-menu dropdown-menu-columns">
+<a asp-action="Area" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-area">Area</span></a>
+<a asp-action="Bar" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-bar">Bar</span></a>
+<a asp-action="Bubble" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-bubble">Bubble</span></a>
+<a asp-action="Candlestick" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-candlestick">Candlestick</span></a>
+<a asp-action="Column" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-column">Column</span></a>
+<a asp-action="Heatmap" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-heatmap">Heatmap</span></a>
+<a asp-action="Line" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-line">Line</span></a>
+<a asp-action="Mixed" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-mixed">Mixed</span></a>
+<a asp-action="Timeline" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-timeline">Timeline</span></a>
+<a asp-action="Boxplot" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-boxplot">Boxplot</span></a>
+<a asp-action="Treemap" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-treemap">Treemap</span></a>
+<a asp-action="Pie" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-pie">Pie</span></a>
+<a asp-action="Radar" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-radar">Radar</span></a>
+<a asp-action="Radialbar" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-radialbar">RadialBar</span></a>
+<a asp-action="Scatter" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-scatter">Scatter</span></a>
+<a asp-action="PolarArea" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-polar-area">Polar Area</span></a>
+<a asp-action="Sparklines" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-sparklines">Sparklines</span></a>
+<a asp-action="Range" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-range">Range</span></a>
+<a asp-action="Funnel" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-funnel">Funnel</span></a>
+<a asp-action="Slope" asp-controller="Apex" class="dropdown-item"><span data-lang="charts-apex-slope">Slope</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-echarts" role="button">
+<span data-lang="echarts">Echarts</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-echarts" class="dropdown-menu dropdown-menu-columns">
+<a asp-action="Line" asp-controller="Echart" class="dropdown-item"><span data-lang="charts-echart-line">Line</span></a>
+<a asp-action="Bar" asp-controller="Echart" class="dropdown-item"><span data-lang="charts-echart-bar">Bar</span></a>
+<a asp-action="Pie" asp-controller="Echart" class="dropdown-item"><span data-lang="charts-echart-pie">Pie</span></a>
+<a asp-action="Scatter" asp-controller="Echart" class="dropdown-item"><span data-lang="charts-echart-scatter">Scatter</span></a>
+<a asp-action="GeoMap" asp-controller="Echart" class="dropdown-item"><span data-lang="charts-echart-geo-map">GEO Map</span></a>
+<a asp-action="Gauge" asp-controller="Echart" class="dropdown-item"><span data-lang="charts-echart-gauge">Gauge</span></a>
+<a asp-action="Candlestick" asp-controller="Echart" class="dropdown-item"><span data-lang="charts-echart-candlestick">Candlestick</span></a>
+<a asp-action="Area" asp-controller="Echart" class="dropdown-item"><span data-lang="charts-echart-area">Area</span></a>
+<a asp-action="Radar" asp-controller="Echart" class="dropdown-item"><span data-lang="charts-echart-radar">Radar</span></a>
+<a asp-action="Heatmap" asp-controller="Echart" class="dropdown-item"><span data-lang="charts-echart-heatmap">Heatmap</span></a>
+<a asp-action="Other" asp-controller="Echart" class="dropdown-item"><span data-lang="charts-echart-other">Other</span></a>
+</div>
+</div>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-forms" role="button">
+<span data-lang="forms">Forms</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-forms" class="dropdown-menu">
+<a asp-action="Elements" asp-controller="Form" class="dropdown-item"><span data-lang="form-elements">Basic Elements</span></a>
+<a asp-action="Pickers" asp-controller="Form" class="dropdown-item"><span data-lang="form-pickers">Pickers</span></a>
+<a asp-action="Select" asp-controller="Form" class="dropdown-item"><span data-lang="form-select">Select</span></a>
+<a asp-action="Validation" asp-controller="Form" class="dropdown-item"><span data-lang="form-validation">Validation</span></a>
+<a asp-action="Wizard" asp-controller="Form" class="dropdown-item"><span data-lang="form-wizard">Wizard</span></a>
+<a asp-action="Fileuploads" asp-controller="Form" class="dropdown-item"><span data-lang="form-fileuploads">File Uploads</span></a>
+<a asp-action="TextEditors" asp-controller="Form" class="dropdown-item"><span data-lang="form-text-editors">Text Editors</span></a>
+<a asp-action="RangeSlider" asp-controller="Form" class="dropdown-item"><span data-lang="form-range-slider">Range Slider</span></a>
+<a asp-action="Layout" asp-controller="Form" class="dropdown-item"><span data-lang="form-layout">Layouts</span></a>
+<a asp-action="OtherPlugin" asp-controller="Form" class="dropdown-item"><span data-lang="form-other-plugin">Other Plugins</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-tables" role="button">
+<span data-lang="tables">Tables</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-tables" class="dropdown-menu">
+<a asp-action="Static" asp-controller="Tables" class="dropdown-item"><span data-lang="tables-static">Static Tables</span></a>
+<a asp-action="Custom" asp-controller="Tables" class="dropdown-item"><span data-lang="tables-custom">Custom Tables</span></a>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-datatables" role="button">
+<span data-lang="datatables">DataTables</span><span class="badge bg-success text-white">15</span>
+</a>
+<div aria-labelledby="topnav-submenu-datatables" class="dropdown-menu dropdown-menu-columns">
+<a asp-action="Basic" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-basic">Basic</span></a>
+<a asp-action="ExportData" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-export-data">Export Data</span></a>
+<a asp-action="Select" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-select">Select</span></a>
+<a asp-action="Ajax" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-ajax">Ajax</span></a>
+<a asp-action="Javascript" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-javascript">Javascript Source</span></a>
+<a asp-action="Rendering" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-rendering">Data Rendering</span></a>
+<a asp-action="Scroll" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-scroll">Scroll</span></a>
+<a asp-action="FixedColumns" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-fixed-columns">Fixed Columns</span></a>
+<a asp-action="FixedHeader" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-fixed-header">Fixed Header</span></a>
+<a asp-action="Columns" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-columns">Show &amp; Hide Column</span></a>
+<a asp-action="ChildRows" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-child-rows">Child Rows</span></a>
+<a asp-action="ColumnSearching" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-column-searching">Column Searching</span></a>
+<a asp-action="RangeSearch" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-range-search">Range Search</span></a>
+<a asp-action="RowsAdd" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-rows-add">Add Rows</span></a>
+<a asp-action="CheckboxSelect" asp-controller="Datatables" class="dropdown-item"><span data-lang="tables-datatables-checkbox-select">Checkbox Select</span></a>
+</div>
+</div>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-icons" role="button">
+<span data-lang="icons">Icons</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-icons" class="dropdown-menu">
+<a asp-action="Tabler" asp-controller="Icons" class="dropdown-item"><span data-lang="icons-tabler">Tabler</span></a>
+<a asp-action="Lucide" asp-controller="Icons" class="dropdown-item"><span data-lang="icons-lucide">Lucide</span></a>
+<a asp-action="Flags" asp-controller="Icons" class="dropdown-item"><span data-lang="icons-flags">Flags</span></a>
+</div>
+</div>
+<div class="dropdown">
+<a aria-expanded="false" aria-haspopup="true" class="dropdown-item dropdown-toggle drop-arrow-none" data-bs-toggle="dropdown" href="#" id="topnav-submenu-maps" role="button">
+<span data-lang="maps">Maps</span>
+<div class="menu-arrow"></div>
+</a>
+<div aria-labelledby="topnav-submenu-maps" class="dropdown-menu">
+<a asp-action="Google" asp-controller="Maps" class="dropdown-item"><span data-lang="maps-google">Google Maps</span></a>
+<a asp-action="Vector" asp-controller="Maps" class="dropdown-item"><span data-lang="maps-vector">Vector Maps</span></a>
+<a asp-action="Leaflet" asp-controller="Maps" class="dropdown-item"><span data-lang="maps-leaflet">Leaflet Maps</span></a>
+</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</nav>
+</nav>
+</header>
+<!-- Horizontal Menu End -->

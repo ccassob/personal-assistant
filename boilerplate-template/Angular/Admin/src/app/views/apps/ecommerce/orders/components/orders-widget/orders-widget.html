@@ -1,0 +1,16 @@
+<div class="card mb-1">
+  <div class="card-body">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <div class="avatar-md flex-shrink-0">
+        <span class="avatar-title rounded-circle fs-22 text-bg-{{item.variant}}">
+          <app-icon [icon]="item.icon"></app-icon>
+        </span>
+      </div>
+      <h3 class="mb-0" [countUp]="item.value">{{ item.value }}</h3>
+    </div>
+    <p class="mb-0">
+      {{item.title}}
+      <span class="float-end badge badge-soft-{{item.variant}}"> {{ item.change >= 0 ? '+': '' }}{{ item.change }}%</span>
+    </p>
+  </div>
+</div>

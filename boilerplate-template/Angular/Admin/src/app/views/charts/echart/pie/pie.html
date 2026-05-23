@@ -1,0 +1,94 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Pie Echart" subTitle="Charts" />
+  <div class="row">
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Basic Pie Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="pieChart" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Doughnut Pie Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="doughnutPie" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Doughnut Rounded Pie Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="roundedPie" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Multiple Pie Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="multiplePie" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Pie Label Align Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="labelAlign" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Nightingale Map</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="nightingaleMap" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Pie Edge Align Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="edgeAlign" height="300px" />
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+  </div>
+  <!-- end row -->
+</div>

@@ -1,0 +1,52 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Password Meter" subTitle="Plugins" />
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Progress Bar</h4>
+          </div>
+          <!-- end card header -->
+
+          <div class="card-body">
+            <!-- HTML -->
+            <input type="password" [(ngModel)]="password" class="form-control mb-2" placeholder="Password" />
+            <app-password-strength-bar [password]="password" />
+          </div>
+        </div>
+        <!-- end card-body -->
+      </div>
+      <!-- end card -->
+
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Password Condition</h4>
+          </div>
+          <!-- end card header -->
+
+          <div class="card-body">
+            <!-- HTML -->
+            <div>
+              <label class="form-label" for="password-input">Magic Password ✨ (Click Here)</label>
+              <input type="password" class="form-control" placeholder="Enter password" id="password-input" [(ngModel)]="magicPassword" (focus)="showRules = true" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" (blur)="onBlur()" />
+
+              <div class="form-text">Use 8 or more characters with a mix of letters, numbers & symbols.</div>
+
+              <div [ngbCollapse]="!showRules" class="password-box bg-light-subtle border border-light mt-2 rounded">
+                <div class="p-3">
+                  <h5 class="fs-sm mb-2">Password Recipe:</h5>
+                  <p [class.valid]="isLengthValid" [class.invalid]="!isLengthValid" class="fs-xs mb-2">Minimum <b>8 characters</b></p>
+                  <p [class.valid]="hasLowercase" [class.invalid]="!hasLowercase" class="fs-xs mb-2">At least <b>lowercase</b> letter (a-z)</p>
+                  <p [class.valid]="hasUppercase" [class.invalid]="!hasUppercase" class="fs-xs mb-2">At least <b>uppercase</b> letter (A-Z)</p>
+                  <p [class.valid]="hasNumber" [class.invalid]="!hasNumber" class="fs-xs mb-0">At least <b>number</b> (0-9)</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

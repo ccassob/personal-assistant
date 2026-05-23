@@ -1,0 +1,32 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Forum" subTitle="Apps"></app-page-breadcrumb>
+
+  <div class="row justify-content-center">
+    <div class="col-xxl-10">
+      <div class="row">
+        <div class="col-xl-9">
+          @for (post of forumPostData; track $index; let last = $last;) {
+          <div [class]="last ? 'mb-3' : 'mb-1'">
+            <app-forum-post-card [post]="post" />
+          </div>
+          }
+
+          <ul class="pagination pagination-rounded pagination-boxed justify-content-center">
+            <ngb-pagination [collectionSize]="50" [page]="page" [maxSize]="4" [ellipses]="true">
+              <ng-template ngbPaginationPrevious>
+                <app-icon icon="chevron-left" class="align-middle fs-lg"></app-icon>
+              </ng-template>
+              <ng-template ngbPaginationNext>
+                <app-icon icon="chevron-right" class="align-middle fs-lg"></app-icon>
+              </ng-template>
+            </ngb-pagination>
+          </ul>
+        </div>
+
+        <div class="col-lg-3">
+          <app-forum-sidebar />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

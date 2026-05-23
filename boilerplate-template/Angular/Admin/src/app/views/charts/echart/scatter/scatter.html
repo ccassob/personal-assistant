@@ -1,0 +1,55 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Scatter Echart" subTitle="Charts" />
+  <div class="row">
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Scatter Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="scatterChart" height="300px"></app-echart>
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+    <div class="col-xl-6">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Bubble Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="bubbleChart" height="300px"></app-echart>
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+
+    <div class="col-xl-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Quartet Scatter Chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="quarterChart" height="600px"></app-echart>
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+    <div class="col-xl-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Single Axis Scatter chart</h4>
+        </div>
+        <div class="card-body">
+          <app-echart [getOptions]="singleAxis" height="450px"></app-echart>
+        </div>
+      </div>
+      <!-- end card -->
+    </div>
+    <!-- end col -->
+  </div>
+  <!-- end row -->
+</div>

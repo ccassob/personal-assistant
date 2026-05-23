@@ -1,0 +1,99 @@
+<div class="container-fluid">
+  <app-page-breadcrumb title="Projects" subTitle="Apps"></app-page-breadcrumb>
+
+  <div class="row mb-3">
+    <div class="col-lg-12">
+      <form class="bg-light-subtle rounded border p-3">
+        <div class="row gap-3">
+          <div class="col">
+            <div class="row gap-3">
+              <div class="col-lg-4">
+                <div class="app-search">
+                  <input type="text" class="form-control" placeholder="Search project name..." />
+                  <app-icon icon="search" class="app-search-icon text-muted"></app-icon>
+                </div>
+              </div>
+              <div class="col-auto">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <span class="me-2 fw-semibold">Filter By:</span>
+
+                  <!-- Status Filter -->
+                  <div class="app-search">
+                    <select class="form-select form-control my-1 my-md-0">
+                      <option selected>Status</option>
+                      <option value="On Track">On Track</option>
+                      <option value="Delayed">Delayed</option>
+                      <option value="At Risk">At Risk</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                    <app-icon icon="activity" class="app-search-icon text-muted"></app-icon>
+                  </div>
+
+                  <!-- Team Filter -->
+                  <div class="app-search">
+                    <select class="form-select form-control my-1 my-md-0">
+                      <option selected>Team</option>
+                      <option value="Design">Design</option>
+                      <option value="Development">Development</option>
+                      <option value="Marketing">Marketing</option>
+                      <option value="QA">QA</option>
+                    </select>
+                    <app-icon icon="users" class="app-search-icon text-muted"></app-icon>
+                  </div>
+
+                  <!-- Deadline Filter -->
+                  <div class="app-search">
+                    <select class="form-select form-control my-1 my-md-0">
+                      <option selected>Deadline</option>
+                      <option value="This Week">This Week</option>
+                      <option value="This Month">This Month</option>
+                      <option value="Next Month">Next Month</option>
+                      <option value="No Deadline">No Deadline</option>
+                    </select>
+                    <app-icon icon="calendar-clock" class="app-search-icon text-muted"></app-icon>
+                  </div>
+
+                  <button type="submit" class="btn btn-secondary">Apply</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-auto">
+            <div class="d-flex gap-1">
+              <a routerLink="/apps/projects/grid" class="btn btn-primary btn-icon">
+                <app-icon icon="category" class="fs-lg"></app-icon>
+              </a>
+              <a routerLink="/apps/projects/list" class="btn btn-soft-primary btn-icon">
+                <app-icon icon="list-check" class="fs-lg"></app-icon>
+              </a>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row">
+    @for (project of projectData.slice(0, 4); track project.id) {
+    <div class="col-md-6 col-xxl-3">
+      <app-project-card [project]="project" />
+    </div>
+    } @for (project of projectData.slice(4, 8); track project.id) {
+    <div class="col-md-6 col-xxl-3">
+      <app-project-card2 [project]="project" />
+    </div>
+    }
+  </div>
+
+  <ul class="pagination pagination-rounded pagination-boxed justify-content-center">
+    <ngb-pagination [collectionSize]="50" [(page)]="page" [maxSize]="4" [ellipses]="true">
+      <ng-template ngbPaginationPrevious>
+        <span aria-hidden="true">«</span>
+      </ng-template>
+      <ng-template ngbPaginationNext>
+        <span aria-hidden="true">»</span>
+      </ng-template>
+    </ngb-pagination>
+  </ul>
+</div>
