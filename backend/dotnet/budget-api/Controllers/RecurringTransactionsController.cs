@@ -12,7 +12,10 @@ public class RecurringTransactionsController(BudgetDbContext db) : ControllerBas
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        return Ok(await db.RecurringTransactions.Include(r => r.Category).OrderBy(r => r.DayOfMonth).ToListAsync());
+        var settings = await db.AppSettings.FirstOrDefaultAsync();
+        var cutoffDay = settings?.CutoffDay ?? 1;
+        var items = await db.RecurringTransactions.Include(r => r.Category).ToListAsync();
+        return Ok(items.OrderBy(r => (r.DayOfMonth - cutoffDay + 31) % 31));
     }
 
     [HttpGet("{id}")]

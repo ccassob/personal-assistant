@@ -3,6 +3,10 @@ import { FormsModule } from '@angular/forms'
 import { DecimalPipe } from '@angular/common'
 import { Goal, GoalService } from '../../core/services/api/goal.service'
 
+function diffMonths(from: Date, to: Date): number {
+  return (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth())
+}
+
 @Component({
   selector: 'app-goals',
   imports: [FormsModule, DecimalPipe],
@@ -42,6 +46,17 @@ import { Goal, GoalService } from '../../core/services/api/goal.service'
                   <div class="progress-bar bg-primary" [style.width.%]="pct(g) > 100 ? 100 : pct(g)"></div>
                 </div>
                 <small class="text-muted">Deadline: {{ g.deadline }}</small>
+                @if (monthlyNeeded(g) !== null) {
+                  <div class="mt-2 p-2 rounded" style="background:var(--bs-tertiary-bg)">
+                    <small class="d-block text-muted">Monthly needed to reach goal</small>
+                    <strong>{{ monthlyNeeded(g)! | number:'1.2-2' }}</strong>
+                    <small class="text-muted"> / month &middot; {{ remainingMonths(g) }} month{{ remainingMonths(g) === 1 ? '' : 's' }} left</small>
+                  </div>
+                } @else if (g.currentAmount < g.targetAmount) {
+                  <div class="mt-2">
+                    <small class="text-danger">Deadline has passed</small>
+                  </div>
+                }
               </div>
               <div class="card-footer d-flex gap-2">
                 <button class="btn btn-sm btn-outline-primary flex-fill" (click)="openForm(g)">Edit</button>
@@ -118,6 +133,20 @@ export class Goals implements OnInit {
 
   pct(g: Goal) {
     return g.targetAmount > 0 ? (g.currentAmount / g.targetAmount) * 100 : 0
+  }
+
+  remainingMonths(g: Goal): number {
+    const today = new Date()
+    const deadline = new Date(g.deadline)
+    return diffMonths(today, deadline)
+  }
+
+  monthlyNeeded(g: Goal): number | null {
+    const months = this.remainingMonths(g)
+    if (months <= 0) return null
+    const remaining = g.targetAmount - g.currentAmount
+    if (remaining <= 0) return 0
+    return remaining / months
   }
 
   emptyForm(): Partial<Goal> {

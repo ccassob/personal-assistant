@@ -39,11 +39,12 @@ import { Account, AccountHistory, AccountHistoryTotal, AccountService } from '..
                   [series]="chartSeries"
                   [chart]="chartOptions"
                   [xaxis]="chartXAxis"
-                  [yaxis]="chartYAxis"
+                  [yaxis]="totalChartYAxis"
                   [fill]="chartFill"
                   [stroke]="chartStroke"
                   [dataLabels]="chartDataLabels"
                   [tooltip]="chartTooltip"
+                  [colors]="totalChartColors"
                 ></apx-chart>
               } @else {
                 <p class="text-muted text-center py-3 mb-0">No history yet. Save an account to start tracking.</p>
@@ -174,6 +175,8 @@ export class Accounts implements OnInit {
   chartDataLabels: ApexDataLabels = { enabled: false }
   chartTooltip: ApexTooltip = { y: { formatter: (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 2 }) } }
   chartYAxis: ApexYAxis = { labels: { formatter: (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 0 }) } }
+  totalChartYAxis: ApexYAxis = { min: 0, labels: { formatter: (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 0 }) } }
+  totalChartColors: string[] = ['#198754']
 
   get chartSeries(): ApexAxisChartSeries {
     return [{ name: 'Total Balance', data: this.totalHistory.map(h => h.totalAmount) }]
@@ -200,7 +203,19 @@ export class Accounts implements OnInit {
 
   load() { this.svc.getAll().subscribe(data => this.items = data) }
 
-  loadTotalHistory() { this.svc.getTotalHistory().subscribe(data => this.totalHistory = data) }
+  loadTotalHistory() {
+    this.svc.getTotalHistory().subscribe(data => {
+      this.totalHistory = data
+      const amounts = data.map(h => h.totalAmount)
+      const max = amounts.length > 0 ? Math.max(...amounts) * 1.5 : undefined
+      const min = amounts.length > 0 ? Math.min(...amounts) / 2 : 0
+      this.totalChartYAxis = {
+        min,
+        max,
+        labels: { formatter: (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 0 }) },
+      }
+    })
+  }
 
   selectAccount(a: Account) {
     this.selectedAccount = a

@@ -46,7 +46,7 @@ import { Loan, LoanService } from '../../core/services/api/loan.service'
                   </div>
                   <div class="col-6">
                     <div class="text-muted small">Interest Rate</div>
-                    <div class="fw-semibold">{{ l.interestRate | number:'1.2-4' }}%</div>
+                    <div class="fw-semibold">{{ l.interestRate === 0 ? 'Interest-free' : (l.interestRate | number:'1.2-4') + '%' }}</div>
                   </div>
                   <div class="col-6">
                     <div class="text-muted small">Term</div>
@@ -61,10 +61,12 @@ import { Loan, LoanService } from '../../core/services/api/loan.service'
                     <span class="small">Principal</span>
                     <span class="small fw-semibold text-success">{{ currentPrincipalPortion(l) | number:'1.2-2' }}</span>
                   </div>
-                  <div class="d-flex justify-content-between">
-                    <span class="small">Interest</span>
-                    <span class="small fw-semibold text-warning">{{ currentInterestPortion(l) | number:'1.2-2' }}</span>
-                  </div>
+                  @if (l.interestRate > 0) {
+                    <div class="d-flex justify-content-between">
+                      <span class="small">Interest</span>
+                      <span class="small fw-semibold text-warning">{{ currentInterestPortion(l) | number:'1.2-2' }}</span>
+                    </div>
+                  }
                   @if (l.insuranceAmount > 0) {
                     <div class="d-flex justify-content-between">
                       <span class="small">Insurance</span>
@@ -80,14 +82,16 @@ import { Loan, LoanService } from '../../core/services/api/loan.service'
 
                 <!-- Totals -->
                 <div class="row g-2 mb-3">
-                  <div class="col-6">
+                  <div [class]="l.interestRate === 0 ? 'col-12' : 'col-6'">
                     <div class="text-muted small">Total Cost</div>
                     <div class="fw-semibold">{{ totalCost(l) | number:'1.2-2' }}</div>
                   </div>
-                  <div class="col-6">
-                    <div class="text-muted small">Total Interest</div>
-                    <div class="fw-semibold text-warning">{{ totalInterest(l) | number:'1.2-2' }}</div>
-                  </div>
+                  @if (l.interestRate > 0) {
+                    <div class="col-6">
+                      <div class="text-muted small">Total Interest</div>
+                      <div class="fw-semibold text-warning">{{ totalInterest(l) | number:'1.2-2' }}</div>
+                    </div>
+                  }
                 </div>
 
                 <!-- Progress -->
@@ -224,6 +228,11 @@ import { Loan, LoanService } from '../../core/services/api/loan.service'
                   <input type="date" class="form-control" [(ngModel)]="form.goalDate">
                 </div>
               </div>
+              @if (form.interestRate === 0 && form.loanAmount! > 0 && form.termMonths! > 0) {
+                <div class="alert alert-secondary py-2 small mb-2">
+                  Interest-free — suggested monthly payment: <strong>{{ (form.loanAmount! / form.termMonths!) | number:'1.2-2' }}</strong>
+                </div>
+              }
               @if (form.monthlyPayment! > 0 || form.insuranceAmount! > 0) {
                 <div class="alert alert-info py-2 small mb-0">
                   Total monthly: <strong>{{ (form.monthlyPayment! + form.insuranceAmount!) | number:'1.2-2' }}</strong>
@@ -310,7 +319,7 @@ export class Loans implements OnInit {
 
   /** Total interest paid over the life of the loan (excludes insurance) */
   totalInterest(l: Loan): number {
-    return l.monthlyPayment * l.termMonths - l.loanAmount
+    return Math.max(l.monthlyPayment * l.termMonths - l.loanAmount, 0)
   }
 
   endDate(l: Loan): string {

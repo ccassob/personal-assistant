@@ -16,6 +16,8 @@ export const routes: Routes = [
       { path: 'goals', loadComponent: () => import('./views/goals/goals').then(m => m.Goals), data: { title: 'Goals' } },
       { path: 'recurring-transactions', loadComponent: () => import('./views/recurring-transactions/recurring-transactions').then(m => m.RecurringTransactions), data: { title: 'Recurring Transactions' } },
       { path: 'loans', loadComponent: () => import('./views/loans/loans').then(m => m.Loans), data: { title: 'Loans' } },
+      { path: 'vehicles', loadComponent: () => import('./views/vehicles/vehicles').then(m => m.Vehicles), data: { title: 'Vehicles' } },
+      { path: 'books', loadComponent: () => import('./views/books/books').then(m => m.Books), data: { title: 'Books' } },
       { path: 'accounts', loadComponent: () => import('./views/accounts/accounts').then(m => m.Accounts), data: { title: 'Accounts' } },
       { path: 'settings', loadComponent: () => import('./views/settings/settings').then(m => m.Settings), data: { title: 'Settings' } },
     ],

@@ -44,6 +44,27 @@ import { AppSettings, AppSettingsService } from '../../core/services/api/app-set
         <div class="col-md-6 col-lg-4">
           <div class="card">
             <div class="card-header">
+              <h5 class="card-title mb-0">Vehicle Distance Unit</h5>
+            </div>
+            <div class="card-body">
+              <div class="form-text mb-3">Unit used for mileage across all vehicles.</div>
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" id="unitKm" [(ngModel)]="distanceUnit" value="km">
+                  <label class="form-check-label" for="unitKm">Kilometers (km)</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" id="unitMi" [(ngModel)]="distanceUnit" value="mi">
+                  <label class="form-check-label" for="unitMi">Miles (mi)</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card">
+            <div class="card-header">
               <h5 class="card-title mb-0">Transaction Date Tags</h5>
             </div>
             <div class="card-body">
@@ -86,6 +107,7 @@ export class Settings implements OnInit {
   pastColor = '#6c757d'
   todayColor = '#0d6efd'
   futureColor = '#fd7e14'
+  distanceUnit = 'km'
   saved = false
   private settingsId = 1
 
@@ -98,6 +120,7 @@ export class Settings implements OnInit {
       this.pastColor = s.pastColor
       this.todayColor = s.todayColor
       this.futureColor = s.futureColor
+      this.distanceUnit = s.distanceUnit ?? 'km'
     })
   }
 
@@ -127,12 +150,14 @@ export class Settings implements OnInit {
       cutoffDay: clamped,
       pastColor: this.pastColor,
       todayColor: this.todayColor,
-      futureColor: this.futureColor
+      futureColor: this.futureColor,
+      distanceUnit: this.distanceUnit
     }).subscribe(s => {
       this.cutoffDay = s.cutoffDay
       this.pastColor = s.pastColor
       this.todayColor = s.todayColor
       this.futureColor = s.futureColor
+      this.distanceUnit = s.distanceUnit ?? 'km'
       this.saved = true
       setTimeout(() => this.saved = false, 3000)
     })

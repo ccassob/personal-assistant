@@ -12,6 +12,8 @@ export const menuItems: MenuItemType[] = [
   { slug: 'budgets', label: 'Budgets', icon: 'tabler:chart-bar', url: '/budgets' },
   { slug: 'goals', label: 'Goals', icon: 'tabler:target', url: '/goals' },
   { slug: 'loans', label: 'Loans', icon: 'tabler:credit-card', url: '/loans' },
+  { slug: 'vehicles', label: 'Vehicles', icon: 'tabler:car', url: '/vehicles' },
+  { slug: 'books', label: 'Books', icon: 'tabler:book', url: '/books' },
   { slug: 'accounts', label: 'Accounts', icon: 'tabler:wallet', url: '/accounts' },
   { slug: 'settings', label: 'Settings', icon: 'tabler:settings', url: '/settings' },
 ]

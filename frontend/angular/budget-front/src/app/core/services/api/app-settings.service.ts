@@ -8,6 +8,7 @@ export interface AppSettings {
   pastColor: string
   todayColor: string
   futureColor: string
+  distanceUnit: string // "km" | "mi"
 }
 
 @Injectable({ providedIn: 'root' })

@@ -24,6 +24,10 @@ A full budget management app using:
 | `Account` | Name, Amount, LastModified (DateOnly, auto-set to today on save) |
 | `AccountHistory` | AccountId (FK), Date (DateOnly), Amount — one row per account per day, upserted on every Account create/update |
 | `AppSettings` | CutoffDay (1–31), PastColor, TodayColor, FutureColor — singleton row |
+| `Loan` | Name, LoanAmount, StartDate (DateOnly), InterestRate, MonthlyPayment, TermMonths, InsuranceAmount, CurrentBalance, GoalAmount (decimal?), GoalDate (DateOnly?) |
+| `Book` | Title, Author, TotalPages, CurrentPage, StartDate (DateOnly), Status ("Reading"/"Paused"/"Wishlist"/"Completed"), TargetDate (DateOnly?), Notes, BookType ("Technology"/"Literature") |
+| `BookProgress` | BookId (FK, cascade delete), Date (DateOnly), CurrentPage — one row per book per day, upserted via POST `/api/books/{id}/progress` |
+| `BookTask` | BookId (FK), Title, IsDone — lab tasks for Technology books only |
 
 ### Connection string
 
@@ -74,6 +78,8 @@ ng test --include=src/app/path/to/file.spec.ts   # single file
 | GoalsController | `api/goals` | |
 | RecurringTransactionsController | `api/recurring-transactions` | Sorted by DayOfMonth; POST `/generate?month=&year=` creates transactions from active templates, splitting by CutoffDay |
 | AccountsController | `api/accounts` | GET `/{id}/history` returns last 6 months of AccountHistory ordered by date |
+| LoansController | `api/loans` | Ordered by Name |
+| BooksController | `api/books` | Ordered Reading→Paused→Wishlist→Completed then by Title (in-memory sort); GET `/{id}/progress` returns full BookProgress history; POST `/{id}/progress` upserts today's entry and updates Book.CurrentPage; GET/POST `/{id}/tasks`, PUT/DELETE `/{id}/tasks/{taskId}` — lab task CRUD |
 | AppSettingsController | `api/app-settings` | Singleton; GET auto-creates with defaults; PUT upserts |
 | DashboardController | `api/dashboard/summary?month=&year=` | Returns totalIncome, totalExpense, netBalance, spendingByCategory, budgetVsActual, goals |
 | DashboardController | `api/dashboard/trend?months=6` | Returns income/expense per billing period for the last N months |
@@ -91,7 +97,7 @@ ng test --include=src/app/path/to/file.spec.ts   # single file
 All components are standalone; routes use `loadComponent` for lazy loading. No NgModules.
 
 **Directory layout:**
-- `views/` — one subfolder per feature: `dashboard`, `transactions`, `categories`, `budgets`, `goals`, `recurring-transactions`, `accounts`, `settings`
+- `views/` — one subfolder per feature: `dashboard`, `transactions`, `categories`, `budgets`, `goals`, `recurring-transactions`, `accounts`, `loans`, `books`, `settings`
 - `layouts/` — `MainLayout` (root shell with `<router-outlet>`), `VerticalLayout` (sidebar + topbar + content + footer), `Sidenav`, `Topbar`, `Footer`
 - `core/services/api/` — one service per entity plus `DashboardService`; all use `HttpClient` with `API_BASE = 'http://localhost:5082'` from `constants/index.ts`
 - `core/services/layout.service.ts` — implements `CanActivate`; manages theme and sidenav state via Angular signals, persisted to `sessionStorage`

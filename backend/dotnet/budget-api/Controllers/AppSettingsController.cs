@@ -24,6 +24,7 @@ public class AppSettingsController(BudgetDbContext db) : ControllerBase
             if (string.IsNullOrEmpty(settings.PastColor)) settings.PastColor = "#6c757d";
             if (string.IsNullOrEmpty(settings.TodayColor)) settings.TodayColor = "#0d6efd";
             if (string.IsNullOrEmpty(settings.FutureColor)) settings.FutureColor = "#fd7e14";
+            if (string.IsNullOrEmpty(settings.DistanceUnit)) settings.DistanceUnit = "km";
         }
         return Ok(settings);
     }
@@ -43,6 +44,7 @@ public class AppSettingsController(BudgetDbContext db) : ControllerBase
             settings.PastColor = incoming.PastColor ?? "#6c757d";
             settings.TodayColor = incoming.TodayColor ?? "#0d6efd";
             settings.FutureColor = incoming.FutureColor ?? "#fd7e14";
+            settings.DistanceUnit = incoming.DistanceUnit is "km" or "mi" ? incoming.DistanceUnit : "km";
             db.AppSettings.Update(settings);
         }
         await db.SaveChangesAsync();

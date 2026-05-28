@@ -167,7 +167,7 @@ import { AccountService } from '../../core/services/api/account.service'
       <div class="row g-3 mb-3">
         <div class="col-12">
           <div class="card">
-            <div class="card-header"><h5 class="card-title mb-0">Income vs Expense – Last 6 Periods</h5></div>
+            <div class="card-header"><h5 class="card-title mb-0">Net Balance – Last 6 Periods</h5></div>
             <div class="card-body">
               @if (trendHasData) {
                 <apx-chart
@@ -275,18 +275,18 @@ export class Dashboard implements OnInit {
   trendXaxis: ApexXAxis = { categories: [] }
   trendHasData = false
   trendChart: ApexChart = { type: 'area', height: 300, toolbar: { show: false } }
-  trendColors: string[] = ['#2ecc71', '#e74c3c']
+  trendColors: string[] = ['#198754', '#dc3545']
   trendStroke: ApexStroke = { curve: 'smooth', width: 2 }
   trendFill: ApexFill = { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } }
   trendDataLabels: ApexDataLabels = { enabled: false }
 
-  // Account balances (horizontal bar)
+  // Account balances (stacked bar)
   accountSeries: ApexAxisChartSeries = []
-  accountXaxis: ApexXAxis = { categories: [] }
+  accountXaxis: ApexXAxis = { categories: ['Accounts'] }
   accountHasData = false
-  accountChart: ApexChart = { type: 'bar', height: 200, toolbar: { show: false } }
+  accountChart: ApexChart = { type: 'bar', height: 250, toolbar: { show: false }, stacked: true, stackType: '100%' }
   accountPlotOptions: ApexPlotOptions = { bar: { horizontal: true, barHeight: '60%' } }
-  accountDataLabels: ApexDataLabels = { enabled: true, formatter: (val: number) => Number(val).toFixed(2) }
+  accountDataLabels: ApexDataLabels = { enabled: true, formatter: (val: number) => Number(val).toFixed(0) }
 
   // Goals radial
   radialSeries: ApexNonAxisChartSeries = []
@@ -341,9 +341,10 @@ export class Dashboard implements OnInit {
     this.svc.getTrend(6).subscribe(data => {
       this.trendHasData = data.length > 0
       this.trendXaxis = { categories: data.map(d => d.label) }
+      const nets = data.map(d => +(d.income - d.expense).toFixed(2))
       this.trendSeries = [
-        { name: 'Income', data: data.map(d => d.income) },
-        { name: 'Expense', data: data.map(d => d.expense) },
+        { name: 'Surplus',  data: nets.map(v => v > 0 ? v : 0) },
+        { name: 'Deficit',  data: nets.map(v => v < 0 ? v : 0) },
       ]
     })
   }
@@ -351,8 +352,7 @@ export class Dashboard implements OnInit {
   loadAccounts() {
     this.accountSvc.getAll().subscribe(accounts => {
       this.accountHasData = accounts.length > 0
-      this.accountXaxis = { categories: accounts.map(a => a.name) }
-      this.accountSeries = [{ name: 'Balance', data: accounts.map(a => a.amount) }]
+      this.accountSeries = accounts.map(a => ({ name: a.name, data: [a.amount] }))
     })
   }
 
