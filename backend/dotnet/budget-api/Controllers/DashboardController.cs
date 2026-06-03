@@ -9,15 +9,15 @@ namespace budget_api.Controllers;
 public class DashboardController(BudgetDbContext db) : ControllerBase
 {
     [HttpGet("trend")]
-    public async Task<IActionResult> GetTrend([FromQuery] int months = 6)
+    public async Task<IActionResult> GetTrend([FromQuery] int months = 6, [FromQuery] int? month = null, [FromQuery] int? year = null)
     {
         var now = DateTime.Now;
         var settings = await db.AppSettings.FirstOrDefaultAsync();
         var cutoffDay = settings?.CutoffDay ?? 1;
 
-        var m = now.Month;
-        var y = now.Year;
-        if (now.Day < cutoffDay) { m--; if (m == 0) { m = 12; y--; } }
+        var m = month ?? now.Month;
+        var y = year ?? now.Year;
+        if (month == null && now.Day < cutoffDay) { m--; if (m == 0) { m = 12; y--; } }
 
         var periods = new List<(int month, int year, DateOnly start, DateOnly end)>();
         for (int i = 0; i < months; i++)
@@ -40,7 +40,8 @@ public class DashboardController(BudgetDbContext db) : ControllerBase
             year = p.year,
             label = new DateTime(p.year, p.month, 1).ToString("MMM yyyy"),
             income = transactions.Where(t => t.Date >= p.start && t.Date <= p.end && t.Type == "Income").Sum(t => t.Amount),
-            expense = transactions.Where(t => t.Date >= p.start && t.Date <= p.end && t.Type == "Expense").Sum(t => t.Amount)
+            expense = transactions.Where(t => t.Date >= p.start && t.Date <= p.end && t.Type == "Expense").Sum(t => t.Amount),
+            invested = transactions.Where(t => t.Date >= p.start && t.Date <= p.end && t.Type == "Investment").Sum(t => t.Amount)
         });
 
         return Ok(result);
@@ -64,6 +65,7 @@ public class DashboardController(BudgetDbContext db) : ControllerBase
 
         var totalIncome = transactions.Where(t => t.Type == "Income").Sum(t => t.Amount);
         var totalExpense = transactions.Where(t => t.Type == "Expense").Sum(t => t.Amount);
+        var totalInvested = transactions.Where(t => t.Type == "Investment").Sum(t => t.Amount);
 
         var spendingByCategory = transactions
             .Where(t => t.Type == "Expense")
@@ -97,6 +99,7 @@ public class DashboardController(BudgetDbContext db) : ControllerBase
         {
             totalIncome,
             totalExpense,
+            totalInvested,
             netBalance = totalIncome - totalExpense,
             spendingByCategory,
             budgetVsActual,

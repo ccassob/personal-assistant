@@ -75,6 +75,7 @@ import { RecurringTransactionService } from '../../core/services/api/recurring-t
                     <option value="">All</option>
                     <option value="Income">Income</option>
                     <option value="Expense">Expense</option>
+                    <option value="Investment">Investment</option>
                   </select>
                 </div>
                 <div class="col-auto">
@@ -105,7 +106,7 @@ import { RecurringTransactionService } from '../../core/services/api/recurring-t
       </div>
 
       <div class="row">
-        <div class="col-12">
+        <div class="col-12 d-none d-md-block">
           <div class="card">
             <div class="card-body">
               <table class="table table-hover mb-0">
@@ -136,12 +137,15 @@ import { RecurringTransactionService } from '../../core/services/api/recurring-t
 						</td>
                       <td>{{ t.category?.name ?? '—' }}</td>
                       <td>
-                        <span class="badge" [class.bg-success]="t.type==='Income'" [class.bg-danger]="t.type==='Expense'">
+                        <span class="badge"
+                          [class.bg-success]="t.type==='Income'"
+                          [class.bg-danger]="t.type==='Expense'"
+                          [style.background]="t.type==='Investment' ? '#6610f2' : null">
                           {{ t.type }}
                         </span>
                       </td>
-                      <td [class.text-success]="t.type==='Income'" [class.text-danger]="t.type==='Expense'">
-                        {{ t.type === 'Income' ? '+' : '-' }}{{ t.amount | number:'1.2-2' }}
+                      <td [class.text-success]="t.type==='Income'" [class.text-danger]="t.type==='Expense'" [style.color]="t.type==='Investment' ? '#0d9488' : null">
+                        {{ t.type === 'Income' ? '+' : t.type === 'Expense' ? '-' : '▲' }}{{ t.amount | number:'1.2-2' }}
                       </td>
                       <td>
                         <div class="form-check form-switch mb-0">
@@ -161,10 +165,21 @@ import { RecurringTransactionService } from '../../core/services/api/recurring-t
                   }
                 </tbody>
                 <tfoot>
+                  <tr class="small text-muted">
+                    <td colspan="4"></td>
+                    <td>
+                      <span class="text-success me-2">+{{ totalIncome | number:'1.2-2' }}</span>
+                      <span class="text-danger me-2">-{{ totalExpense | number:'1.2-2' }}</span>
+                      @if (totalInvested > 0) {
+                        <span style="color:#0d9488">▲{{ totalInvested | number:'1.2-2' }}</span>
+                      }
+                    </td>
+                    <td colspan="2"></td>
+                  </tr>
                   <tr class="table-active border-top border-2">
                     <td colspan="4" class="fw-bold">
                       <iconify-icon icon="tabler:arrows-exchange" width="16" class="me-1"></iconify-icon>
-                      Total
+                      Net Balance
                     </td>
                     <td class="fw-bold fs-5" [class.text-success]="netBalance >= 0" [class.text-danger]="netBalance < 0">
                       {{ netBalance >= 0 ? '+' : '' }}{{ netBalance | number:'1.2-2' }}
@@ -176,6 +191,43 @@ import { RecurringTransactionService } from '../../core/services/api/recurring-t
             </div>
           </div>
         </div>
+
+      <!-- Mobile card list -->
+      <div class="col-12 d-md-none">
+        @for (t of transactions; track t.id) {
+          <div class="card mb-2">
+            <div class="card-body py-2">
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <div>
+                  <span class="fw-semibold">{{ t.description }}</span>
+                  @if (dateTag(t); as tag) {
+                    <span class="badge rounded-pill ms-1" [style.background-color]="tag.color">{{ tag.label }}</span>
+                  }
+                </div>
+                <span class="fw-bold" [class.text-success]="t.type==='Income'" [class.text-danger]="t.type==='Expense'" [style.color]="t.type==='Investment' ? '#0d9488' : null">
+                  {{ t.type === 'Income' ? '+' : t.type === 'Expense' ? '-' : '▲' }}{{ t.amount | number:'1.2-2' }}
+                </span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center text-muted small mb-2">
+                <span>{{ t.date }} · {{ t.category?.name ?? '—' }}</span>
+                <span class="badge" [class.bg-success]="t.type==='Income'" [class.bg-danger]="t.type==='Expense'" [style.background]="t.type==='Investment' ? '#6610f2' : null">{{ t.type }}</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" [checked]="t.isExecuted" (change)="toggleExecuted(t)">
+                  <label class="form-check-label small">Executed</label>
+                </div>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-sm btn-outline-primary" (click)="openForm(t)">Edit</button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="delete(t.id)">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="text-center text-muted py-4">No transactions found.</div>
+        }
+      </div>
       </div>
     </div>
 
@@ -201,6 +253,7 @@ import { RecurringTransactionService } from '../../core/services/api/recurring-t
                 <select class="form-select" [(ngModel)]="form.type">
                   <option value="Income">Income</option>
                   <option value="Expense">Expense</option>
+                  <option value="Investment">Investment</option>
                 </select>
               </div>
               <div class="mb-3">
@@ -251,6 +304,7 @@ import { RecurringTransactionService } from '../../core/services/api/recurring-t
                 <select class="form-select" [(ngModel)]="convertForm.type">
                   <option value="Income">Income</option>
                   <option value="Expense">Expense</option>
+                  <option value="Investment">Investment</option>
                 </select>
               </div>
               <div class="mb-3">
@@ -482,6 +536,7 @@ export class Transactions implements OnInit {
 
   get totalIncome() { return this.transactions.filter(t => t.type === 'Income').reduce((s, t) => s + t.amount, 0) }
   get totalExpense() { return this.transactions.filter(t => t.type === 'Expense').reduce((s, t) => s + t.amount, 0) }
+  get totalInvested() { return this.transactions.filter(t => t.type === 'Investment').reduce((s, t) => s + t.amount, 0) }
   get netBalance() { return this.totalIncome - this.totalExpense }
 
   delete(id: number) {

@@ -1,7 +1,11 @@
 import { MenuItemType } from '../types'
 
 export const APP_NAME = 'BudgetApp'
-export const API_BASE = 'http://localhost:5082'
+export const API_BASE = 'http://localhost:5085'
+
+export function getApiBase(): string {
+  return localStorage.getItem('__BUDGET_API_URL__') ?? API_BASE
+}
 export const currentYear = new Date().getFullYear()
 
 export const menuItems: MenuItemType[] = [

@@ -60,7 +60,7 @@ import { AppSettingsService } from '../../core/services/api/app-settings.service
       </div>
 
       <div class="row">
-        <div class="col-12">
+        <div class="col-12 d-none d-md-block">
           <div class="card">
             <div class="card-body">
               <table class="table table-hover mb-0">
@@ -119,6 +119,32 @@ import { AppSettingsService } from '../../core/services/api/app-settings.service
             </div>
           </div>
         </div>
+
+      <!-- Mobile card list -->
+      <div class="col-12 d-md-none">
+        @for (r of items; track r.id) {
+          <div class="card mb-2">
+            <div class="card-body py-2">
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <span class="fw-semibold">{{ r.description }}</span>
+                <span class="fw-bold" [class.text-success]="r.type==='Income'" [class.text-danger]="r.type==='Expense'">
+                  {{ r.type === 'Income' ? '+' : '-' }}{{ r.amount | number:'1.2-2' }}
+                </span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center text-muted small mb-2">
+                <span>Day {{ r.dayOfMonth }} · {{ r.category?.name ?? '—' }}</span>
+                <span class="badge" [class.bg-success]="r.isActive" [class.bg-secondary]="!r.isActive">{{ r.isActive ? 'Active' : 'Inactive' }}</span>
+              </div>
+              <div class="d-flex justify-content-end gap-1">
+                <button class="btn btn-sm btn-outline-primary" (click)="openForm(r)">Edit</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="delete(r.id)">Delete</button>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="text-center text-muted py-4">No recurring templates found.</div>
+        }
+      </div>
       </div>
     </div>
 

@@ -19,52 +19,78 @@ import { Category, CategoryService } from '../../core/services/api/category.serv
         </div>
       </div>
 
-      <div class="row">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-body">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Color</th>
-                    <th>Icon</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (cat of categories; track cat.id) {
-                    <tr>
-                      <td>{{ cat.name }}</td>
-                      <td>
-                        <span class="badge" [class.bg-success]="cat.type==='Income'" [class.bg-danger]="cat.type==='Expense'">
-                          {{ cat.type }}
-                        </span>
-                      </td>
-                      <td>
-                        <span class="d-inline-block rounded" [style.background]="cat.color" style="width:24px;height:24px;border:1px solid #ccc"></span>
-                      </td>
-                      <td>
-                        @if (cat.icon) {
-                          <iconify-icon [attr.icon]="cat.icon" width="20"></iconify-icon>
-                        }
-                        {{ cat.icon }}
-                      </td>
-                      <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" (click)="openForm(cat)">Edit</button>
-                        <button class="btn btn-sm btn-outline-danger" (click)="delete(cat.id)">Delete</button>
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr><td colspan="5" class="text-center text-muted py-4">No categories yet. Add one to get started.</td></tr>
-                  }
-                </tbody>
-              </table>
+      @if (categories.length === 0) {
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body text-center text-muted py-5">No categories yet. Add one to get started.</div>
             </div>
           </div>
         </div>
-      </div>
+      }
+
+      <!-- Income -->
+      @if (income.length > 0) {
+        <h6 class="text-muted text-uppercase small fw-semibold mb-2 px-1">Income</h6>
+        <div class="row g-2 mb-3">
+          @for (cat of income; track cat.id) {
+            <div class="col-12">
+              <div class="card" style="border-left: 4px solid {{ cat.color }}">
+                <div class="card-body py-2 px-3 d-flex align-items-center justify-content-between">
+                  <span class="fw-semibold">{{ cat.name }}</span>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success">Income</span>
+                    <button class="btn btn-sm btn-outline-primary" (click)="openForm(cat)">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger" (click)="delete(cat.id)">Delete</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Expense -->
+      @if (expense.length > 0) {
+        <h6 class="text-muted text-uppercase small fw-semibold mb-2 px-1">Expense</h6>
+        <div class="row g-2 mb-3">
+          @for (cat of expense; track cat.id) {
+            <div class="col-12">
+              <div class="card" style="border-left: 4px solid {{ cat.color }}">
+                <div class="card-body py-2 px-3 d-flex align-items-center justify-content-between">
+                  <span class="fw-semibold">{{ cat.name }}</span>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-danger">Expense</span>
+                    <button class="btn btn-sm btn-outline-primary" (click)="openForm(cat)">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger" (click)="delete(cat.id)">Delete</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Investment -->
+      @if (investment.length > 0) {
+        <h6 class="text-muted text-uppercase small fw-semibold mb-2 px-1">Investment</h6>
+        <div class="row g-2">
+          @for (cat of investment; track cat.id) {
+            <div class="col-12">
+              <div class="card" style="border-left: 4px solid {{ cat.color }}">
+                <div class="card-body py-2 px-3 d-flex align-items-center justify-content-between">
+                  <span class="fw-semibold">{{ cat.name }}</span>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge" style="background:#6610f2">Investment</span>
+                    <button class="btn btn-sm btn-outline-primary" (click)="openForm(cat)">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger" (click)="delete(cat.id)">Delete</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
     </div>
 
     <!-- Modal -->
@@ -86,6 +112,7 @@ import { Category, CategoryService } from '../../core/services/api/category.serv
                 <select class="form-select" [(ngModel)]="form.type">
                   <option value="Income">Income</option>
                   <option value="Expense">Expense</option>
+                  <option value="Investment">Investment</option>
                 </select>
               </div>
               <div class="mb-3">
@@ -111,6 +138,10 @@ export class Categories implements OnInit {
   categories: Category[] = []
   showModal = false
   form: Partial<Category> & { id?: number } = this.emptyForm()
+
+  get income() { return this.categories.filter(c => c.type === 'Income') }
+  get expense() { return this.categories.filter(c => c.type === 'Expense') }
+  get investment() { return this.categories.filter(c => c.type === 'Investment') }
 
   constructor(private svc: CategoryService) {}
 

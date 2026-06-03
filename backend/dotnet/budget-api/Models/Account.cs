@@ -6,4 +6,5 @@ public class Account
     public string Name { get; set; } = "";
     public decimal Amount { get; set; }
     public DateOnly LastModified { get; set; }
+    public string AccountType { get; set; } = "Regular"; // "Regular" | "Investment"
 }

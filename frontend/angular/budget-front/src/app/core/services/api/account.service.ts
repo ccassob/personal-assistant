@@ -7,6 +7,7 @@ export interface Account {
   name: string
   amount: number
   lastModified: string
+  accountType: string // "Regular" | "Investment"
 }
 
 export interface AccountHistory {
@@ -25,7 +26,7 @@ export class AccountService {
   constructor(private http: HttpClient) {}
 
   getAll() { return this.http.get<Account[]>(this.url) }
-  create(a: Pick<Account, 'name' | 'amount'>) { return this.http.post<Account>(this.url, a) }
+  create(a: Pick<Account, 'name' | 'amount' | 'accountType'>) { return this.http.post<Account>(this.url, a) }
   update(a: Account) { return this.http.put<void>(`${this.url}/${a.id}`, a) }
   delete(id: number) { return this.http.delete<void>(`${this.url}/${id}`) }
   getHistory(id: number) { return this.http.get<AccountHistory[]>(`${this.url}/${id}/history`) }

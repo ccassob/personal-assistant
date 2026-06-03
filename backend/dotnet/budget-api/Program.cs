@@ -8,7 +8,7 @@ builder.Services.AddDbContext<BudgetDbContext>(options =>
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
-        policy.WithOrigins("http://localhost:4200", "http://localhost:8000")
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod()));
 
@@ -20,8 +20,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
-app.UseHttpsRedirection();
 app.UseCors();
-app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+public partial class Program { }

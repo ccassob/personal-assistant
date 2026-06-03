@@ -25,8 +25,34 @@ import { Account, AccountHistory, AccountHistoryTotal, AccountService } from '..
         </div>
       </div>
 
-      <!-- Total portfolio chart — always displayed -->
-      <div class="row mb-3">
+      <!-- Balance banners — always visible -->
+      <div class="row mb-3 g-3">
+        <div class="col-sm-6">
+          <div class="card bg-primary text-white h-100">
+            <div class="card-body py-3 d-flex align-items-center justify-content-between">
+              <div>
+                <div class="small opacity-75 mb-1">Total Available</div>
+                <div class="fw-bold" style="font-size:1.6rem">{{ totalRegular | number:'1.2-2' }}</div>
+              </div>
+              <iconify-icon icon="tabler:wallet" width="40" style="opacity:0.4"></iconify-icon>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="card text-white h-100" style="background:#0d9488">
+            <div class="card-body py-3 d-flex align-items-center justify-content-between">
+              <div>
+                <div class="small opacity-75 mb-1">Total Invested</div>
+                <div class="fw-bold" style="font-size:1.6rem">{{ totalInvestment | number:'1.2-2' }}</div>
+              </div>
+              <iconify-icon icon="tabler:chart-candle" width="40" style="opacity:0.4"></iconify-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Portfolio chart — hidden on mobile -->
+      <div class="row mb-3 d-none d-md-flex">
         <div class="col-12">
           <div class="card">
             <div class="card-body">
@@ -54,57 +80,55 @@ import { Account, AccountHistory, AccountHistoryTotal, AccountService } from '..
         </div>
       </div>
 
-      <div class="row">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-body">
-              <table class="table table-hover mb-0">
-                <thead>
-                  <tr>
-                    <th>Account Name</th>
-                    <th>Amount</th>
-                    <th>Last Modified</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (a of items; track a.id) {
-                    <tr
-                      [class.table-active]="selectedAccount?.id === a.id"
-                      style="cursor:pointer"
-                      (click)="selectAccount(a)"
-                    >
-                      <td>{{ a.name }}</td>
-                      <td class="fw-medium">{{ a.amount | number:'1.2-2' }}</td>
-                      <td class="text-muted small">{{ a.lastModified }}</td>
-                      <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" (click)="openForm(a); $event.stopPropagation()">Edit</button>
-                        <button class="btn btn-sm btn-outline-danger" (click)="delete(a.id); $event.stopPropagation()">Delete</button>
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr><td colspan="4" class="text-center text-muted py-4">No accounts found.</td></tr>
-                  }
-                </tbody>
-                <tfoot>
-                  <tr class="table-active border-top border-2">
-                    <td class="fw-bold">
-                      <iconify-icon icon="tabler:wallet" width="16" class="me-1"></iconify-icon>
-                      Total Available
-                    </td>
-                    <td class="fw-bold fs-5 text-primary">{{ total | number:'1.2-2' }}</td>
-                    <td colspan="2"></td>
-                  </tr>
-                </tfoot>
-              </table>
+      <!-- Account card grid — responsive on all sizes -->
+      @if (items.length === 0) {
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body text-center text-muted py-5">No accounts found.</div>
             </div>
           </div>
         </div>
+      }
+      <div class="row g-3">
+        @for (a of items; track a.id) {
+          <div class="col-12 col-sm-6 col-xl-4">
+            <div class="card h-100 account-card"
+                 [class.border-primary]="selectedAccount?.id === a.id && a.accountType !== 'Investment'"
+                 [style.border-left]="a.accountType === 'Investment' ? '4px solid #0d9488' : ''"
+                 style="cursor:pointer; transition: border-color .15s"
+                 (click)="selectAccount(a)">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="d-flex align-items-center gap-2 text-truncate me-2">
+                    <span class="fw-semibold fs-6">{{ a.name }}</span>
+                    @if (a.accountType === 'Investment') {
+                      <span class="badge" style="background:#0d9488;font-size:0.65rem">Investment</span>
+                    }
+                  </div>
+                  <iconify-icon icon="tabler:chevron-right" width="16" class="text-muted flex-shrink-0 d-md-none mt-1"></iconify-icon>
+                </div>
+                <div class="fw-bold mb-1" style="font-size:1.4rem" [class.text-success]="a.amount >= 0" [class.text-danger]="a.amount < 0">
+                  {{ a.amount | number:'1.2-2' }}
+                </div>
+                <div class="text-muted small mb-3">Updated {{ a.lastModified }}</div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-outline-primary flex-grow-1" (click)="openForm(a); $event.stopPropagation()">
+                    <iconify-icon icon="tabler:edit" width="14"></iconify-icon> Edit
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="delete(a.id); $event.stopPropagation()">
+                    <iconify-icon icon="tabler:trash" width="14"></iconify-icon> Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
       </div>
 
-      <!-- Per-account chart — shown when a row is selected -->
+      <!-- Per-account history chart — hidden on mobile, shown on tap/click -->
       @if (selectedAccount) {
-        <div class="row mt-3">
+        <div class="row mt-3 d-none d-md-flex">
           <div class="col-12">
             <div class="card">
               <div class="card-body">
@@ -145,6 +169,13 @@ import { Account, AccountHistory, AccountHistoryTotal, AccountService } from '..
               <div class="mb-3">
                 <label class="form-label">Account Name</label>
                 <input class="form-control" [(ngModel)]="form.name">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Account Type</label>
+                <select class="form-select" [(ngModel)]="form.accountType">
+                  <option value="Regular">Regular</option>
+                  <option value="Investment">Investment</option>
+                </select>
               </div>
               <div class="mb-3">
                 <label class="form-label">Amount</label>
@@ -223,8 +254,10 @@ export class Accounts implements OnInit {
   }
 
   get total() { return this.items.reduce((sum, a) => sum + a.amount, 0) }
+  get totalRegular() { return this.items.filter(a => a.accountType !== 'Investment').reduce((sum, a) => sum + a.amount, 0) }
+  get totalInvestment() { return this.items.filter(a => a.accountType === 'Investment').reduce((sum, a) => sum + a.amount, 0) }
 
-  emptyForm() { return { name: '', amount: 0 } }
+  emptyForm() { return { name: '', amount: 0, accountType: 'Regular' } }
 
   openForm(a?: Account) {
     this.form = a ? { ...a } : this.emptyForm()
@@ -243,7 +276,7 @@ export class Accounts implements OnInit {
         this.closeForm()
       })
     } else {
-      this.svc.create({ name: this.form.name!, amount: this.form.amount! }).subscribe(() => {
+      this.svc.create({ name: this.form.name!, amount: this.form.amount!, accountType: this.form.accountType ?? 'Regular' }).subscribe(() => {
         this.load()
         this.loadTotalHistory()
         this.closeForm()

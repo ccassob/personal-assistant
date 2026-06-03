@@ -33,7 +33,7 @@ import { AccountService } from '../../core/services/api/account.service'
 
       <!-- Summary cards -->
       <div class="row g-3 mb-3">
-        <div class="col-sm-6 col-xl-3">
+        <div class="col-sm-6 col-xl">
           <div class="card">
             <div class="card-body">
               <div class="d-flex align-items-center">
@@ -46,7 +46,7 @@ import { AccountService } from '../../core/services/api/account.service'
             </div>
           </div>
         </div>
-        <div class="col-sm-6 col-xl-3">
+        <div class="col-sm-6 col-xl">
           <div class="card">
             <div class="card-body">
               <div class="d-flex align-items-center">
@@ -59,7 +59,7 @@ import { AccountService } from '../../core/services/api/account.service'
             </div>
           </div>
         </div>
-        <div class="col-sm-6 col-xl-3">
+        <div class="col-sm-6 col-xl">
           <div class="card">
             <div class="card-body">
               <div class="d-flex align-items-center">
@@ -74,7 +74,7 @@ import { AccountService } from '../../core/services/api/account.service'
             </div>
           </div>
         </div>
-        <div class="col-sm-6 col-xl-3">
+        <div class="col-sm-6 col-xl">
           <div class="card">
             <div class="card-body">
               <div class="d-flex align-items-center">
@@ -87,10 +87,23 @@ import { AccountService } from '../../core/services/api/account.service'
             </div>
           </div>
         </div>
+        <div class="col-sm-6 col-xl">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                  <p class="text-muted mb-1">Invested</p>
+                  <h4 style="color:#0d9488" class="mb-0">{{ summary?.totalInvested | number:'1.2-2' }}</h4>
+                </div>
+                <div class="fs-3 opacity-50" style="color:#0d9488"><iconify-icon icon="tabler:chart-candle" width="36"></iconify-icon></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Charts -->
-      <div class="row g-3 mb-3">
+      <!-- Charts — hidden on mobile -->
+      <div class="row g-3 mb-3 d-none d-md-flex">
         <div class="col-xl-5">
           <div class="card h-100">
             <div class="card-header"><h5 class="card-title mb-0">Spending by Category</h5></div>
@@ -163,8 +176,8 @@ import { AccountService } from '../../core/services/api/account.service'
         </div>
       </div>
 
-      <!-- Trend chart -->
-      <div class="row g-3 mb-3">
+      <!-- Trend chart — hidden on mobile -->
+      <div class="row g-3 mb-3 d-none d-md-flex">
         <div class="col-12">
           <div class="card">
             <div class="card-header"><h5 class="card-title mb-0">Net Balance – Last 6 Periods</h5></div>
@@ -177,7 +190,8 @@ import { AccountService } from '../../core/services/api/account.service'
                   [colors]="trendColors"
                   [stroke]="trendStroke"
                   [fill]="trendFill"
-                  [dataLabels]="trendDataLabels">
+                  [dataLabels]="trendDataLabels"
+                  [tooltip]="trendTooltip">
                 </apx-chart>
               } @else {
                 <div class="text-center text-muted py-5">No transaction data available.</div>
@@ -187,8 +201,8 @@ import { AccountService } from '../../core/services/api/account.service'
         </div>
       </div>
 
-      <!-- Account balances + Goals radial + Budget utilization -->
-      <div class="row g-3 mb-3">
+      <!-- Account balances + Goals radial + Budget utilization — hidden on mobile -->
+      <div class="row g-3 mb-3 d-none d-md-flex">
         <div class="col-xl-4">
           <div class="card h-100">
             <div class="card-header"><h5 class="card-title mb-0">Account Balances</h5></div>
@@ -270,14 +284,15 @@ export class Dashboard implements OnInit {
   barPlotOptions: ApexPlotOptions = { bar: { horizontal: false, columnWidth: '55%' } }
   barDataLabels: ApexDataLabels = { enabled: false }
 
-  // Trend chart (area)
+  // Trend chart (area with negative values)
   trendSeries: ApexAxisChartSeries = []
   trendXaxis: ApexXAxis = { categories: [] }
   trendHasData = false
   trendChart: ApexChart = { type: 'area', height: 300, toolbar: { show: false } }
-  trendColors: string[] = ['#198754', '#dc3545']
+  trendColors: string[] = ['#000000']
+  trendTooltip: any = { y: { formatter: (v: number) => v.toFixed(2) } }
   trendStroke: ApexStroke = { curve: 'smooth', width: 2 }
-  trendFill: ApexFill = { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } }
+  trendFill: ApexFill = { type: 'gradient', gradient: { shadeIntensity: 1, type: 'vertical', colorStops: [] } }
   trendDataLabels: ApexDataLabels = { enabled: false }
 
   // Account balances (stacked bar)
@@ -338,14 +353,30 @@ export class Dashboard implements OnInit {
   }
 
   loadTrend() {
-    this.svc.getTrend(6).subscribe(data => {
+    this.svc.getTrend(6, this.selectedMonth, this.selectedYear).subscribe(data => {
       this.trendHasData = data.length > 0
       this.trendXaxis = { categories: data.map(d => d.label) }
       const nets = data.map(d => +(d.income - d.expense).toFixed(2))
-      this.trendSeries = [
-        { name: 'Surplus',  data: nets.map(v => v > 0 ? v : 0) },
-        { name: 'Deficit',  data: nets.map(v => v < 0 ? v : 0) },
-      ]
+      this.trendSeries = [{ name: 'Net Balance', data: nets }]
+      this.trendColors = ['#000000']
+
+      const max = Math.max(...nets, 0)
+      const min = Math.min(...nets, 0)
+      const range = max - min
+      const zeroPct = range > 0 ? Math.round((max / range) * 100) : 0
+
+      this.trendFill = {
+        type: 'gradient',
+        gradient: {
+          type: 'vertical',
+          colorStops: [
+            { offset: 0,         color: '#198754', opacity: 0.5 },
+            { offset: zeroPct,   color: '#198754', opacity: 0.05 },
+            { offset: zeroPct,   color: '#dc3545', opacity: 0.05 },
+            { offset: 100,       color: '#dc3545', opacity: 0.5 },
+          ]
+        }
+      }
     })
   }
 
@@ -378,12 +409,14 @@ export class Dashboard implements OnInit {
     if (this.selectedMonth === 1) { this.selectedMonth = 12; this.selectedYear-- }
     else { this.selectedMonth-- }
     this.load()
+    this.loadTrend()
   }
 
   nextPeriod() {
     if (this.selectedMonth === 12) { this.selectedMonth = 1; this.selectedYear++ }
     else { this.selectedMonth++ }
     this.load()
+    this.loadTrend()
   }
 
   get activeGoals() {

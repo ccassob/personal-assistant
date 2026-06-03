@@ -87,6 +87,22 @@ import { AppSettings, AppSettingsService } from '../../core/services/api/app-set
             </div>
           </div>
         </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Connection</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">API Base URL</label>
+                <input type="url" class="form-control" [(ngModel)]="apiUrl" placeholder="http://192.168.1.x:8002">
+                <div class="form-text">Override the API server address (useful when accessing from phone over local Wi-Fi). Leave blank to use the default.</div>
+              </div>
+              <button class="btn btn-sm btn-outline-secondary" (click)="clearApiUrl()">Reset to default</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="row mt-3">
@@ -108,12 +124,15 @@ export class Settings implements OnInit {
   todayColor = '#0d6efd'
   futureColor = '#fd7e14'
   distanceUnit = 'km'
+  apiUrl = ''
   saved = false
   private settingsId = 1
 
   constructor(private svc: AppSettingsService) {}
 
+
   ngOnInit() {
+    this.apiUrl = localStorage.getItem('__BUDGET_API_URL__') ?? ''
     this.svc.get().subscribe(s => {
       this.settingsId = s.id
       this.cutoffDay = s.cutoffDay
@@ -122,6 +141,11 @@ export class Settings implements OnInit {
       this.futureColor = s.futureColor
       this.distanceUnit = s.distanceUnit ?? 'km'
     })
+  }
+
+  clearApiUrl() {
+    this.apiUrl = ''
+    localStorage.removeItem('__BUDGET_API_URL__')
   }
 
   get periodLabel(): string {
@@ -144,6 +168,11 @@ export class Settings implements OnInit {
   }
 
   save() {
+    if (this.apiUrl.trim()) {
+      localStorage.setItem('__BUDGET_API_URL__', this.apiUrl.trim())
+    } else {
+      localStorage.removeItem('__BUDGET_API_URL__')
+    }
     const clamped = Math.min(31, Math.max(1, this.cutoffDay))
     this.svc.update({
       id: this.settingsId,

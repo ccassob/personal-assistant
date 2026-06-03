@@ -53,7 +53,7 @@ interface BudgetRow extends Budget {
       </div>
 
       <div class="row">
-        <div class="col-12">
+        <div class="col-12 d-none d-md-block">
           <div class="card">
             <div class="card-body">
               <table class="table table-hover">
@@ -94,6 +94,39 @@ interface BudgetRow extends Budget {
             </div>
           </div>
         </div>
+
+      <!-- Mobile card list -->
+      <div class="col-12 d-md-none">
+        @for (b of rows; track b.id) {
+          <div class="card mb-2">
+            <div class="card-body py-2">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-semibold">{{ b.category?.name }}</span>
+                <span class="text-muted small" [class.text-danger]="b.remaining < 0">
+                  {{ b.remaining | number:'1.2-2' }} left
+                </span>
+              </div>
+              <div class="d-flex justify-content-between text-muted small mb-2">
+                <span>Target: {{ b.targetAmount | number:'1.2-2' }}</span>
+                <span>Spent: {{ b.actual | number:'1.2-2' }}</span>
+              </div>
+              <div class="progress mb-2" style="height:6px">
+                <div class="progress-bar" [class.bg-danger]="b.pct>100" [class.bg-warning]="b.pct>75 && b.pct<=100" [class.bg-success]="b.pct<=75"
+                     [style.width.%]="b.pct > 100 ? 100 : b.pct"></div>
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">{{ b.pct | number:'1.0-0' }}%</small>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-sm btn-outline-primary" (click)="openForm(b)">Edit</button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="delete(b.id)">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="text-center text-muted py-4">No budgets for this period.</div>
+        }
+      </div>
       </div>
     </div>
 

@@ -6,7 +6,7 @@ public class Transaction
     public DateOnly Date { get; set; }
     public decimal Amount { get; set; }
     public string Description { get; set; } = "";
-    public string Type { get; set; } = ""; // "Income" | "Expense"
+    public string Type { get; set; } = ""; // "Income" | "Expense" | "Investment"
     public int CategoryId { get; set; }
     public Category? Category { get; set; }
     public string Notes { get; set; } = "";

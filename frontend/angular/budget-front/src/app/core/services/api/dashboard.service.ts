@@ -8,11 +8,13 @@ export interface TrendPoint {
   label: string
   income: number
   expense: number
+  invested: number
 }
 
 export interface DashboardSummary {
   totalIncome: number
   totalExpense: number
+  totalInvested: number
   netBalance: number
   spendingByCategory: { categoryId: number; categoryName: string; color: string; amount: number }[]
   budgetVsActual: { categoryId: number; categoryName: string; target: number; actual: number }[]
@@ -29,8 +31,8 @@ export class DashboardService {
     return this.http.get<DashboardSummary>(`${this.url}/summary`, { params })
   }
 
-  getTrend(months: number) {
-    const params = new HttpParams().set('months', months)
+  getTrend(months: number, month: number, year: number) {
+    const params = new HttpParams().set('months', months).set('month', month).set('year', year)
     return this.http.get<TrendPoint[]>(`${this.url}/trend`, { params })
   }
 }

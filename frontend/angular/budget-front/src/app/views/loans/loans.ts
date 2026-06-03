@@ -283,20 +283,10 @@ export class Loans implements OnInit {
     return Math.min(Math.max(months, 0), l.termMonths)
   }
 
-  /** Remaining balance using standard amortization formula */
-  currentBalance(l: Loan): number {
-    const r = l.interestRate / 12 / 100
-    const n = this.elapsedMonths(l)
-    if (r === 0) return Math.max(l.loanAmount - l.monthlyPayment * n, 0)
-    const balance = l.loanAmount * Math.pow(1 + r, n)
-      - l.monthlyPayment * (Math.pow(1 + r, n) - 1) / r
-    return Math.max(balance, 0)
-  }
-
   /** Interest portion of the next payment */
   currentInterestPortion(l: Loan): number {
     const r = l.interestRate / 12 / 100
-    return this.currentBalance(l) * r
+    return l.currentBalance * r
   }
 
   /** Principal portion of the next payment */

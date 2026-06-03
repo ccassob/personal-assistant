@@ -27,7 +27,7 @@ import { Book, BookProgress, BookTask, BookService } from '../../core/services/a
           <div class="col-12">
             <div class="card">
               <div class="card-body pb-0">
-                <h6 class="text-muted mb-0">Pages Read Per Day</h6>
+                <h6 class="text-muted mb-0">Pages Read Per Week</h6>
                 <apx-chart
                   [series]="histSeries"
                   [chart]="histOpts.chart"
@@ -109,8 +109,8 @@ import { Book, BookProgress, BookTask, BookService } from '../../core/services/a
                       }
                     </div>
                     <div class="d-flex justify-content-between mb-1">
-                      <span class="small">Daily pace</span>
-                      <span class="small fw-semibold text-primary">{{ recentPace(b) | number:'1.1-1' }} pages/day</span>
+                      <span class="small">Weekly pace</span>
+                      <span class="small fw-semibold text-primary">{{ recentPace(b) | number:'1.1-1' }} pages/week</span>
                     </div>
                     <div class="d-flex justify-content-between">
                       <span class="small">Est. finish at this pace</span>
@@ -137,7 +137,7 @@ import { Book, BookProgress, BookTask, BookService } from '../../core/services/a
                         <span class="small fw-bold"
                           [class.text-danger]="daysToTarget(b) > 0 && requiredPace(b) > recentPace(b)"
                           [class.text-success]="daysToTarget(b) > 0 && requiredPace(b) <= recentPace(b)">
-                          {{ daysToTarget(b) > 0 ? (requiredPace(b) | number:'1.1-1') + ' pages/day' : '—' }}
+                          {{ daysToTarget(b) > 0 ? (requiredPace(b) | number:'1.1-1') + ' pages/week' : '—' }}
                         </span>
                       </div>
                     </div>
@@ -379,18 +379,34 @@ export class Books implements OnInit {
     })
   }
 
+  private weekStart(dateStr: string): string {
+    const d = new Date(dateStr)
+    const day = d.getDay()
+    const diff = day === 0 ? -6 : 1 - day
+    d.setDate(d.getDate() + diff)
+    return d.toISOString().split('T')[0]
+  }
+
+  private isoWeekNumber(dateStr: string): number {
+    const d = new Date(dateStr)
+    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7)
+    const week1 = new Date(d.getFullYear(), 0, 4)
+    return 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7)
+  }
+
   buildHistoryChart() {
-    const dailyMap = new Map<string, number>()
+    const weeklyMap = new Map<string, number>()
     this.books.forEach(b => {
       const history = this.histories.get(b.id) ?? []
       history.forEach((entry, i) => {
         const pagesRead = i === 0 ? entry.currentPage : Math.max(entry.currentPage - history[i - 1].currentPage, 0)
-        dailyMap.set(entry.date, (dailyMap.get(entry.date) ?? 0) + pagesRead)
+        const week = this.weekStart(entry.date)
+        weeklyMap.set(week, (weeklyMap.get(week) ?? 0) + pagesRead)
       })
     })
 
-    const sorted = Array.from(dailyMap.entries()).sort((a, b) => a[0].localeCompare(b[0]))
-    const dates = sorted.map(([d]) => d)
+    const sorted = Array.from(weeklyMap.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+    const weeks = sorted.map(([d]) => `Week ${this.isoWeekNumber(d)}`)
     const pages = sorted.map(([, p]) => p)
 
     this.histSeries = [{ name: 'Pages Read', data: pages }]
@@ -399,7 +415,7 @@ export class Books implements OnInit {
       stroke: { curve: 'smooth', width: 2 },
       fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.05 } },
       dataLabels: { enabled: false },
-      xaxis: { categories: dates, tickAmount: 8, labels: { rotate: -30, style: { fontSize: '11px' } } },
+      xaxis: { categories: weeks, labels: { rotate: -30, style: { fontSize: '11px' } } },
       yaxis: { labels: { style: { fontSize: '11px' } }, min: 0 },
       colors: ['#0d6efd'],
       grid: { borderColor: '#e9ecef' },
@@ -441,14 +457,14 @@ export class Books implements OnInit {
     return Math.max(Math.floor((this.today().getTime() - start.getTime()) / 86400000), 1)
   }
 
-  dailyPace(b: Book): number {
-    return b.currentPage === 0 ? 0 : b.currentPage / this.daysReading(b)
+  weeklyPace(b: Book): number {
+    return b.currentPage === 0 ? 0 : (b.currentPage / this.daysReading(b)) * 7
   }
 
-  /** Uses last-7-day history for accuracy; falls back to lifetime average */
+  /** Uses last-7-day history for accuracy; falls back to lifetime average. Returns pages/week. */
   recentPace(b: Book): number {
     const history = this.histories.get(b.id)
-    if (!history || history.length < 2) return this.dailyPace(b)
+    if (!history || history.length < 2) return this.weeklyPace(b)
 
     const cutoffMs = this.today().getTime() - 7 * 86400000
     const recent = history.filter(h => new Date(h.date).getTime() >= cutoffMs)
@@ -459,7 +475,7 @@ export class Books implements OnInit {
     const daysDiff = Math.max(
       (new Date(newest.date).getTime() - new Date(oldest.date).getTime()) / 86400000, 1
     )
-    return Math.max((newest.currentPage - oldest.currentPage) / daysDiff, 0)
+    return Math.max(((newest.currentPage - oldest.currentPage) / daysDiff) * 7, 0)
   }
 
   estimatedFinish(b: Book): string {
@@ -468,7 +484,8 @@ export class Books implements OnInit {
     const remaining = this.pagesRemaining(b)
     if (remaining === 0) return 'Done!'
     const finish = new Date(this.today())
-    finish.setDate(finish.getDate() + Math.ceil(remaining / pace))
+    const daysNeeded = Math.ceil((remaining / pace) * 7)
+    finish.setDate(finish.getDate() + daysNeeded)
     return finish.toISOString().split('T')[0]
   }
 
@@ -481,7 +498,7 @@ export class Books implements OnInit {
 
   requiredPace(b: Book): number {
     const days = this.daysToTarget(b)
-    return days <= 0 ? 0 : this.pagesRemaining(b) / days
+    return days <= 0 ? 0 : (this.pagesRemaining(b) / days) * 7
   }
 
   hasHistory(id: number): boolean {
