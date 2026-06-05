@@ -1,12 +1,14 @@
 import { Routes } from '@angular/router'
 import { MainLayout } from './layouts/main-layout'
 import { LayoutService } from './core/services/layout.service'
+import { authGuard } from './core/guards/auth.guard'
 
 export const routes: Routes = [
+  { path: 'login', loadComponent: () => import('./views/auth/auth').then(m => m.Auth) },
   {
     path: '',
     component: MainLayout,
-    canActivate: [LayoutService],
+    canActivate: [LayoutService, authGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./views/dashboard/dashboard').then(m => m.Dashboard), data: { title: 'Dashboard' } },
@@ -22,5 +24,5 @@ export const routes: Routes = [
       { path: 'settings', loadComponent: () => import('./views/settings/settings').then(m => m.Settings), data: { title: 'Settings' } },
     ],
   },
-  { path: '**', redirectTo: 'dashboard' },
+  { path: '**', redirectTo: 'login' },
 ]

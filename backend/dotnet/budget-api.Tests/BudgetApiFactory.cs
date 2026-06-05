@@ -1,6 +1,8 @@
 using budget_api.Data;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +23,19 @@ public class BudgetApiFactory : WebApplicationFactory<Program>
 
             services.AddDbContext<BudgetDbContext>(options =>
                 options.UseInMemoryDatabase(_dbName));
+        });
+
+        builder.ConfigureTestServices(services =>
+        {
+            services.AddAuthentication()
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.Scheme, _ => { });
+
+            services.PostConfigure<AuthenticationOptions>(options =>
+            {
+                options.DefaultAuthenticateScheme = TestAuthHandler.Scheme;
+                options.DefaultChallengeScheme = TestAuthHandler.Scheme;
+                options.DefaultScheme = TestAuthHandler.Scheme;
+            });
         });
     }
 

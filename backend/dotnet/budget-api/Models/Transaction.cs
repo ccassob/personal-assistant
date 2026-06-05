@@ -11,4 +11,5 @@ public class Transaction
     public Category? Category { get; set; }
     public string Notes { get; set; } = "";
     public bool IsExecuted { get; set; }
+    public string UserId { get; set; } = "";
 }

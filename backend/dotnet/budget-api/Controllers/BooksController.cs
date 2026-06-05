@@ -1,18 +1,23 @@
+using System.Security.Claims;
 using budget_api.Data;
 using budget_api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace budget_api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class BooksController(BudgetDbContext db) : ControllerBase
 {
+    private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var books = await db.Books.ToListAsync();
+        var books = await db.Books.Where(b => b.UserId == CurrentUserId).ToListAsync();
         return Ok(books
             .OrderBy(b => b.Status == "Completed" ? 1 : 0)
             .ThenByDescending(b => b.TotalPages > 0 ? (double)b.CurrentPage / b.TotalPages : 0)
@@ -22,13 +27,14 @@ public class BooksController(BudgetDbContext db) : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var book = await db.Books.FindAsync(id);
+        var book = await db.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == CurrentUserId);
         return book is null ? NotFound() : Ok(book);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create(Book book)
     {
+        book.UserId = CurrentUserId;
         db.Books.Add(book);
         await db.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { id = book.Id }, book);
@@ -38,7 +44,17 @@ public class BooksController(BudgetDbContext db) : ControllerBase
     public async Task<IActionResult> Update(int id, Book book)
     {
         if (id != book.Id) return BadRequest();
-        db.Entry(book).State = EntityState.Modified;
+        var existing = await db.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == CurrentUserId);
+        if (existing is null) return NotFound();
+        existing.Title = book.Title;
+        existing.Author = book.Author;
+        existing.TotalPages = book.TotalPages;
+        existing.CurrentPage = book.CurrentPage;
+        existing.StartDate = book.StartDate;
+        existing.Status = book.Status;
+        existing.TargetDate = book.TargetDate;
+        existing.Notes = book.Notes;
+        existing.BookType = book.BookType;
         await db.SaveChangesAsync();
         return NoContent();
     }
@@ -46,7 +62,7 @@ public class BooksController(BudgetDbContext db) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var book = await db.Books.FindAsync(id);
+        var book = await db.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == CurrentUserId);
         if (book is null) return NotFound();
         db.Books.Remove(book);
         await db.SaveChangesAsync();
@@ -54,16 +70,19 @@ public class BooksController(BudgetDbContext db) : ControllerBase
     }
 
     [HttpGet("{id}/progress")]
-    public async Task<IActionResult> GetProgress(int id) =>
-        Ok(await db.BookProgresses
+    public async Task<IActionResult> GetProgress(int id)
+    {
+        if (!await db.Books.AnyAsync(b => b.Id == id && b.UserId == CurrentUserId)) return NotFound();
+        return Ok(await db.BookProgresses
             .Where(p => p.BookId == id)
             .OrderBy(p => p.Date)
             .ToListAsync());
+    }
 
     [HttpPost("{id}/progress")]
     public async Task<IActionResult> UpdateProgress(int id, [FromBody] UpdateProgressRequest req)
     {
-        var book = await db.Books.FindAsync(id);
+        var book = await db.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == CurrentUserId);
         if (book is null) return NotFound();
 
         var today = DateOnly.FromDateTime(DateTime.Today);
@@ -80,13 +99,16 @@ public class BooksController(BudgetDbContext db) : ControllerBase
     }
 
     [HttpGet("{id}/tasks")]
-    public async Task<IActionResult> GetTasks(int id) =>
-        Ok(await db.BookTasks.Where(t => t.BookId == id).OrderBy(t => t.Id).ToListAsync());
+    public async Task<IActionResult> GetTasks(int id)
+    {
+        if (!await db.Books.AnyAsync(b => b.Id == id && b.UserId == CurrentUserId)) return NotFound();
+        return Ok(await db.BookTasks.Where(t => t.BookId == id).OrderBy(t => t.Id).ToListAsync());
+    }
 
     [HttpPost("{id}/tasks")]
     public async Task<IActionResult> CreateTask(int id, [FromBody] CreateTaskRequest req)
     {
-        if (!await db.Books.AnyAsync(b => b.Id == id)) return NotFound();
+        if (!await db.Books.AnyAsync(b => b.Id == id && b.UserId == CurrentUserId)) return NotFound();
         var task = new BookTask { BookId = id, Title = req.Title };
         db.BookTasks.Add(task);
         await db.SaveChangesAsync();
@@ -96,6 +118,7 @@ public class BooksController(BudgetDbContext db) : ControllerBase
     [HttpPut("{id}/tasks/{taskId}")]
     public async Task<IActionResult> UpdateTask(int id, int taskId, [FromBody] UpdateTaskRequest req)
     {
+        if (!await db.Books.AnyAsync(b => b.Id == id && b.UserId == CurrentUserId)) return NotFound();
         var task = await db.BookTasks.FirstOrDefaultAsync(t => t.Id == taskId && t.BookId == id);
         if (task is null) return NotFound();
         task.IsDone = req.IsDone;
@@ -106,6 +129,7 @@ public class BooksController(BudgetDbContext db) : ControllerBase
     [HttpDelete("{id}/tasks/{taskId}")]
     public async Task<IActionResult> DeleteTask(int id, int taskId)
     {
+        if (!await db.Books.AnyAsync(b => b.Id == id && b.UserId == CurrentUserId)) return NotFound();
         var task = await db.BookTasks.FirstOrDefaultAsync(t => t.Id == taskId && t.BookId == id);
         if (task is null) return NotFound();
         db.BookTasks.Remove(task);

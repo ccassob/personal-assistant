@@ -12,4 +12,5 @@ public class Book
     public DateOnly? TargetDate { get; set; }
     public string Notes { get; set; } = "";
     public string BookType { get; set; } = "Literature"; // "Technology" | "Literature"
+    public string UserId { get; set; } = "";
 }

@@ -13,4 +13,5 @@ public class Loan
     public decimal CurrentBalance { get; set; }
     public decimal? GoalAmount { get; set; }
     public DateOnly? GoalDate { get; set; }
+    public string UserId { get; set; } = "";
 }

@@ -1,18 +1,23 @@
+using System.Security.Claims;
 using budget_api.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace budget_api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class DashboardController(BudgetDbContext db) : ControllerBase
 {
+    private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
     [HttpGet("trend")]
     public async Task<IActionResult> GetTrend([FromQuery] int months = 6, [FromQuery] int? month = null, [FromQuery] int? year = null)
     {
         var now = DateTime.Now;
-        var settings = await db.AppSettings.FirstOrDefaultAsync();
+        var settings = await db.AppSettings.FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
         var cutoffDay = settings?.CutoffDay ?? 1;
 
         var m = month ?? now.Month;
@@ -31,7 +36,7 @@ public class DashboardController(BudgetDbContext db) : ControllerBase
         var allStart = periods.First().start;
         var allEnd = periods.Last().end;
         var transactions = await db.Transactions
-            .Where(t => t.Date >= allStart && t.Date <= allEnd)
+            .Where(t => t.UserId == CurrentUserId && t.Date >= allStart && t.Date <= allEnd)
             .ToListAsync();
 
         var result = periods.Select(p => new
@@ -54,13 +59,13 @@ public class DashboardController(BudgetDbContext db) : ControllerBase
         var m = month ?? now.Month;
         var y = year ?? now.Year;
 
-        var settings = await db.AppSettings.FirstOrDefaultAsync();
+        var settings = await db.AppSettings.FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
         var cutoffDay = settings?.CutoffDay ?? 1;
         var (startDate, endDate) = GetPeriod(cutoffDay, m, y);
 
         var transactions = await db.Transactions
             .Include(t => t.Category)
-            .Where(t => t.Date >= startDate && t.Date <= endDate)
+            .Where(t => t.UserId == CurrentUserId && t.Date >= startDate && t.Date <= endDate)
             .ToListAsync();
 
         var totalIncome = transactions.Where(t => t.Type == "Income").Sum(t => t.Amount);
@@ -80,7 +85,7 @@ public class DashboardController(BudgetDbContext db) : ControllerBase
 
         var budgets = await db.Budgets
             .Include(b => b.Category)
-            .Where(b => b.Month == m && b.Year == y)
+            .Where(b => b.UserId == CurrentUserId && b.Month == m && b.Year == y)
             .ToListAsync();
 
         var budgetVsActual = budgets.Select(b => new
@@ -93,7 +98,7 @@ public class DashboardController(BudgetDbContext db) : ControllerBase
                 .Sum(t => t.Amount)
         });
 
-        var goals = await db.Goals.ToListAsync();
+        var goals = await db.Goals.Where(g => g.UserId == CurrentUserId).ToListAsync();
 
         return Ok(new
         {

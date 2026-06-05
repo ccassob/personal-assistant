@@ -11,4 +11,5 @@ public class Vehicle
     public string LicensePlate { get; set; } = "";
     public string Color { get; set; } = "";
     public string Notes { get; set; } = "";
+    public string UserId { get; set; } = "";
 }

@@ -8,4 +8,5 @@ public class Budget
     public int Month { get; set; }
     public int Year { get; set; }
     public decimal TargetAmount { get; set; }
+    public string UserId { get; set; } = "";
 }

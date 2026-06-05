@@ -8,4 +8,5 @@ public class AppSettings
     public string TodayColor { get; set; } = "#0d6efd";
     public string FutureColor { get; set; } = "#fd7e14";
     public string DistanceUnit { get; set; } = "km"; // "km" | "mi"
+    public string UserId { get; set; } = "";
 }

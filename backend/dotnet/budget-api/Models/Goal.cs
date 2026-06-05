@@ -9,4 +9,5 @@ public class Goal
     public decimal CurrentAmount { get; set; }
     public DateOnly Deadline { get; set; }
     public string Status { get; set; } = "Active"; // "Active" | "Completed" | "Paused"
+    public string UserId { get; set; } = "";
 }

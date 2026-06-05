@@ -1,9 +1,12 @@
 using budget_api.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace budget_api.Data;
 
-public class BudgetDbContext(DbContextOptions<BudgetDbContext> options) : DbContext(options)
+public class BudgetDbContext(DbContextOptions<BudgetDbContext> options)
+    : IdentityDbContext<IdentityUser>(options)
 {
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
@@ -24,6 +27,7 @@ public class BudgetDbContext(DbContextOptions<BudgetDbContext> options) : DbCont
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<Transaction>().Property(t => t.Amount).HasPrecision(18, 2);
         modelBuilder.Entity<Budget>().Property(b => b.TargetAmount).HasPrecision(18, 2);
         modelBuilder.Entity<Goal>().Property(g => g.TargetAmount).HasPrecision(18, 2);

@@ -7,4 +7,5 @@ public class Category
     public string Type { get; set; } = ""; // "Income" | "Expense"
     public string Color { get; set; } = "#000000";
     public string Icon { get; set; } = "";
+    public string UserId { get; set; } = "";
 }

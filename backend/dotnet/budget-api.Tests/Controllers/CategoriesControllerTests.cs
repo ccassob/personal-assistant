@@ -17,6 +17,9 @@ public class CategoriesControllerTests : IClassFixture<BudgetApiFactory>
         factory.ResetDatabase();
     }
 
+    private static Category Cat(string name, string type = "Income") =>
+        new() { Name = name, Type = type, Color = "#00ff00", Icon = "cash", UserId = TestAuthHandler.UserId };
+
     // ── GET /api/categories ─────────────────────────────────────────────────
 
     [Fact]
@@ -33,8 +36,8 @@ public class CategoriesControllerTests : IClassFixture<BudgetApiFactory>
     public async Task GetAll_ReturnsAllCategories()
     {
         _factory.SeedMany([
-            new Category { Name = "Salary", Type = "Income",  Color = "#00ff00", Icon = "cash" },
-            new Category { Name = "Food",   Type = "Expense", Color = "#ff0000", Icon = "fork" },
+            new Category { Name = "Salary", Type = "Income",  Color = "#00ff00", Icon = "cash", UserId = TestAuthHandler.UserId },
+            new Category { Name = "Food",   Type = "Expense", Color = "#ff0000", Icon = "fork", UserId = TestAuthHandler.UserId },
         ]);
 
         var categories = await _client.GetFromJsonAsync<Category[]>("/api/categories");
@@ -49,7 +52,7 @@ public class CategoriesControllerTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task GetById_ReturnsCategory_WhenExists()
     {
-        var id = _factory.Seed(new Category { Name = "Salary", Type = "Income", Color = "#00ff00", Icon = "cash" });
+        var id = _factory.Seed(Cat("Salary"));
 
         var category = await _client.GetFromJsonAsync<Category>($"/api/categories/{id}");
 
@@ -98,7 +101,7 @@ public class CategoriesControllerTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task Update_ReturnsNoContent_WhenSuccessful()
     {
-        var id = _factory.Seed(new Category { Name = "Salary", Type = "Income", Color = "#00ff00", Icon = "cash" });
+        var id = _factory.Seed(Cat("Salary"));
         var updated = new Category { Id = id, Name = "Wages", Type = "Income", Color = "#00ff00", Icon = "cash" };
 
         var response = await _client.PutAsJsonAsync($"/api/categories/{id}", updated);
@@ -119,7 +122,7 @@ public class CategoriesControllerTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task Update_PersistsChanges()
     {
-        var id = _factory.Seed(new Category { Name = "Old Name", Type = "Income", Color = "#00ff00", Icon = "cash" });
+        var id = _factory.Seed(Cat("Old Name"));
         var updated = new Category { Id = id, Name = "New Name", Type = "Expense", Color = "#ff0000", Icon = "tag" };
 
         await _client.PutAsJsonAsync($"/api/categories/{id}", updated);
@@ -135,7 +138,7 @@ public class CategoriesControllerTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task Delete_ReturnsNoContent_WhenSuccessful()
     {
-        var id = _factory.Seed(new Category { Name = "Salary", Type = "Income", Color = "#00ff00", Icon = "cash" });
+        var id = _factory.Seed(Cat("Salary"));
 
         var response = await _client.DeleteAsync($"/api/categories/{id}");
 
@@ -153,7 +156,7 @@ public class CategoriesControllerTests : IClassFixture<BudgetApiFactory>
     [Fact]
     public async Task Delete_RemovesCategory()
     {
-        var id = _factory.Seed(new Category { Name = "Salary", Type = "Income", Color = "#00ff00", Icon = "cash" });
+        var id = _factory.Seed(Cat("Salary"));
 
         await _client.DeleteAsync($"/api/categories/{id}");
 

@@ -11,4 +11,5 @@ public class RecurringTransaction
     public int DayOfMonth { get; set; } // 1–31, clamped to last day of target month on generate
     public string Notes { get; set; } = "";
     public bool IsActive { get; set; } = true;
+    public string UserId { get; set; } = "";
 }
