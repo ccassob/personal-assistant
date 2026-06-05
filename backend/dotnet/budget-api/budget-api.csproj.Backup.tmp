@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>budget_api</RootNamespace>
-    <UserSecretsId>1b2a0105-c3a8-471b-956b-fe3e965d46c6</UserSecretsId>
+    <UserSecretsId>4b936229-36cd-41fa-b4fa-0044a0628410</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
