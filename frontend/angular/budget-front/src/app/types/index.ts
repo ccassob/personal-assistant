@@ -4,4 +4,12 @@ export type MenuItemType = {
   isTitle?: boolean
   icon?: string
   url?: string
+  badge?: {
+    className: string
+    text: string
+  }
+  target?: string
+  isDisabled?: boolean
+  isSpecial?: boolean
+  children?: MenuItemType[]
 }

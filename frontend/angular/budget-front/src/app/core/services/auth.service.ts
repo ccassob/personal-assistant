@@ -5,9 +5,12 @@ import { tap } from 'rxjs/operators'
 import { API_BASE } from '../../constants'
 
 interface JwtPayload {
-  sub: string
-  email: string
-  name: string
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'?: string
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'?: string
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'?: string
+  sub?: string
+  email?: string
+  name?: string
   exp: number
 }
 
@@ -43,11 +46,18 @@ export class AuthService {
   }
 
   get userEmail(): string {
-    return this.decodePayload()?.email ?? ''
+    const p = this.decodePayload()
+    return p?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] ?? p?.email ?? ''
   }
 
   get userName(): string {
-    return this.decodePayload()?.name ?? ''
+    const p = this.decodePayload()
+    return p?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ?? p?.name ?? ''
+  }
+
+  get userId(): string {
+    const p = this.decodePayload()
+    return p?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ?? p?.sub ?? ''
   }
 
   private decodePayload(): JwtPayload | null {

@@ -1,4 +1,16 @@
-import { MenuItemType } from '../types'
+export const META_DATA = {
+  name: 'Inspinia',
+  title: 'INSPINIA - Responsive Bootstrap 5 Admin Dashboard Template',
+  description: 'Inspinia is the #1 best-selling admin dashboard template on Wrapmarket. Perfect for building CRM, CMS, project management tools, and custom web apps with clean UI, responsive design, and powerful features.',
+  author: 'WebAppLayers',
+  username: 'Damian D.',
+  keywords: 'Inspinia, admin dashboard, Wrapmarket, Wrapbootstrap, HTML template, Bootstrap admin, CRM template, CMS template, responsive admin, web app UI, admin theme, best admin template',
+  version: '5.0.0',
+  buyUrl: 'https://wrapmarket.com/item/inspinia-multipurpose-admin-dashboard-template-WB0R5L90S?via=webapp',
+  supportUrl: '__supportUrl__',
+}
+
+export const currentYear = new Date().getFullYear()
 
 export const APP_NAME = 'BudgetApp'
 export const API_BASE = 'http://localhost:5085'
@@ -6,18 +18,19 @@ export const API_BASE = 'http://localhost:5085'
 export function getApiBase(): string {
   return localStorage.getItem('__BUDGET_API_URL__') ?? API_BASE
 }
-export const currentYear = new Date().getFullYear()
+
+import { MenuItemType } from '../types'
 
 export const menuItems: MenuItemType[] = [
-  { slug: 'dashboard', label: 'Dashboard', icon: 'tabler:dashboard', url: '/dashboard' },
-  { slug: 'transactions', label: 'Transactions', icon: 'tabler:arrows-exchange', url: '/transactions' },
-  { slug: 'recurring-transactions', label: 'Recurring', icon: 'tabler:refresh', url: '/recurring-transactions' },
-  { slug: 'categories', label: 'Categories', icon: 'tabler:category', url: '/categories' },
-  { slug: 'budgets', label: 'Budgets', icon: 'tabler:chart-bar', url: '/budgets' },
-  { slug: 'goals', label: 'Goals', icon: 'tabler:target', url: '/goals' },
-  { slug: 'loans', label: 'Loans', icon: 'tabler:credit-card', url: '/loans' },
-  { slug: 'vehicles', label: 'Vehicles', icon: 'tabler:car', url: '/vehicles' },
-  { slug: 'books', label: 'Books', icon: 'tabler:book', url: '/books' },
-  { slug: 'accounts', label: 'Accounts', icon: 'tabler:wallet', url: '/accounts' },
-  { slug: 'settings', label: 'Settings', icon: 'tabler:settings', url: '/settings' },
+  { slug: 'dashboard', label: 'Dashboard', icon: 'dashboard', url: '/dashboard' },
+  { slug: 'transactions', label: 'Transactions', icon: 'arrows-exchange', url: '/transactions' },
+  { slug: 'recurring-transactions', label: 'Recurring', icon: 'refresh', url: '/recurring-transactions' },
+  { slug: 'categories', label: 'Categories', icon: 'category', url: '/categories' },
+  { slug: 'budgets', label: 'Budgets', icon: 'chart-bar', url: '/budgets' },
+  { slug: 'goals', label: 'Goals', icon: 'target', url: '/goals' },
+  { slug: 'loans', label: 'Loans', icon: 'credit-card', url: '/loans' },
+  { slug: 'vehicles', label: 'Vehicles', icon: 'car', url: '/vehicles' },
+  { slug: 'books', label: 'Books', icon: 'book', url: '/books' },
+  { slug: 'accounts', label: 'Accounts', icon: 'wallet', url: '/accounts' },
+  { slug: 'settings', label: 'Settings', icon: 'settings', url: '/settings' },
 ]
