@@ -20,6 +20,7 @@ public class BudgetDbContext(DbContextOptions<BudgetDbContext> options)
     public DbSet<Book> Books => Set<Book>();
     public DbSet<BookProgress> BookProgresses => Set<BookProgress>();
     public DbSet<BookTask> BookTasks => Set<BookTask>();
+    public DbSet<LoanPayment> LoanPayments => Set<LoanPayment>();
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
     public DbSet<VehicleMaintenance> VehicleMaintenances => Set<VehicleMaintenance>();
     public DbSet<VehicleTodo> VehicleTodos => Set<VehicleTodo>();
@@ -41,6 +42,15 @@ public class BudgetDbContext(DbContextOptions<BudgetDbContext> options)
         modelBuilder.Entity<Loan>().Property(l => l.InsuranceAmount).HasPrecision(18, 2);
         modelBuilder.Entity<Loan>().Property(l => l.CurrentBalance).HasPrecision(18, 2);
         modelBuilder.Entity<Loan>().Property(l => l.GoalAmount).HasPrecision(18, 2);
+        modelBuilder.Entity<LoanPayment>().Property(p => p.PrincipalAmount).HasPrecision(18, 2);
+        modelBuilder.Entity<LoanPayment>().Property(p => p.InterestAmount).HasPrecision(18, 2);
+        modelBuilder.Entity<LoanPayment>().Property(p => p.InsuranceAmount).HasPrecision(18, 2);
+        modelBuilder.Entity<LoanPayment>().Property(p => p.AdditionalPrincipal).HasPrecision(18, 2);
+        modelBuilder.Entity<LoanPayment>()
+            .HasOne(p => p.Loan)
+            .WithMany()
+            .HasForeignKey(p => p.LoanId)
+            .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<BookProgress>()
             .HasOne<Book>()
             .WithMany()

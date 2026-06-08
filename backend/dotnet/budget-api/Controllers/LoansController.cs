@@ -63,4 +63,58 @@ public class LoansController(BudgetDbContext db) : ControllerBase
         await db.SaveChangesAsync();
         return NoContent();
     }
+
+    // ── Payment endpoints ────────────────────────────────────────────────────
+
+    [HttpGet("{id}/payments")]
+    public async Task<IActionResult> GetPayments(int id)
+    {
+        var loan = await db.Loans.FirstOrDefaultAsync(l => l.Id == id && l.UserId == CurrentUserId);
+        if (loan is null) return NotFound();
+        var payments = await db.LoanPayments
+            .Where(p => p.LoanId == id)
+            .OrderByDescending(p => p.Date)
+            .ToListAsync();
+        return Ok(payments);
+    }
+
+    [HttpPost("{id}/payments")]
+    public async Task<IActionResult> CreatePayment(int id, LoanPayment payment)
+    {
+        var loan = await db.Loans.FirstOrDefaultAsync(l => l.Id == id && l.UserId == CurrentUserId);
+        if (loan is null) return NotFound();
+        payment.LoanId = id;
+        payment.UserId = CurrentUserId;
+        db.LoanPayments.Add(payment);
+        await db.SaveChangesAsync();
+        return Created("", payment);
+    }
+
+    [HttpPut("{id}/payments/{paymentId}")]
+    public async Task<IActionResult> UpdatePayment(int id, int paymentId, LoanPayment payment)
+    {
+        var loan = await db.Loans.FirstOrDefaultAsync(l => l.Id == id && l.UserId == CurrentUserId);
+        if (loan is null) return NotFound();
+        var existing = await db.LoanPayments.FirstOrDefaultAsync(p => p.Id == paymentId && p.LoanId == id);
+        if (existing is null) return NotFound();
+        existing.Date = payment.Date;
+        existing.PrincipalAmount = payment.PrincipalAmount;
+        existing.InterestAmount = payment.InterestAmount;
+        existing.InsuranceAmount = payment.InsuranceAmount;
+        existing.AdditionalPrincipal = payment.AdditionalPrincipal;
+        await db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{id}/payments/{paymentId}")]
+    public async Task<IActionResult> DeletePayment(int id, int paymentId)
+    {
+        var loan = await db.Loans.FirstOrDefaultAsync(l => l.Id == id && l.UserId == CurrentUserId);
+        if (loan is null) return NotFound();
+        var payment = await db.LoanPayments.FirstOrDefaultAsync(p => p.Id == paymentId && p.LoanId == id);
+        if (payment is null) return NotFound();
+        db.LoanPayments.Remove(payment);
+        await db.SaveChangesAsync();
+        return NoContent();
+    }
 }

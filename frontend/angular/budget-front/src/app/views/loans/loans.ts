@@ -2,6 +2,7 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { DecimalPipe } from '@angular/common'
 import { Loan, LoanService } from '../../core/services/api/loan.service'
+import { LoanPayment, LoanPaymentService } from '../../core/services/api/loan-payment.service'
 
 @Component({
   selector: 'app-loans',
@@ -42,7 +43,7 @@ import { Loan, LoanService } from '../../core/services/api/loan.service'
                   </div>
                   <div class="col-6">
                     <div class="text-muted small">Current Balance</div>
-                    <div class="fw-semibold text-danger">{{ l.currentBalance | number:'1.2-2' }}</div>
+                    <div class="fw-semibold text-danger">{{ effectiveBalance(l) | number:'1.2-2' }}</div>
                   </div>
                   <div class="col-6">
                     <div class="text-muted small">Interest Rate</div>
@@ -111,6 +112,7 @@ import { Loan, LoanService } from '../../core/services/api/loan.service'
 
               </div>
 
+              <!-- Goal section -->
               @if (l.goalAmount && l.goalDate) {
                 <div class="px-3 pb-2">
                   <button class="btn btn-sm btn-outline-secondary w-100 d-flex justify-content-between align-items-center" (click)="toggleGoal(l.id)">
@@ -121,7 +123,7 @@ import { Loan, LoanService } from '../../core/services/api/loan.service'
                     <div class="border rounded p-2 mt-2 bg-light">
                       @if (goalMonthsRemaining(l) <= 0) {
                         <div class="text-danger small">Goal date is in the past.</div>
-                      } @else if ((l.goalAmount ?? 0) >= l.currentBalance) {
+                      } @else if ((l.goalAmount ?? 0) >= effectiveBalance(l)) {
                         <div class="text-success small">Goal already reached!</div>
                       } @else {
                         <div class="d-flex justify-content-between mb-1">
@@ -155,6 +157,79 @@ import { Loan, LoanService } from '../../core/services/api/loan.service'
                 </div>
               }
 
+              <!-- Payments section -->
+              <div class="px-3 pb-2">
+                <button class="btn btn-sm btn-outline-secondary w-100 d-flex justify-content-between align-items-center" (click)="togglePayments(l.id)">
+                  <span><iconify-icon icon="tabler:receipt" width="14" class="me-1"></iconify-icon> Payments</span>
+                  <iconify-icon [attr.icon]="expandedPayments.has(l.id) ? 'tabler:chevron-up' : 'tabler:chevron-down'" width="14"></iconify-icon>
+                </button>
+                @if (expandedPayments.has(l.id)) {
+                  <div class="border rounded p-2 mt-2">
+
+                    <!-- Payment totals summary -->
+                    <div class="row g-2 mb-2">
+                      <div class="col-6">
+                        <div class="text-muted" style="font-size:0.7rem">Capital Paid</div>
+                        <div class="fw-semibold text-success" style="font-size:0.85rem">{{ totalPrincipalPaid(l) | number:'1.2-2' }}</div>
+                      </div>
+                      <div class="col-6">
+                        <div class="text-muted" style="font-size:0.7rem">Interest Paid</div>
+                        <div class="fw-semibold text-warning" style="font-size:0.85rem">{{ totalInterestPaid(l) | number:'1.2-2' }}</div>
+                      </div>
+                      <div class="col-6">
+                        <div class="text-muted" style="font-size:0.7rem">Insurance Paid</div>
+                        <div class="fw-semibold text-info" style="font-size:0.85rem">{{ totalInsurancePaid(l) | number:'1.2-2' }}</div>
+                      </div>
+                      <div class="col-6">
+                        <div class="text-muted" style="font-size:0.7rem">Remaining Balance</div>
+                        <div class="fw-semibold text-danger" style="font-size:0.85rem">{{ effectiveBalance(l) | number:'1.2-2' }}</div>
+                      </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mb-2">
+                      <button class="btn btn-sm btn-primary" (click)="openPaymentForm(l.id)">Add Payment</button>
+                    </div>
+
+                    <!-- Payment list -->
+                    @for (p of payments(l); track p.id) {
+                      <div class="border rounded p-2 mb-1 bg-light">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                          <span class="small fw-semibold">{{ p.date }}</span>
+                          <div class="d-flex gap-1">
+                            <button class="btn btn-xs btn-outline-primary" style="padding:1px 6px;font-size:0.75rem" (click)="openPaymentForm(l.id, p)">Edit</button>
+                            <button class="btn btn-xs btn-outline-danger" style="padding:1px 6px;font-size:0.75rem" (click)="deletePayment(l.id, p.id)">Delete</button>
+                          </div>
+                        </div>
+                        <div class="row g-1">
+                          <div class="col-6">
+                            <span class="text-muted" style="font-size:0.7rem">Capital: </span>
+                            <span class="small text-success">{{ p.principalAmount | number:'1.2-2' }}</span>
+                          </div>
+                          <div class="col-6">
+                            <span class="text-muted" style="font-size:0.7rem">Interest: </span>
+                            <span class="small text-warning">{{ p.interestAmount | number:'1.2-2' }}</span>
+                          </div>
+                          @if (p.insuranceAmount > 0) {
+                            <div class="col-6">
+                              <span class="text-muted" style="font-size:0.7rem">Insurance: </span>
+                              <span class="small text-info">{{ p.insuranceAmount | number:'1.2-2' }}</span>
+                            </div>
+                          }
+                          @if (p.additionalPrincipal > 0) {
+                            <div class="col-6">
+                              <span class="text-muted" style="font-size:0.7rem">Extra capital: </span>
+                              <span class="small fw-semibold text-success">{{ p.additionalPrincipal | number:'1.2-2' }}</span>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    } @empty {
+                      <div class="text-muted small text-center py-2">No payments recorded yet.</div>
+                    }
+                  </div>
+                }
+              </div>
+
               <div class="card-footer d-flex gap-2">
                 <button class="btn btn-sm btn-outline-primary flex-fill" (click)="openForm(l)">Edit</button>
                 <button class="btn btn-sm btn-outline-danger flex-fill" (click)="delete(l.id)">Delete</button>
@@ -167,6 +242,7 @@ import { Loan, LoanService } from '../../core/services/api/loan.service'
       </div>
     </div>
 
+    <!-- Loan modal -->
     @if (showModal) {
       <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
         <div class="modal-dialog">
@@ -186,31 +262,25 @@ import { Loan, LoanService } from '../../core/services/api/loan.service'
                   <input type="number" class="form-control" [(ngModel)]="form.loanAmount" min="0" step="0.01">
                 </div>
                 <div class="col-6 mb-3">
-                  <label class="form-label">Current Balance</label>
-                  <input type="number" class="form-control" [(ngModel)]="form.currentBalance" min="0" step="0.01">
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-6 mb-3">
                   <label class="form-label">Start Date</label>
                   <input type="date" class="form-control" [(ngModel)]="form.startDate">
                 </div>
+              </div>
+              <div class="row">
                 <div class="col-6 mb-3">
                   <label class="form-label">Loan Term (months)</label>
                   <input type="number" class="form-control" [(ngModel)]="form.termMonths" min="1" step="1">
                 </div>
-              </div>
-              <div class="row">
                 <div class="col-6 mb-3">
                   <label class="form-label">Annual Interest Rate (%)</label>
                   <input type="number" class="form-control" [(ngModel)]="form.interestRate" min="0" step="0.01">
                 </div>
+              </div>
+              <div class="row">
                 <div class="col-6 mb-3">
                   <label class="form-label">Monthly Payment (P+I)</label>
                   <input type="number" class="form-control" [(ngModel)]="form.monthlyPayment" min="0" step="0.01">
                 </div>
-              </div>
-              <div class="row">
                 <div class="col-6 mb-3">
                   <label class="form-label">Insurance Amount</label>
                   <input type="number" class="form-control" [(ngModel)]="form.insuranceAmount" min="0" step="0.01">
@@ -247,6 +317,55 @@ import { Loan, LoanService } from '../../core/services/api/loan.service'
         </div>
       </div>
     }
+
+    <!-- Payment modal -->
+    @if (showPaymentModal) {
+      <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">{{ paymentForm.id ? 'Edit' : 'Add' }} Payment</h5>
+              <button type="button" class="btn-close" (click)="closePaymentForm()"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Date</label>
+                <input type="date" class="form-control" [(ngModel)]="paymentForm.date">
+              </div>
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Capital (Principal)</label>
+                  <input type="number" class="form-control" [(ngModel)]="paymentForm.principalAmount" min="0" step="0.01">
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Interest</label>
+                  <input type="number" class="form-control" [(ngModel)]="paymentForm.interestAmount" min="0" step="0.01">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6 mb-3">
+                  <label class="form-label">Insurance</label>
+                  <input type="number" class="form-control" [(ngModel)]="paymentForm.insuranceAmount" min="0" step="0.01">
+                </div>
+                <div class="col-6 mb-3">
+                  <label class="form-label">Extra Capital</label>
+                  <input type="number" class="form-control" [(ngModel)]="paymentForm.additionalPrincipal" min="0" step="0.01">
+                </div>
+              </div>
+              @if ((paymentForm.principalAmount! + paymentForm.interestAmount! + paymentForm.insuranceAmount! + paymentForm.additionalPrincipal!) > 0) {
+                <div class="alert alert-info py-2 small mb-0">
+                  Total this payment: <strong>{{ (paymentForm.principalAmount! + paymentForm.interestAmount! + paymentForm.insuranceAmount! + paymentForm.additionalPrincipal!) | number:'1.2-2' }}</strong>
+                </div>
+              }
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" (click)="closePaymentForm()">Cancel</button>
+              <button class="btn btn-primary" (click)="savePayment()">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   `,
 })
 export class Loans implements OnInit {
@@ -255,11 +374,26 @@ export class Loans implements OnInit {
   form: Partial<Loan> = this.emptyForm()
   expandedGoals = new Set<number>()
 
-  constructor(private svc: LoanService) {}
+  paymentsByLoan = new Map<number, LoanPayment[]>()
+  expandedPayments = new Set<number>()
+  showPaymentModal = false
+  paymentForm: Partial<LoanPayment> = this.emptyPaymentForm()
+  activeLoanId: number | null = null
+
+  constructor(private svc: LoanService, private pmtSvc: LoanPaymentService) {}
 
   ngOnInit() { this.load() }
 
-  load() { this.svc.getAll().subscribe(data => this.loans = data) }
+  load() {
+    this.svc.getAll().subscribe(data => {
+      this.loans = data
+      data.forEach(l => this.loadPayments(l.id))
+    })
+  }
+
+  loadPayments(loanId: number) {
+    this.pmtSvc.getByLoan(loanId).subscribe(p => this.paymentsByLoan.set(loanId, p))
+  }
 
   emptyForm(): Partial<Loan> {
     return {
@@ -276,6 +410,40 @@ export class Loans implements OnInit {
     }
   }
 
+  emptyPaymentForm(): Partial<LoanPayment> {
+    return {
+      date: new Date().toISOString().split('T')[0],
+      principalAmount: 0,
+      interestAmount: 0,
+      insuranceAmount: 0,
+      additionalPrincipal: 0,
+    }
+  }
+
+  // ── Payment computed helpers ──────────────────────────────────────────────
+
+  payments(l: Loan): LoanPayment[] {
+    return this.paymentsByLoan.get(l.id) ?? []
+  }
+
+  totalPrincipalPaid(l: Loan): number {
+    return this.payments(l).reduce((s, p) => s + p.principalAmount + p.additionalPrincipal, 0)
+  }
+
+  totalInterestPaid(l: Loan): number {
+    return this.payments(l).reduce((s, p) => s + p.interestAmount, 0)
+  }
+
+  totalInsurancePaid(l: Loan): number {
+    return this.payments(l).reduce((s, p) => s + p.insuranceAmount, 0)
+  }
+
+  effectiveBalance(l: Loan): number {
+    return Math.max(l.loanAmount - this.totalPrincipalPaid(l), 0)
+  }
+
+  // ── Loan computed helpers ─────────────────────────────────────────────────
+
   elapsedMonths(l: Loan): number {
     const start = new Date(l.startDate)
     const now = new Date()
@@ -283,13 +451,11 @@ export class Loans implements OnInit {
     return Math.min(Math.max(months, 0), l.termMonths)
   }
 
-  /** Interest portion of the next payment */
   currentInterestPortion(l: Loan): number {
     const r = l.interestRate / 12 / 100
-    return l.currentBalance * r
+    return this.effectiveBalance(l) * r
   }
 
-  /** Principal portion of the next payment */
   currentPrincipalPortion(l: Loan): number {
     return Math.max(l.monthlyPayment - this.currentInterestPortion(l), 0)
   }
@@ -302,12 +468,10 @@ export class Loans implements OnInit {
     return l.termMonths > 0 ? (this.elapsedMonths(l) / l.termMonths) * 100 : 0
   }
 
-  /** Total out-of-pocket cost over the loan term (P+I payments + insurance) */
   totalCost(l: Loan): number {
     return this.totalMonthlyPayment(l) * l.termMonths
   }
 
-  /** Total interest paid over the life of the loan (excludes insurance) */
   totalInterest(l: Loan): number {
     return Math.max(l.monthlyPayment * l.termMonths - l.loanAmount, 0)
   }
@@ -321,6 +485,8 @@ export class Loans implements OnInit {
   isPaidOff(l: Loan): boolean {
     return this.elapsedMonths(l) >= l.termMonths
   }
+
+  // ── Goal helpers ──────────────────────────────────────────────────────────
 
   toggleGoal(id: number) {
     if (this.expandedGoals.has(id)) this.expandedGoals.delete(id)
@@ -336,7 +502,7 @@ export class Loans implements OnInit {
 
   goalMonthlyPaymentTotal(l: Loan): number {
     const N = this.goalMonthsRemaining(l)
-    const B = l.currentBalance
+    const B = this.effectiveBalance(l)
     const T = l.goalAmount ?? 0
     const r = l.interestRate / 12 / 100
     if (N <= 0) return 0
@@ -348,6 +514,48 @@ export class Loans implements OnInit {
   goalMonthlyPaymentExtra(l: Loan): number {
     return Math.max(this.goalMonthlyPaymentTotal(l) - l.monthlyPayment, 0)
   }
+
+  // ── Payments CRUD ─────────────────────────────────────────────────────────
+
+  togglePayments(id: number) {
+    if (this.expandedPayments.has(id)) this.expandedPayments.delete(id)
+    else this.expandedPayments.add(id)
+  }
+
+  openPaymentForm(loanId: number, p?: LoanPayment) {
+    this.activeLoanId = loanId
+    this.paymentForm = p ? { ...p } : this.emptyPaymentForm()
+    this.showPaymentModal = true
+  }
+
+  closePaymentForm() {
+    this.showPaymentModal = false
+    this.activeLoanId = null
+  }
+
+  savePayment() {
+    if (!this.activeLoanId) return
+    const loanId = this.activeLoanId
+    if (this.paymentForm.id) {
+      this.pmtSvc.update(loanId, this.paymentForm as LoanPayment).subscribe(() => {
+        this.loadPayments(loanId)
+        this.closePaymentForm()
+      })
+    } else {
+      this.pmtSvc.create(loanId, this.paymentForm as Omit<LoanPayment, 'id' | 'loanId'>).subscribe(() => {
+        this.loadPayments(loanId)
+        this.closePaymentForm()
+      })
+    }
+  }
+
+  deletePayment(loanId: number, paymentId: number) {
+    if (confirm('Delete this payment?')) {
+      this.pmtSvc.delete(loanId, paymentId).subscribe(() => this.loadPayments(loanId))
+    }
+  }
+
+  // ── Loan CRUD ─────────────────────────────────────────────────────────────
 
   openForm(l?: Loan) {
     this.form = l ? { ...l } : this.emptyForm()

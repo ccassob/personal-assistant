@@ -12,8 +12,10 @@ export const META_DATA = {
 
 export const currentYear = new Date().getFullYear()
 
+import { environment } from '../../environments/environment'
+
 export const APP_NAME = 'BudgetApp'
-export const API_BASE = 'http://localhost:5085'
+export const API_BASE = environment.apiBase
 
 export function getApiBase(): string {
   return localStorage.getItem('__BUDGET_API_URL__') ?? API_BASE
