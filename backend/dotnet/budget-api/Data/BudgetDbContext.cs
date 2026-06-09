@@ -25,6 +25,12 @@ public class BudgetDbContext(DbContextOptions<BudgetDbContext> options)
     public DbSet<VehicleMaintenance> VehicleMaintenances => Set<VehicleMaintenance>();
     public DbSet<VehicleTodo> VehicleTodos => Set<VehicleTodo>();
     public DbSet<VehicleReminder> VehicleReminders => Set<VehicleReminder>();
+    public DbSet<GroceryCategory> GroceryCategories => Set<GroceryCategory>();
+    public DbSet<Supermarket> Supermarkets => Set<Supermarket>();
+    public DbSet<GroceryItem> GroceryItems => Set<GroceryItem>();
+    public DbSet<GroceryItemSupermarket> GroceryItemSupermarkets => Set<GroceryItemSupermarket>();
+    public DbSet<GroceryPurchase> GroceryPurchases => Set<GroceryPurchase>();
+    public DbSet<PantryItem> PantryItems => Set<PantryItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,5 +87,40 @@ public class BudgetDbContext(DbContextOptions<BudgetDbContext> options)
             .WithMany()
             .HasForeignKey(r => r.VehicleId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Grocery
+        modelBuilder.Entity<GroceryItem>().Property(i => i.LastPrice).HasPrecision(18, 2);
+        modelBuilder.Entity<GroceryItem>().Property(i => i.LastQuantity).HasPrecision(18, 2);
+        modelBuilder.Entity<GroceryPurchase>().Property(p => p.Price).HasPrecision(18, 2);
+        modelBuilder.Entity<GroceryPurchase>().Property(p => p.Quantity).HasPrecision(18, 2);
+
+        modelBuilder.Entity<GroceryItemSupermarket>()
+            .HasKey(x => new { x.GroceryItemId, x.SupermarketId });
+        modelBuilder.Entity<GroceryItemSupermarket>()
+            .HasOne<GroceryItem>().WithMany()
+            .HasForeignKey(x => x.GroceryItemId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<GroceryItemSupermarket>()
+            .HasOne<Supermarket>().WithMany()
+            .HasForeignKey(x => x.SupermarketId).OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<GroceryItem>()
+            .HasOne<GroceryCategory>().WithMany()
+            .HasForeignKey(i => i.GroceryCategoryId).OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<GroceryItem>()
+            .HasOne<Supermarket>().WithMany()
+            .HasForeignKey(i => i.LastSupermarketId).OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<GroceryPurchase>()
+            .HasOne<GroceryItem>().WithMany()
+            .HasForeignKey(p => p.GroceryItemId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<GroceryPurchase>()
+            .HasOne<Supermarket>().WithMany()
+            .HasForeignKey(p => p.SupermarketId).OnDelete(DeleteBehavior.Restrict);
+
+        // Pantry
+        modelBuilder.Entity<PantryItem>().Property(p => p.Quantity).HasPrecision(18, 2);
+        modelBuilder.Entity<PantryItem>()
+            .HasOne<GroceryItem>().WithMany()
+            .HasForeignKey(p => p.GroceryItemId).OnDelete(DeleteBehavior.SetNull);
     }
 }

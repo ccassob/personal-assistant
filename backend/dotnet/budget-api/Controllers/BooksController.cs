@@ -18,10 +18,7 @@ public class BooksController(BudgetDbContext db) : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var books = await db.Books.Where(b => b.UserId == CurrentUserId).ToListAsync();
-        return Ok(books
-            .OrderBy(b => b.Status == "Completed" ? 1 : 0)
-            .ThenByDescending(b => b.TotalPages > 0 ? (double)b.CurrentPage / b.TotalPages : 0)
-            .ThenBy(b => b.Title));
+        return Ok(books.OrderByDescending(b => b.LastUpdated).ThenBy(b => b.Title));
     }
 
     [HttpGet("{id}")]
@@ -35,6 +32,7 @@ public class BooksController(BudgetDbContext db) : ControllerBase
     public async Task<IActionResult> Create(Book book)
     {
         book.UserId = CurrentUserId;
+        book.LastUpdated = DateOnly.FromDateTime(DateTime.Today);
         db.Books.Add(book);
         await db.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { id = book.Id }, book);
@@ -55,6 +53,7 @@ public class BooksController(BudgetDbContext db) : ControllerBase
         existing.TargetDate = book.TargetDate;
         existing.Notes = book.Notes;
         existing.BookType = book.BookType;
+        existing.LastUpdated = DateOnly.FromDateTime(DateTime.Today);
         await db.SaveChangesAsync();
         return NoContent();
     }
@@ -94,6 +93,7 @@ public class BooksController(BudgetDbContext db) : ControllerBase
             existing.CurrentPage = req.CurrentPage;
 
         book.CurrentPage = req.CurrentPage;
+        book.LastUpdated = DateOnly.FromDateTime(DateTime.Today);
         await db.SaveChangesAsync();
         return Ok(book);
     }

@@ -31,6 +31,11 @@ All user-owned entities carry a `UserId` string (FK to ASP.NET Identity `AspNetU
 | `BookProgress` | BookId (FK, cascade delete), Date (DateOnly), CurrentPage — one row per book per day, upserted via POST `/api/books/{id}/progress` |
 | `BookTask` | BookId (FK), Title, IsDone — lab tasks for Technology books only |
 | `Vehicle` | Name, Make, Model, Year, CurrentMileage, LicensePlate, Color, Notes, UserId |
+| `GroceryCategory` | Name, Color (Bootstrap color name), UserId |
+| `Supermarket` | Name, UserId |
+| `GroceryItem` | Name, Barcode?, Manufacturer?, GroceryCategoryId?, UnitType (Units/Lbs), IsOnList, LastPrice?, LastQuantity?, LastSupermarketId?, UserId; [NotMapped] SupermarketIds: List&lt;int&gt; |
+| `GroceryItemSupermarket` | GroceryItemId (FK, cascade), SupermarketId (FK, cascade) — composite PK, many-to-many join |
+| `GroceryPurchase` | GroceryItemId (FK, cascade), SupermarketId (FK, restrict), PurchasedAt (DateTime), Price, Quantity, UserId |
 
 ### Connection string
 
@@ -85,6 +90,9 @@ ng test --include=src/app/path/to/file.spec.ts   # single file
 | LoansController | `api/loans` | Ordered by Name |
 | BooksController | `api/books` | Ordered Reading→Paused→Wishlist→Completed then by Title (in-memory sort); GET `/{id}/progress` returns full BookProgress history; POST `/{id}/progress` upserts today's entry and updates Book.CurrentPage; GET/POST `/{id}/tasks`, PUT/DELETE `/{id}/tasks/{taskId}` — lab task CRUD |
 | VehiclesController | `api/vehicles` | Ordered by Name |
+| SupermarketsController | `api/supermarkets` | Ordered by Name; DELETE blocked if purchase history exists |
+| GroceryCategoriesController | `api/grocery-categories` | Ordered by Name |
+| GroceryItemsController | `api/grocery-items` | GET: `?onList=true`, `?supermarketId=X`; returns `SupermarketIds` list; PATCH `/{id}/toggle-list`; POST `/{id}/purchase` creates GroceryPurchase + updates LastPrice/LastQuantity/LastSupermarketId + sets IsOnList=false; GET `/purchases` all purchases |
 | AppSettingsController | `api/app-settings` | Singleton; GET auto-creates with defaults; PUT upserts |
 | DashboardController | `api/dashboard/summary?month=&year=` | Returns totalIncome, totalExpense, netBalance, totalInvested, spendingByCategory, budgetVsActual, goals |
 | DashboardController | `api/dashboard/trend?months=6` | Returns net balance per billing period for the last N months |

@@ -21,6 +21,8 @@ export const routes: Routes = [
       { path: 'vehicles', loadComponent: () => import('./views/vehicles/vehicles').then(m => m.Vehicles), data: { title: 'Vehicles' } },
       { path: 'books', loadComponent: () => import('./views/books/books').then(m => m.Books), data: { title: 'Books' } },
       { path: 'accounts', loadComponent: () => import('./views/accounts/accounts').then(m => m.Accounts), data: { title: 'Accounts' } },
+      { path: 'grocery', loadComponent: () => import('./views/grocery/grocery').then(m => m.Grocery), data: { title: 'Grocery' } },
+      { path: 'pantry', loadComponent: () => import('./views/pantry/pantry').then(m => m.Pantry), data: { title: 'Pantry' } },
       { path: 'settings', loadComponent: () => import('./views/settings/settings').then(m => m.Settings), data: { title: 'Settings' } },
     ],
   },

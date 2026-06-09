@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using budget_api.Data;
 
@@ -11,9 +12,11 @@ using budget_api.Data;
 namespace budget_api.Migrations
 {
     [DbContext(typeof(BudgetDbContext))]
-    partial class BudgetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260609163708_AddBookLastUpdated")]
+    partial class AddBookLastUpdated
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -520,136 +523,6 @@ namespace budget_api.Migrations
                     b.ToTable("Goals");
                 });
 
-            modelBuilder.Entity("budget_api.Models.GroceryCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Color")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("GroceryCategories");
-                });
-
-            modelBuilder.Entity("budget_api.Models.GroceryItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Barcode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("GroceryCategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsOnList")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal?>("LastPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("LastQuantity")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int?>("LastSupermarketId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Manufacturer")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UnitType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroceryCategoryId");
-
-                    b.HasIndex("LastSupermarketId");
-
-                    b.ToTable("GroceryItems");
-                });
-
-            modelBuilder.Entity("budget_api.Models.GroceryItemSupermarket", b =>
-                {
-                    b.Property<int>("GroceryItemId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SupermarketId")
-                        .HasColumnType("int");
-
-                    b.HasKey("GroceryItemId", "SupermarketId");
-
-                    b.HasIndex("SupermarketId");
-
-                    b.ToTable("GroceryItemSupermarkets");
-                });
-
-            modelBuilder.Entity("budget_api.Models.GroceryPurchase", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("GroceryItemId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("PurchasedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Quantity")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("SupermarketId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroceryItemId");
-
-                    b.HasIndex("SupermarketId");
-
-                    b.ToTable("GroceryPurchases");
-                });
-
             modelBuilder.Entity("budget_api.Models.Loan", b =>
                 {
                     b.Property<int>("Id")
@@ -745,49 +618,6 @@ namespace budget_api.Migrations
                     b.ToTable("LoanPayments");
                 });
 
-            modelBuilder.Entity("budget_api.Models.PantryItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateOnly?>("ExpiresAt")
-                        .HasColumnType("date");
-
-                    b.Property<int?>("GroceryItemId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateOnly>("PurchasedAt")
-                        .HasColumnType("date");
-
-                    b.Property<decimal>("Quantity")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("UnitType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroceryItemId");
-
-                    b.ToTable("PantryItems");
-                });
-
             modelBuilder.Entity("budget_api.Models.RecurringTransaction", b =>
                 {
                     b.Property<int>("Id")
@@ -830,27 +660,6 @@ namespace budget_api.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("RecurringTransactions");
-                });
-
-            modelBuilder.Entity("budget_api.Models.Supermarket", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Supermarkets");
                 });
 
             modelBuilder.Entity("budget_api.Models.Transaction", b =>
@@ -1135,49 +944,6 @@ namespace budget_api.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("budget_api.Models.GroceryItem", b =>
-                {
-                    b.HasOne("budget_api.Models.GroceryCategory", null)
-                        .WithMany()
-                        .HasForeignKey("GroceryCategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("budget_api.Models.Supermarket", null)
-                        .WithMany()
-                        .HasForeignKey("LastSupermarketId")
-                        .OnDelete(DeleteBehavior.SetNull);
-                });
-
-            modelBuilder.Entity("budget_api.Models.GroceryItemSupermarket", b =>
-                {
-                    b.HasOne("budget_api.Models.GroceryItem", null)
-                        .WithMany()
-                        .HasForeignKey("GroceryItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("budget_api.Models.Supermarket", null)
-                        .WithMany()
-                        .HasForeignKey("SupermarketId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("budget_api.Models.GroceryPurchase", b =>
-                {
-                    b.HasOne("budget_api.Models.GroceryItem", null)
-                        .WithMany()
-                        .HasForeignKey("GroceryItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("budget_api.Models.Supermarket", null)
-                        .WithMany()
-                        .HasForeignKey("SupermarketId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("budget_api.Models.LoanPayment", b =>
                 {
                     b.HasOne("budget_api.Models.Loan", "Loan")
@@ -1187,14 +953,6 @@ namespace budget_api.Migrations
                         .IsRequired();
 
                     b.Navigation("Loan");
-                });
-
-            modelBuilder.Entity("budget_api.Models.PantryItem", b =>
-                {
-                    b.HasOne("budget_api.Models.GroceryItem", null)
-                        .WithMany()
-                        .HasForeignKey("GroceryItemId")
-                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("budget_api.Models.RecurringTransaction", b =>

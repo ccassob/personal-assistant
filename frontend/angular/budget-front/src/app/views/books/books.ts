@@ -69,7 +69,12 @@ import { Book, BookProgress, BookTask, BookService } from '../../core/services/a
                       [class.bg-secondary]="b.status === 'Wishlist'">{{ b.status }}</span>
                   </div>
                 </div>
-                <div class="text-muted small mb-3">{{ b.author }}</div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <span class="text-muted small">{{ b.author }}</span>
+                  @if (b.lastUpdated) {
+                    <span class="text-muted" style="font-size:.7rem">Updated {{ b.lastUpdated }}</span>
+                  }
+                </div>
 
                 <!-- Progress bar -->
                 <div class="mb-1 d-flex justify-content-between">
