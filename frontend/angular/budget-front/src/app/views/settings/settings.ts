@@ -1,6 +1,7 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { AppSettings, AppSettingsService } from '../../core/services/api/app-settings.service'
+import { PushNotificationService } from '../../core/services/push-notification.service'
 
 @Component({
   selector: 'app-settings',
@@ -103,6 +104,45 @@ import { AppSettings, AppSettingsService } from '../../core/services/api/app-set
             </div>
           </div>
         </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Push Notifications</h5>
+            </div>
+            <div class="card-body">
+              @if (!push.isSupported()) {
+                <div class="alert alert-secondary py-2 mb-0">
+                  <small>Push notifications are not supported in this browser or environment.</small>
+                </div>
+              } @else if (push.permissionStatus === 'denied') {
+                <div class="alert alert-warning py-2 mb-0">
+                  <small>Notifications are blocked. Enable them in your browser or device settings, then reload.</small>
+                </div>
+              } @else {
+                <p class="text-muted small mb-3">
+                  Receive alerts for expired transactions and upcoming vehicle maintenance when you open the app.
+                </p>
+                @if (push.isSubscribed()) {
+                  <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge bg-success">Enabled</span>
+                    <span class="text-muted small">Notifications are active on this device.</span>
+                  </div>
+                  <button class="btn btn-sm btn-outline-danger" (click)="disableNotifications()" [disabled]="pushWorking">
+                    Disable
+                  </button>
+                } @else {
+                  <button class="btn btn-sm btn-primary" (click)="enableNotifications()" [disabled]="pushWorking">
+                    Enable Notifications
+                  </button>
+                }
+                @if (pushMessage) {
+                  <div class="mt-2 text-muted small">{{ pushMessage }}</div>
+                }
+              }
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="row mt-3">
@@ -128,7 +168,10 @@ export class Settings implements OnInit {
   saved = false
   private settingsId = 1
 
-  constructor(private svc: AppSettingsService) {}
+  pushWorking = false
+  pushMessage = ''
+
+  constructor(private svc: AppSettingsService, public push: PushNotificationService) {}
 
 
   ngOnInit() {
@@ -140,6 +183,24 @@ export class Settings implements OnInit {
       this.todayColor = s.todayColor
       this.futureColor = s.futureColor
       this.distanceUnit = s.distanceUnit ?? 'km'
+    })
+  }
+
+  enableNotifications() {
+    this.pushWorking = true
+    this.pushMessage = ''
+    this.push.subscribe().subscribe({
+      next: () => { this.pushWorking = false; this.pushMessage = 'Notifications enabled.' },
+      error: () => { this.pushWorking = false; this.pushMessage = 'Failed to enable notifications.' }
+    })
+  }
+
+  disableNotifications() {
+    this.pushWorking = true
+    this.pushMessage = ''
+    this.push.unsubscribe().subscribe({
+      next: () => { this.pushWorking = false; this.pushMessage = 'Notifications disabled.' },
+      error: () => { this.pushWorking = false; this.pushMessage = 'Failed to disable notifications.' }
     })
   }
 

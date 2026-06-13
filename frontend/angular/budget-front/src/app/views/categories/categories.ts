@@ -1,10 +1,11 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 import { FormsModule } from '@angular/forms'
+import { RouterLink, RouterLinkActive } from '@angular/router'
 import { Category, CategoryService } from '../../core/services/api/category.service'
 
 @Component({
   selector: 'app-categories',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink, RouterLinkActive],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="container-fluid">
@@ -16,6 +17,23 @@ import { Category, CategoryService } from '../../core/services/api/category.serv
               <iconify-icon icon="tabler:plus" width="16"></iconify-icon> Add Category
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- Budget sub-nav -->
+      <div class="row mb-1">
+        <div class="col-12">
+          <ul class="nav nav-tabs">
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/transactions" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Transactions</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/recurring-transactions" routerLinkActive="active">Recurring</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/categories" routerLinkActive="active">Categories</a>
+            </li>
+          </ul>
         </div>
       </div>
 

@@ -21,12 +21,26 @@ export interface VehicleMaintenance {
   date: string
   mileage: number
   type: string
-  location: string
   price: number
-  mechanic: string
   notes: string
   nextDate?: string
   nextMileage?: number
+}
+
+export interface VehicleFuel {
+  id: number
+  vehicleId: number
+  date: string
+  pricePerGallon: number
+  totalAmount: number
+  gallons: number
+}
+
+export interface VehicleMileageHistory {
+  id: number
+  vehicleId: number
+  date: string
+  mileage: number
 }
 
 export interface VehicleChecklist {
@@ -52,13 +66,18 @@ export class VehicleService {
   updateMaintenance(id: number, mid: number, m: VehicleMaintenance): Observable<VehicleMaintenance> { return this.http.put<VehicleMaintenance>(`${this.url}/${id}/maintenance/${mid}`, m) }
   deleteMaintenance(id: number, mid: number): Observable<void> { return this.http.delete<void>(`${this.url}/${id}/maintenance/${mid}`) }
 
+  getFuel(id: number): Observable<VehicleFuel[]> { return this.http.get<VehicleFuel[]>(`${this.url}/${id}/fuel`) }
+  createFuel(id: number, f: Omit<VehicleFuel, 'id' | 'vehicleId' | 'gallons'>): Observable<VehicleFuel> { return this.http.post<VehicleFuel>(`${this.url}/${id}/fuel`, f) }
+  updateFuel(id: number, fid: number, f: VehicleFuel): Observable<VehicleFuel> { return this.http.put<VehicleFuel>(`${this.url}/${id}/fuel/${fid}`, f) }
+  deleteFuel(id: number, fid: number): Observable<void> { return this.http.delete<void>(`${this.url}/${id}/fuel/${fid}`) }
+
+  getMileageHistory(id: number): Observable<VehicleMileageHistory[]> { return this.http.get<VehicleMileageHistory[]>(`${this.url}/${id}/mileage-history`) }
+
   getTodos(id: number): Observable<VehicleChecklist[]> { return this.http.get<VehicleChecklist[]>(`${this.url}/${id}/todos`) }
   createTodo(id: number, title: string): Observable<VehicleChecklist> { return this.http.post<VehicleChecklist>(`${this.url}/${id}/todos`, { title }) }
   toggleTodo(id: number, tid: number, isDone: boolean): Observable<VehicleChecklist> { return this.http.put<VehicleChecklist>(`${this.url}/${id}/todos/${tid}`, { isDone }) }
   deleteTodo(id: number, tid: number): Observable<void> { return this.http.delete<void>(`${this.url}/${id}/todos/${tid}`) }
 
   getReminders(id: number): Observable<VehicleChecklist[]> { return this.http.get<VehicleChecklist[]>(`${this.url}/${id}/reminders`) }
-  createReminder(id: number, title: string): Observable<VehicleChecklist> { return this.http.post<VehicleChecklist>(`${this.url}/${id}/reminders`, { title }) }
   toggleReminder(id: number, rid: number, isDone: boolean): Observable<VehicleChecklist> { return this.http.put<VehicleChecklist>(`${this.url}/${id}/reminders/${rid}`, { isDone }) }
-  deleteReminder(id: number, rid: number): Observable<void> { return this.http.delete<void>(`${this.url}/${id}/reminders/${rid}`) }
 }

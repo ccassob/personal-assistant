@@ -1,6 +1,7 @@
-import { Component } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { RouterOutlet } from '@angular/router'
 import { LayoutService } from '@core/services/layout.service'
+import { PushNotificationService } from '@core/services/push-notification.service'
 import { HorizontalLayout } from '@layouts/horizontal-layout'
 import { VerticalLayout } from '@layouts/vertical-layout'
 
@@ -19,6 +20,10 @@ import { VerticalLayout } from '@layouts/vertical-layout'
       </app-horizontal-layout>
     }`,
 })
-export class MainLayout {
-  constructor(public layout: LayoutService) {}
+export class MainLayout implements OnInit {
+  constructor(public layout: LayoutService, private push: PushNotificationService) {}
+
+  ngOnInit() {
+    this.push.dispatch()
+  }
 }

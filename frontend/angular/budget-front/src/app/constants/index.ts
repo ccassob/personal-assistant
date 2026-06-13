@@ -25,12 +25,11 @@ import { MenuItemType } from '../types'
 
 export const menuItems: MenuItemType[] = [
   { slug: 'dashboard', label: 'Dashboard', icon: 'dashboard', url: '/dashboard' },
-  { slug: 'transactions', label: 'Transactions', icon: 'arrows-exchange', url: '/transactions' },
-  { slug: 'recurring-transactions', label: 'Recurring', icon: 'refresh', url: '/recurring-transactions' },
-  { slug: 'categories', label: 'Categories', icon: 'category', url: '/categories' },
+  { slug: 'transactions', label: 'Budget', icon: 'arrows-exchange', url: '/transactions' },
   { slug: 'budgets', label: 'Budgets', icon: 'chart-bar', url: '/budgets' },
   { slug: 'goals', label: 'Goals', icon: 'target', url: '/goals' },
   { slug: 'loans', label: 'Loans', icon: 'credit-card', url: '/loans' },
+  { slug: 'credit-cards', label: 'Credit Cards', icon: 'cards', url: '/credit-cards' },
   { slug: 'vehicles', label: 'Vehicles', icon: 'car', url: '/vehicles' },
   { slug: 'books', label: 'Books', icon: 'book', url: '/books' },
   { slug: 'accounts', label: 'Accounts', icon: 'wallet', url: '/accounts' },

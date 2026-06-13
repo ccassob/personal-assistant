@@ -25,12 +25,19 @@ public class BudgetDbContext(DbContextOptions<BudgetDbContext> options)
     public DbSet<VehicleMaintenance> VehicleMaintenances => Set<VehicleMaintenance>();
     public DbSet<VehicleTodo> VehicleTodos => Set<VehicleTodo>();
     public DbSet<VehicleReminder> VehicleReminders => Set<VehicleReminder>();
+    public DbSet<VehicleMileageHistory> VehicleMileageHistories => Set<VehicleMileageHistory>();
+    public DbSet<VehicleFuel> VehicleFuels => Set<VehicleFuel>();
     public DbSet<GroceryCategory> GroceryCategories => Set<GroceryCategory>();
     public DbSet<Supermarket> Supermarkets => Set<Supermarket>();
     public DbSet<GroceryItem> GroceryItems => Set<GroceryItem>();
     public DbSet<GroceryItemSupermarket> GroceryItemSupermarkets => Set<GroceryItemSupermarket>();
     public DbSet<GroceryPurchase> GroceryPurchases => Set<GroceryPurchase>();
     public DbSet<PantryItem> PantryItems => Set<PantryItem>();
+    public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
+    public DbSet<NotificationLog> NotificationLogs => Set<NotificationLog>();
+    public DbSet<CreditCard> CreditCards => Set<CreditCard>();
+    public DbSet<CreditCardStatement> CreditCardStatements => Set<CreditCardStatement>();
+    public DbSet<CreditCardTransaction> CreditCardTransactions => Set<CreditCardTransaction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -87,6 +94,22 @@ public class BudgetDbContext(DbContextOptions<BudgetDbContext> options)
             .WithMany()
             .HasForeignKey(r => r.VehicleId)
             .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<VehicleMileageHistory>()
+            .HasOne<Vehicle>()
+            .WithMany()
+            .HasForeignKey(h => h.VehicleId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<VehicleFuel>()
+            .Property(f => f.PricePerGallon).HasPrecision(18, 4);
+        modelBuilder.Entity<VehicleFuel>()
+            .Property(f => f.TotalAmount).HasPrecision(18, 2);
+        modelBuilder.Entity<VehicleFuel>()
+            .Property(f => f.Gallons).HasPrecision(18, 3);
+        modelBuilder.Entity<VehicleFuel>()
+            .HasOne<Vehicle>()
+            .WithMany()
+            .HasForeignKey(f => f.VehicleId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Grocery
         modelBuilder.Entity<GroceryItem>().Property(i => i.LastPrice).HasPrecision(18, 2);
@@ -122,5 +145,20 @@ public class BudgetDbContext(DbContextOptions<BudgetDbContext> options)
         modelBuilder.Entity<PantryItem>()
             .HasOne<GroceryItem>().WithMany()
             .HasForeignKey(p => p.GroceryItemId).OnDelete(DeleteBehavior.SetNull);
+
+        // Credit Cards
+        modelBuilder.Entity<CreditCardStatement>()
+            .Property(s => s.TotalAmount).HasPrecision(18, 2);
+        modelBuilder.Entity<CreditCardTransaction>()
+            .Property(t => t.Amount).HasPrecision(18, 2);
+        modelBuilder.Entity<CreditCardStatement>()
+            .HasOne<CreditCard>().WithMany()
+            .HasForeignKey(s => s.CreditCardId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<CreditCardTransaction>()
+            .HasOne<CreditCardStatement>().WithMany()
+            .HasForeignKey(t => t.StatementId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<CreditCardTransaction>()
+            .HasOne(t => t.Category).WithMany()
+            .HasForeignKey(t => t.CategoryId).OnDelete(DeleteBehavior.SetNull);
     }
 }

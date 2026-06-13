@@ -1,6 +1,7 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { DecimalPipe } from '@angular/common'
+import { RouterLink, RouterLinkActive } from '@angular/router'
 import { CategoryService, Category } from '../../core/services/api/category.service'
 import { Transaction, TransactionService, ImportRow } from '../../core/services/api/transaction.service'
 import { AppSettingsService } from '../../core/services/api/app-settings.service'
@@ -8,7 +9,7 @@ import { RecurringTransactionService } from '../../core/services/api/recurring-t
 
 @Component({
   selector: 'app-transactions',
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, RouterLink, RouterLinkActive],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="container-fluid">
@@ -32,6 +33,23 @@ import { RecurringTransactionService } from '../../core/services/api/recurring-t
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Budget sub-nav -->
+      <div class="row mb-1">
+        <div class="col-12">
+          <ul class="nav nav-tabs">
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/transactions" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Transactions</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/recurring-transactions" routerLinkActive="active">Recurring</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/categories" routerLinkActive="active">Categories</a>
+            </li>
+          </ul>
         </div>
       </div>
 

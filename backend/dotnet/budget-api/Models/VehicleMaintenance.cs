@@ -7,9 +7,7 @@ public class VehicleMaintenance
     public DateOnly Date { get; set; }
     public int Mileage { get; set; }
     public string Type { get; set; } = "";
-    public string Location { get; set; } = "";
     public decimal Price { get; set; }
-    public string Mechanic { get; set; } = "";
     public string Notes { get; set; } = "";
     public DateOnly? NextDate { get; set; }
     public int? NextMileage { get; set; }

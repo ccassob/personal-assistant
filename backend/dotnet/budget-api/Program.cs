@@ -1,5 +1,7 @@
 using System.Text;
 using budget_api.Data;
+using budget_api.Options;
+using budget_api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
@@ -50,6 +52,11 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod()));
 
+builder.Services.Configure<NotificationOptions>(builder.Configuration.GetSection("Notifications"));
+builder.Services.Configure<CreditCardOptions>(builder.Configuration.GetSection("CreditCards"));
+builder.Services.AddScoped<PushNotificationService>();
+builder.Services.AddScoped<BlobStorageService>();
+builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
