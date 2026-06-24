@@ -68,6 +68,22 @@ public class CreditCardsController(
         return NoContent();
     }
 
+    // ── Spending summary ──────────────────────────────────────────────────
+
+    [HttpGet("spending")]
+    public async Task<IActionResult> GetSpending([FromQuery] int month, [FromQuery] int year)
+    {
+        var spending = await ctx.CreditCardTransactions
+            .Where(t => t.UserId == CurrentUserId &&
+                        t.Type == "Expense" &&
+                        t.Date.Month == month &&
+                        t.Date.Year == year)
+            .GroupBy(t => t.CreditCardCategoryId)
+            .Select(g => new { creditCardCategoryId = g.Key, amount = g.Sum(t => t.Amount) })
+            .ToListAsync();
+        return Ok(spending);
+    }
+
     // ── Statements ────────────────────────────────────────────────────────
 
     [HttpGet("{cardId}/statements")]
@@ -133,11 +149,28 @@ public class CreditCardsController(
 
         if (!string.IsNullOrEmpty(_opts.LogicAppsUrl))
         {
-            var sasUrl = blobService.GenerateSasUrl(blobName, TimeSpan.FromHours(1));
-            var categories = await ctx.Categories
+            string sasUrl;
+            try { sasUrl = blobService.GenerateSasUrl(blobName, TimeSpan.FromHours(1)); }
+            catch (Exception ex)
+            {
+                stmt.Status = "Failed";
+                stmt.ErrorMessage = $"SAS generation failed: {ex.Message}";
+                await ctx.SaveChangesAsync();
+                return StatusCode(500, stmt.ErrorMessage);
+            }
+
+            var categories = await ctx.CreditCardCategories
                 .Where(c => c.UserId == CurrentUserId)
-                .Select(c => new { c.Id, c.Name, c.Type })
+                .Select(c => new { c.Id, c.Name })
                 .ToListAsync();
+
+            if (categories.Count == 0)
+            {
+                stmt.Status = "Failed";
+                stmt.ErrorMessage = "No credit card categories found. Create at least one category before uploading a statement.";
+                await ctx.SaveChangesAsync();
+                return UnprocessableEntity(new { error = stmt.ErrorMessage });
+            }
 
             var webhookUrl = $"{Request.Scheme}://{Request.Host}/api/credit-cards/webhook";
             var payload = new
@@ -154,9 +187,28 @@ public class CreditCardsController(
                 try
                 {
                     var client = httpClientFactory.CreateClient();
-                    await client.PostAsJsonAsync(_opts.LogicAppsUrl, payload);
+                    var response = await client.PostAsJsonAsync(_opts.LogicAppsUrl, payload);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var s = ctx.CreditCardStatements.FirstOrDefault(x => x.Id == stmt.Id);
+                        if (s is not null && s.Status == "Pending")
+                        {
+                            s.Status = "Failed";
+                            s.ErrorMessage = $"Logic Apps trigger failed: HTTP {(int)response.StatusCode}";
+                            await ctx.SaveChangesAsync();
+                        }
+                    }
                 }
-                catch { /* fire-and-forget; Logic Apps will post back via webhook */ }
+                catch (Exception ex)
+                {
+                    var s = ctx.CreditCardStatements.FirstOrDefault(x => x.Id == stmt.Id);
+                    if (s is not null && s.Status == "Pending")
+                    {
+                        s.Status = "Failed";
+                        s.ErrorMessage = $"Logic Apps trigger error: {ex.Message}";
+                        await ctx.SaveChangesAsync();
+                    }
+                }
             });
         }
 
@@ -182,7 +234,7 @@ public class CreditCardsController(
         if (stmt is null) return NotFound();
 
         var txs = await ctx.CreditCardTransactions
-            .Include(t => t.Category)
+            .Include(t => t.CreditCardCategory)
             .Where(t => t.StatementId == statementId)
             .OrderBy(t => t.Date)
             .ToListAsync();
@@ -195,7 +247,7 @@ public class CreditCardsController(
     {
         var tx = await ctx.CreditCardTransactions.FirstOrDefaultAsync(t => t.Id == id && t.UserId == CurrentUserId);
         if (tx is null) return NotFound();
-        tx.CategoryId = req.CategoryId;
+        tx.CreditCardCategoryId = req.CreditCardCategoryId;
         tx.Notes = req.Notes ?? tx.Notes;
         tx.Type = req.Type ?? tx.Type;
         tx.IsAiClassified = false;
@@ -244,7 +296,7 @@ public class CreditCardsController(
                 Description = t.Description,
                 Amount = t.Amount,
                 Type = t.Type,
-                CategoryId = t.CategoryId,
+                CreditCardCategoryId = t.CreditCardCategoryId,
                 Notes = t.Notes ?? "",
                 IsAiClassified = true,
                 CreatedAt = DateTime.UtcNow
@@ -289,7 +341,7 @@ public class CreditCardsController(
                 Description = t.Description,
                 Amount = t.Amount,
                 Type = t.Type,
-                CategoryId = t.CategoryId,
+                CreditCardCategoryId = t.CreditCardCategoryId,
                 Notes = t.Notes ?? "",
                 IsAiClassified = true,
                 CreatedAt = DateTime.UtcNow
@@ -317,7 +369,7 @@ public class CreditCardsController(
     }
 }
 
-public record UpdateTransactionRequest(int? CategoryId, string? Notes, string? Type);
+public record UpdateTransactionRequest(int? CreditCardCategoryId, string? Notes, string? Type);
 
 public class WebhookPayload
 {
@@ -337,6 +389,6 @@ public class WebhookTransaction
     public string Description { get; set; } = "";
     public decimal Amount { get; set; }
     public string Type { get; set; } = "Expense";
-    public int? CategoryId { get; set; }
+    public int? CreditCardCategoryId { get; set; }
     public string? Notes { get; set; }
 }

@@ -2,11 +2,11 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { DecimalPipe } from '@angular/common'
 import { RouterLink, RouterLinkActive } from '@angular/router'
-import { Category, CategoryService } from '../../core/services/api/category.service'
-import { BudgetService, BudgetYearRow } from '../../core/services/api/budget.service'
+import { CreditCardCategoryService, CreditCardCategory } from '../../core/services/api/credit-card-category.service'
+import { CreditCardCategoryLimitService, CcLimitYearRow } from '../../core/services/api/credit-card-category-limit.service'
 
 @Component({
-  selector: 'app-budgets',
+  selector: 'app-credit-card-category-limits',
   imports: [FormsModule, DecimalPipe, RouterLink, RouterLinkActive],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
@@ -14,26 +14,23 @@ import { BudgetService, BudgetYearRow } from '../../core/services/api/budget.ser
       <div class="row">
         <div class="col-12">
           <div class="page-title-box d-flex align-items-center justify-content-between">
-            <h4 class="page-title">Limits</h4>
+            <h4 class="page-title">CC Limits</h4>
           </div>
         </div>
       </div>
 
-      <!-- Budget sub-nav -->
+      <!-- Credit Cards sub-nav -->
       <div class="row mb-1">
         <div class="col-12">
           <ul class="nav nav-tabs">
             <li class="nav-item">
-              <a class="nav-link" routerLink="/transactions" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Transactions</a>
+              <a class="nav-link" routerLink="/credit-cards" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Credit Cards</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" routerLink="/recurring-transactions" routerLinkActive="active">Recurring</a>
+              <a class="nav-link" routerLink="/credit-card-categories" routerLinkActive="active">Categories</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" routerLink="/categories" routerLinkActive="active">Categories</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/budgets" routerLinkActive="active">Limits</a>
+              <a class="nav-link" routerLink="/credit-card-category-limits" routerLinkActive="active">Limits</a>
             </li>
           </ul>
         </div>
@@ -117,7 +114,7 @@ import { BudgetService, BudgetYearRow } from '../../core/services/api/budget.ser
                     @empty {
                       <tr>
                         <td [attr.colspan]="13" class="text-center text-muted py-4">
-                          No expense categories found. Add categories first.
+                          No CC categories found. Add categories first.
                         </td>
                       </tr>
                     }
@@ -175,10 +172,10 @@ import { BudgetService, BudgetYearRow } from '../../core/services/api/budget.ser
     </div>
   `,
 })
-export class Budgets implements OnInit {
+export class CreditCardCategoryLimits implements OnInit {
   activeTab: 'matrix' | 'progress' = 'matrix'
-  categories: Category[] = []
-  yearRows: BudgetYearRow[] = []
+  categories: CreditCardCategory[] = []
+  yearRows: CcLimitYearRow[] = []
 
   cellValues: { [key: string]: number } = {}
   cellActuals: { [key: string]: number } = {}
@@ -190,11 +187,11 @@ export class Budgets implements OnInit {
   monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   monthsFull = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
-  constructor(private svc: BudgetService, private catSvc: CategoryService) {}
+  constructor(private svc: CreditCardCategoryLimitService, private catSvc: CreditCardCategoryService) {}
 
   ngOnInit() {
     this.catSvc.getAll().subscribe(cats => {
-      this.categories = cats.filter(c => c.type === 'Expense')
+      this.categories = cats
       this.loadData()
     })
   }
@@ -206,14 +203,14 @@ export class Budgets implements OnInit {
     })
   }
 
-  buildCells(rows: BudgetYearRow[]) {
+  buildCells(rows: CcLimitYearRow[]) {
     this.cellValues = {}
     this.cellActuals = {}
     for (const cat of this.categories) {
       for (const m of this.monthNums) {
         const key = `${cat.id}-${m}`
-        const row = rows.find(r => r.categoryId === cat.id && r.month === m)
-        this.cellValues[key] = row?.targetAmount ?? 0
+        const row = rows.find(r => r.creditCardCategoryId === cat.id && r.month === m)
+        this.cellValues[key] = row?.amount ?? 0
         this.cellActuals[key] = row?.actualSpent ?? 0
       }
     }
@@ -221,7 +218,7 @@ export class Budgets implements OnInit {
 
   onBlur(catId: number, month: number) {
     const val = this.cellValues[`${catId}-${month}`] ?? 0
-    this.svc.upsert({ categoryId: catId, month, year: this.selectedYear, targetAmount: val }).subscribe()
+    this.svc.upsert({ creditCardCategoryId: catId, month, year: this.selectedYear, amount: val }).subscribe()
   }
 
   get progressRows() {

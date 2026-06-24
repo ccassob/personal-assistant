@@ -38,6 +38,8 @@ public class BudgetDbContext(DbContextOptions<BudgetDbContext> options)
     public DbSet<CreditCard> CreditCards => Set<CreditCard>();
     public DbSet<CreditCardStatement> CreditCardStatements => Set<CreditCardStatement>();
     public DbSet<CreditCardTransaction> CreditCardTransactions => Set<CreditCardTransaction>();
+    public DbSet<CreditCardCategory> CreditCardCategories => Set<CreditCardCategory>();
+    public DbSet<CreditCardCategoryLimit> CreditCardCategoryLimits => Set<CreditCardCategoryLimit>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -158,7 +160,12 @@ public class BudgetDbContext(DbContextOptions<BudgetDbContext> options)
             .HasOne<CreditCardStatement>().WithMany()
             .HasForeignKey(t => t.StatementId).OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<CreditCardTransaction>()
-            .HasOne(t => t.Category).WithMany()
-            .HasForeignKey(t => t.CategoryId).OnDelete(DeleteBehavior.SetNull);
+            .HasOne(t => t.CreditCardCategory).WithMany()
+            .HasForeignKey(t => t.CreditCardCategoryId).OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<CreditCardCategoryLimit>()
+            .Property(l => l.Amount).HasPrecision(18, 2);
+        modelBuilder.Entity<CreditCardCategoryLimit>()
+            .HasOne(l => l.CreditCardCategory).WithMany()
+            .HasForeignKey(l => l.CreditCardCategoryId).OnDelete(DeleteBehavior.Cascade);
     }
 }

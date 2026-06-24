@@ -33,6 +33,9 @@ import { Category, CategoryService } from '../../core/services/api/category.serv
             <li class="nav-item">
               <a class="nav-link" routerLink="/categories" routerLinkActive="active">Categories</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/budgets" routerLinkActive="active">Limits</a>
+            </li>
           </ul>
         </div>
       </div>

@@ -33,8 +33,8 @@ export interface CreditCardTransaction {
   description: string
   amount: number
   type: string
-  categoryId?: number
-  category?: { id: number; name: string; color: string; icon: string }
+  creditCardCategoryId?: number
+  creditCardCategory?: { id: number; name: string; color: string; icon: string }
   notes: string
   isAiClassified: boolean
 }
@@ -60,6 +60,6 @@ export class CreditCardService {
   deleteStatement(id: number): Observable<void> { return this.http.delete<void>(`${this.base}/statements/${id}`) }
 
   getTransactions(statementId: number): Observable<CreditCardTransaction[]> { return this.http.get<CreditCardTransaction[]>(`${this.base}/statements/${statementId}/transactions`) }
-  updateTransaction(id: number, body: { categoryId?: number | null; notes: string; type: string }): Observable<void> { return this.http.put<void>(`${this.base}/transactions/${id}`, body) }
+  updateTransaction(id: number, body: { creditCardCategoryId?: number | null; notes: string; type: string }): Observable<void> { return this.http.put<void>(`${this.base}/transactions/${id}`, body) }
   deleteTransaction(id: number): Observable<void> { return this.http.delete<void>(`${this.base}/transactions/${id}`) }
 }

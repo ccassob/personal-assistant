@@ -19,6 +19,8 @@ export const routes: Routes = [
       { path: 'recurring-transactions', loadComponent: () => import('./views/recurring-transactions/recurring-transactions').then(m => m.RecurringTransactions), data: { title: 'Recurring Transactions' } },
       { path: 'loans', loadComponent: () => import('./views/loans/loans').then(m => m.Loans), data: { title: 'Loans' } },
       { path: 'credit-cards', loadComponent: () => import('./views/credit-cards/credit-cards').then(m => m.CreditCards), data: { title: 'Credit Cards' } },
+      { path: 'credit-card-categories', loadComponent: () => import('./views/credit-card-categories/credit-card-categories').then(m => m.CreditCardCategories), data: { title: 'Credit Card Categories' } },
+      { path: 'credit-card-category-limits', loadComponent: () => import('./views/credit-card-category-limits/credit-card-category-limits').then(m => m.CreditCardCategoryLimits), data: { title: 'CC Limits' } },
       { path: 'vehicles', loadComponent: () => import('./views/vehicles/vehicles').then(m => m.Vehicles), data: { title: 'Vehicles' } },
       { path: 'books', loadComponent: () => import('./views/books/books').then(m => m.Books), data: { title: 'Books' } },
       { path: 'accounts', loadComponent: () => import('./views/accounts/accounts').then(m => m.Accounts), data: { title: 'Accounts' } },

@@ -12,6 +12,15 @@ export interface Budget {
   targetAmount: number
 }
 
+export interface BudgetYearRow {
+  categoryId: number
+  categoryName: string
+  month: number
+  year: number
+  targetAmount: number
+  actualSpent: number
+}
+
 @Injectable({ providedIn: 'root' })
 export class BudgetService {
   private url = `${API_BASE}/api/budgets`
@@ -22,6 +31,14 @@ export class BudgetService {
     if (month) params = params.set('month', month)
     if (year) params = params.set('year', year)
     return this.http.get<Budget[]>(this.url, { params })
+  }
+
+  getYearSummary(year: number) {
+    return this.http.get<BudgetYearRow[]>(`${this.url}/year-summary`, { params: new HttpParams().set('year', year) })
+  }
+
+  upsert(req: { categoryId: number; month: number; year: number; targetAmount: number }) {
+    return this.http.post<Budget>(`${this.url}/upsert`, req)
   }
 
   create(b: Omit<Budget, 'id' | 'category'>) { return this.http.post<Budget>(this.url, b) }

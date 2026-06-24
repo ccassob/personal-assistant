@@ -49,6 +49,9 @@ import { RecurringTransactionService } from '../../core/services/api/recurring-t
             <li class="nav-item">
               <a class="nav-link" routerLink="/categories" routerLinkActive="active">Categories</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/budgets" routerLinkActive="active">Limits</a>
+            </li>
           </ul>
         </div>
       </div>

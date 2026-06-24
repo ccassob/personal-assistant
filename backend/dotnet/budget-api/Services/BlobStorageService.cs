@@ -20,8 +20,8 @@ public class BlobStorageService(IConfiguration configuration)
 
     public string GenerateSasUrl(string blobName, TimeSpan ttl)
     {
-        var container = new BlobContainerClient(_connectionString, _containerName);
-        var blob = container.GetBlobClient(blobName);
+        var serviceClient = new BlobServiceClient(_connectionString);
+        var blob = serviceClient.GetBlobContainerClient(_containerName).GetBlobClient(blobName);
 
         var sasBuilder = new BlobSasBuilder
         {

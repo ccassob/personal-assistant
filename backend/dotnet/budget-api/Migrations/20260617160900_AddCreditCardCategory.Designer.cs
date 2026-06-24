@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using budget_api.Data;
 
@@ -11,9 +12,11 @@ using budget_api.Data;
 namespace budget_api.Migrations
 {
     [DbContext(typeof(BudgetDbContext))]
-    partial class BudgetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260617160900_AddCreditCardCategory")]
+    partial class AddCreditCardCategory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -543,38 +546,6 @@ namespace budget_api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CreditCardCategories");
-                });
-
-            modelBuilder.Entity("budget_api.Models.CreditCardCategoryLimit", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("CreditCardCategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Month")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreditCardCategoryId");
-
-                    b.ToTable("CreditCardCategoryLimits");
                 });
 
             modelBuilder.Entity("budget_api.Models.CreditCardStatement", b =>
@@ -1452,17 +1423,6 @@ namespace budget_api.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("budget_api.Models.CreditCardCategoryLimit", b =>
-                {
-                    b.HasOne("budget_api.Models.CreditCardCategory", "CreditCardCategory")
-                        .WithMany()
-                        .HasForeignKey("CreditCardCategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreditCardCategory");
                 });
 
             modelBuilder.Entity("budget_api.Models.CreditCardStatement", b =>

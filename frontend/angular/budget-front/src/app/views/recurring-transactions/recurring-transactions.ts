@@ -36,6 +36,9 @@ import { AppSettingsService } from '../../core/services/api/app-settings.service
             <li class="nav-item">
               <a class="nav-link" routerLink="/categories" routerLinkActive="active">Categories</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/budgets" routerLinkActive="active">Limits</a>
+            </li>
           </ul>
         </div>
       </div>

@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { DecimalPipe, DatePipe } from '@angular/common'
+import { RouterLink, RouterLinkActive } from '@angular/router'
 import { CreditCardService, CreditCard, CreditCardStatement, CreditCardTransaction } from '../../core/services/api/credit-card.service'
-import { CategoryService, Category } from '../../core/services/api/category.service'
+import { CreditCardCategoryService, CreditCardCategory } from '../../core/services/api/credit-card-category.service'
 
 @Component({
   selector: 'app-credit-cards',
-  imports: [FormsModule, DecimalPipe, DatePipe],
+  imports: [FormsModule, DecimalPipe, DatePipe, RouterLink, RouterLinkActive],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="container-fluid">
@@ -20,6 +21,23 @@ import { CategoryService, Category } from '../../core/services/api/category.serv
               <iconify-icon icon="tabler:plus" width="16"></iconify-icon> Add Card
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- Credit Cards sub-nav -->
+      <div class="row mb-1">
+        <div class="col-12">
+          <ul class="nav nav-tabs">
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/credit-cards" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Credit Cards</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/credit-card-categories" routerLinkActive="active">Categories</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/credit-card-category-limits" routerLinkActive="active">Limits</a>
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -218,9 +236,9 @@ import { CategoryService, Category } from '../../core/services/api/category.serv
                             </span>
                           </td>
                           <td>
-                            @if (tx.category) {
-                              <span class="badge" [style.background-color]="tx.category.color || '#6c757d'">
-                                {{ tx.category.name }}
+                            @if (tx.creditCardCategory) {
+                              <span class="badge" [style.background-color]="tx.creditCardCategory.color || '#6c757d'">
+                                {{ tx.creditCardCategory.name }}
                               </span>
                             } @else {
                               <span class="text-muted small">Unclassified</span>
@@ -313,7 +331,7 @@ import { CategoryService, Category } from '../../core/services/api/category.serv
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Category</label>
-                  <select class="form-select" [(ngModel)]="txForm.categoryId">
+                  <select class="form-select" [(ngModel)]="txForm.creditCardCategoryId">
                     <option [ngValue]="null">-- Unclassified --</option>
                     @for (cat of categories; track cat.id) {
                       <option [ngValue]="cat.id">{{ cat.name }}</option>
@@ -343,7 +361,7 @@ export class CreditCards implements OnInit, OnDestroy {
   statements: CreditCardStatement[] = []
   selectedStatement: CreditCardStatement | null = null
   transactions: CreditCardTransaction[] = []
-  categories: Category[] = []
+  categories: CreditCardCategory[] = []
 
   showCardModal = false
   showTxModal = false
@@ -355,7 +373,7 @@ export class CreditCards implements OnInit, OnDestroy {
 
   constructor(
     private svc: CreditCardService,
-    private catSvc: CategoryService
+    private catSvc: CreditCardCategoryService
   ) {}
 
   ngOnInit() {
@@ -466,7 +484,7 @@ export class CreditCards implements OnInit, OnDestroy {
   // ── Transaction editing ────────────────────────────────────────────────
 
   openTxEdit(tx: CreditCardTransaction) {
-    this.txForm = { ...tx, categoryId: tx.categoryId ?? undefined }
+    this.txForm = { ...tx, creditCardCategoryId: tx.creditCardCategoryId ?? undefined }
     this.showTxModal = true
   }
 
@@ -478,7 +496,7 @@ export class CreditCards implements OnInit, OnDestroy {
   saveTxEdit() {
     if (!this.txForm) return
     this.svc.updateTransaction(this.txForm.id, {
-      categoryId: this.txForm.categoryId ?? null,
+      creditCardCategoryId: this.txForm.creditCardCategoryId ?? null,
       notes: this.txForm.notes ?? '',
       type: this.txForm.type ?? 'Expense'
     }).subscribe(() => {

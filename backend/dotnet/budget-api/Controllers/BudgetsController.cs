@@ -64,4 +64,70 @@ public class BudgetsController(BudgetDbContext db) : ControllerBase
         await db.SaveChangesAsync();
         return NoContent();
     }
+
+    [HttpGet("year-summary")]
+    public async Task<IActionResult> GetYearSummary([FromQuery] int year)
+    {
+        var categories = await db.Categories
+            .Where(c => c.UserId == CurrentUserId && c.Type == "Expense")
+            .ToListAsync();
+
+        var budgets = await db.Budgets
+            .Where(b => b.UserId == CurrentUserId && b.Year == year)
+            .ToListAsync();
+
+        var transactions = await db.Transactions
+            .Where(t => t.UserId == CurrentUserId && t.Date.Year == year && t.Type == "Expense")
+            .ToListAsync();
+
+        var budgetMap = budgets.ToDictionary(b => (b.CategoryId, b.Month), b => b.TargetAmount);
+        var spendMap = transactions
+            .GroupBy(t => (t.CategoryId, t.Date.Month))
+            .ToDictionary(g => g.Key, g => g.Sum(t => t.Amount));
+
+        var result = categories.SelectMany(cat =>
+            Enumerable.Range(1, 12).Select(month => new
+            {
+                CategoryId = cat.Id,
+                CategoryName = cat.Name,
+                Month = month,
+                Year = year,
+                TargetAmount = budgetMap.TryGetValue((cat.Id, month), out var ta) ? ta : 0m,
+                ActualSpent = spendMap.TryGetValue((cat.Id, month), out var sp) ? sp : 0m
+            })
+        );
+
+        return Ok(result);
+    }
+
+    [HttpPost("upsert")]
+    public async Task<IActionResult> Upsert([FromBody] UpsertBudgetRequest req)
+    {
+        var existing = await db.Budgets.FirstOrDefaultAsync(b =>
+            b.UserId == CurrentUserId &&
+            b.CategoryId == req.CategoryId &&
+            b.Month == req.Month &&
+            b.Year == req.Year);
+
+        if (existing is not null)
+        {
+            existing.TargetAmount = req.TargetAmount;
+            await db.SaveChangesAsync();
+            return Ok(existing);
+        }
+
+        var budget = new Budget
+        {
+            CategoryId = req.CategoryId,
+            Month = req.Month,
+            Year = req.Year,
+            TargetAmount = req.TargetAmount,
+            UserId = CurrentUserId
+        };
+        db.Budgets.Add(budget);
+        await db.SaveChangesAsync();
+        return Ok(budget);
+    }
 }
+
+public record UpsertBudgetRequest(int CategoryId, int Month, int Year, decimal TargetAmount);
