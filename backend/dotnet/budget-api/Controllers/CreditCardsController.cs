@@ -19,7 +19,6 @@ namespace budget_api.Controllers;
 public class CreditCardsController(
     BudgetDbContext ctx,
     BlobStorageService blobService,
-    IHttpClientFactory httpClientFactory,
     IOptions<CreditCardOptions> creditCardOptions) : ControllerBase
 {
     private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -132,8 +131,21 @@ public class CreditCardsController(
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (ext != ".pdf") return BadRequest("Only PDF files are accepted.");
 
+        var categories = await ctx.CreditCardCategories
+            .Where(c => c.UserId == CurrentUserId)
+            .Select(c => new { c.Id, c.Name })
+            .ToListAsync();
+
+        if (categories.Count == 0)
+            return UnprocessableEntity(new { error = "No credit card categories found. Create at least one category before uploading a statement." });
+
         var blobName = $"statements/{CurrentUserId}/{Guid.NewGuid()}.pdf";
-        await blobService.UploadAsync(file.OpenReadStream(), blobName, "application/pdf");
+        var metadata = new Dictionary<string, string>
+        {
+            ["statementid"]    = "0",
+            ["userid"]         = CurrentUserId,
+            ["categoriesjson"] = JsonSerializer.Serialize(categories)
+        };
 
         var stmt = new CreditCardStatement
         {
@@ -147,70 +159,8 @@ public class CreditCardsController(
         ctx.CreditCardStatements.Add(stmt);
         await ctx.SaveChangesAsync();
 
-        if (!string.IsNullOrEmpty(_opts.LogicAppsUrl))
-        {
-            string sasUrl;
-            try { sasUrl = blobService.GenerateSasUrl(blobName, TimeSpan.FromHours(1)); }
-            catch (Exception ex)
-            {
-                stmt.Status = "Failed";
-                stmt.ErrorMessage = $"SAS generation failed: {ex.Message}";
-                await ctx.SaveChangesAsync();
-                return StatusCode(500, stmt.ErrorMessage);
-            }
-
-            var categories = await ctx.CreditCardCategories
-                .Where(c => c.UserId == CurrentUserId)
-                .Select(c => new { c.Id, c.Name })
-                .ToListAsync();
-
-            if (categories.Count == 0)
-            {
-                stmt.Status = "Failed";
-                stmt.ErrorMessage = "No credit card categories found. Create at least one category before uploading a statement.";
-                await ctx.SaveChangesAsync();
-                return UnprocessableEntity(new { error = stmt.ErrorMessage });
-            }
-
-            var webhookUrl = $"{Request.Scheme}://{Request.Host}/api/credit-cards/webhook";
-            var payload = new
-            {
-                statementId = stmt.Id,
-                sasUrl,
-                webhookUrl,
-                userId = CurrentUserId,
-                categories
-            };
-
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    var client = httpClientFactory.CreateClient();
-                    var response = await client.PostAsJsonAsync(_opts.LogicAppsUrl, payload);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        var s = ctx.CreditCardStatements.FirstOrDefault(x => x.Id == stmt.Id);
-                        if (s is not null && s.Status == "Pending")
-                        {
-                            s.Status = "Failed";
-                            s.ErrorMessage = $"Logic Apps trigger failed: HTTP {(int)response.StatusCode}";
-                            await ctx.SaveChangesAsync();
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    var s = ctx.CreditCardStatements.FirstOrDefault(x => x.Id == stmt.Id);
-                    if (s is not null && s.Status == "Pending")
-                    {
-                        s.Status = "Failed";
-                        s.ErrorMessage = $"Logic Apps trigger error: {ex.Message}";
-                        await ctx.SaveChangesAsync();
-                    }
-                }
-            });
-        }
+        metadata["statementid"] = stmt.Id.ToString();
+        await blobService.UploadAsync(file.OpenReadStream(), blobName, "application/pdf", metadata);
 
         return Accepted(new { statementId = stmt.Id, status = stmt.Status });
     }
