@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+Properties/serviceDependencies*.json
+Properties/launchSettings.json
+projectsbudget-apppublish-outputazure-api/
