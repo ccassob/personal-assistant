@@ -54,6 +54,7 @@ Desktop.ini
 # Docker secrets
 # ============================================================
 .env
+SECRETS.local.md
 
 # ============================================================
 # Claude Code (local settings only)
