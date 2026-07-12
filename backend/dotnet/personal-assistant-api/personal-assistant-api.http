@@ -1,0 +1,6 @@
+@personal_assistant_api_HostAddress = http://localhost:5082
+
+GET {{personal_assistant_api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,12 +1,12 @@
-# Budget App — IIS Setup Script
+# Personal Assistant — IIS Setup Script
 # MUST be run AS ADMINISTRATOR
 # Prerequisites: ASP.NET Core Hosting Bundle (.NET 10) + IIS URL Rewrite Module installed
 
 $outputDir   = "C:\projects\budget-app\publish-output"
-$frontSrc    = "$outputDir\budget-front"
-$apiSrc      = "$outputDir\budget-api"
-$frontDest   = "C:\inetpub\budget-front"
-$apiDest     = "C:\inetpub\budget-api"
+$frontSrc    = "$outputDir\personal-assistant-web"
+$apiSrc      = "$outputDir\personal-assistant-api"
+$frontDest   = "C:\inetpub\personal-assistant-web"
+$apiDest     = "C:\inetpub\personal-assistant-api"
 $frontPort   = 8000
 $apiPort     = 8002
 
@@ -22,31 +22,31 @@ Copy-Item $apiSrc $apiDest -Recurse
 
 # --- Frontend site (port 8000) ---
 Write-Host "Setting up frontend site on port $frontPort..." -ForegroundColor Cyan
-if (Get-WebAppPoolState -Name 'budget-front' -ErrorAction SilentlyContinue) {
-    Remove-WebAppPool -Name 'budget-front'
+if (Get-WebAppPoolState -Name 'personal-assistant-web' -ErrorAction SilentlyContinue) {
+    Remove-WebAppPool -Name 'personal-assistant-web'
 }
-if (Get-Website -Name 'budget-front' -ErrorAction SilentlyContinue) {
-    Remove-Website -Name 'budget-front'
+if (Get-Website -Name 'personal-assistant-web' -ErrorAction SilentlyContinue) {
+    Remove-Website -Name 'personal-assistant-web'
 }
-New-WebAppPool -Name 'budget-front'
-Set-ItemProperty IIS:\AppPools\budget-front -Name managedRuntimeVersion -Value ''
-New-Website -Name 'budget-front' -Port $frontPort -PhysicalPath $frontDest -ApplicationPool 'budget-front'
+New-WebAppPool -Name 'personal-assistant-web'
+Set-ItemProperty IIS:\AppPools\personal-assistant-web -Name managedRuntimeVersion -Value ''
+New-Website -Name 'personal-assistant-web' -Port $frontPort -PhysicalPath $frontDest -ApplicationPool 'personal-assistant-web'
 
 # --- API site (port 8002) ---
 Write-Host "Setting up API site on port $apiPort..." -ForegroundColor Cyan
-if (Get-WebAppPoolState -Name 'budget-api' -ErrorAction SilentlyContinue) {
-    Remove-WebAppPool -Name 'budget-api'
+if (Get-WebAppPoolState -Name 'personal-assistant-api' -ErrorAction SilentlyContinue) {
+    Remove-WebAppPool -Name 'personal-assistant-api'
 }
-if (Get-Website -Name 'budget-api' -ErrorAction SilentlyContinue) {
-    Remove-Website -Name 'budget-api'
+if (Get-Website -Name 'personal-assistant-api' -ErrorAction SilentlyContinue) {
+    Remove-Website -Name 'personal-assistant-api'
 }
-New-WebAppPool -Name 'budget-api'
-Set-ItemProperty IIS:\AppPools\budget-api -Name managedRuntimeVersion -Value ''
-New-Website -Name 'budget-api' -Port $apiPort -PhysicalPath $apiDest -ApplicationPool 'budget-api'
+New-WebAppPool -Name 'personal-assistant-api'
+Set-ItemProperty IIS:\AppPools\personal-assistant-api -Name managedRuntimeVersion -Value ''
+New-Website -Name 'personal-assistant-api' -Port $apiPort -PhysicalPath $apiDest -ApplicationPool 'personal-assistant-api'
 
 # --- Start both sites ---
-Start-WebSite -Name 'budget-front'
-Start-WebSite -Name 'budget-api'
+Start-WebSite -Name 'personal-assistant-web'
+Start-WebSite -Name 'personal-assistant-api'
 
 Write-Host ""
 Write-Host "=== IIS setup complete ===" -ForegroundColor Green

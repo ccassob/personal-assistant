@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="../budget-api.Tests/budget-api.Tests.csproj" />
-  <Project Path="budget-api.csproj" />
-</Solution>

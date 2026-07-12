@@ -6,11 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A boilerplate template collection for full-stack web apps. The working templates live under `boilerplate-template/` — the top-level `backend/` and `frontend/` directories are where the actual application is being built.
 
-## Budget Application
+## Personal Assistant Application
 
-A full budget management app using:
-- **Backend:** `backend/dotnet/budget-api/` — ASP.NET Core 10 Web API, namespace `budget_api`, EF Core with SQL Server `(localdb)\MSSQLLocalDB`, database `BudgetApp`
-- **Frontend:** `frontend/angular/budget-front/` — Angular 21.1 standalone components, lazy-loaded routes, Bootstrap 5.3.8
+A full personal-management app (budget, loans, vehicles, books, grocery, pantry, goals, credit cards) using:
+- **Backend:** `backend/dotnet/personal-assistant-api/` — ASP.NET Core 10 Web API, namespace `personal_assistant_api`, EF Core with SQL Server `(localdb)\MSSQLLocalDB`, database `BudgetApp`
+- **Frontend:** `frontend/angular/personal-assistant-web/` — Angular 21.1 standalone components, lazy-loaded routes, Bootstrap 5.3.8
 
 ### Domain model
 
@@ -36,6 +36,20 @@ All user-owned entities carry a `UserId` string (FK to ASP.NET Identity `AspNetU
 | `GroceryItem` | Name, Barcode?, Manufacturer?, GroceryCategoryId?, UnitType (Units/Lbs), IsOnList, LastPrice?, LastQuantity?, LastSupermarketId?, UserId; [NotMapped] SupermarketIds: List&lt;int&gt; |
 | `GroceryItemSupermarket` | GroceryItemId (FK, cascade), SupermarketId (FK, cascade) — composite PK, many-to-many join |
 | `GroceryPurchase` | GroceryItemId (FK, cascade), SupermarketId (FK, restrict), PurchasedAt (DateTime), Price, Quantity, UserId |
+| `PantryItem` | GroceryItemId? (FK), Name, Quantity, UnitType (Units/Lbs), PurchasedAt (DateOnly), ExpiresAt? (DateOnly), Notes?, UserId |
+| `LoanPayment` | LoanId (FK), Date (DateOnly), PrincipalAmount, InterestAmount, InsuranceAmount, AdditionalPrincipal, UserId |
+| `VehicleFuel` | VehicleId (FK), Date (DateOnly), PricePerGallon, TotalAmount, Gallons |
+| `VehicleMaintenance` | VehicleId (FK), Date (DateOnly), Mileage, Type, Price, Notes, NextDate? (DateOnly), NextMileage? — powers auto-reminders |
+| `VehicleMileageHistory` | VehicleId (FK), Date (DateOnly), Mileage — one row per vehicle per day, auto-upserted |
+| `VehicleReminder` | VehicleId (FK), Type, Title, IsDone — auto-(re)created from NextDate/NextMileage |
+| `VehicleTodo` | VehicleId (FK), Title, IsDone |
+| `CreditCard` | Name, LastFourDigits, Color, Notes, CreatedAt, UserId |
+| `CreditCardCategory` | Name, Color, Icon, UserId |
+| `CreditCardCategoryLimit` | CreditCardCategoryId (FK), Month, Year, Amount, UserId |
+| `CreditCardStatement` | CreditCardId (FK), FileName, BlobName, Status (Pending/…), ErrorMessage, UploadedAt, ProcessedAt?, StatementMonth?, StatementYear?, TotalAmount? |
+| `CreditCardTransaction` | StatementId (FK), CreditCardId (FK), Date (DateOnly), Description, Amount, Type (Expense/…), CreditCardCategoryId?, Notes, IsAiClassified, CreatedAt, UserId |
+| `PushSubscription` | Endpoint, P256dh, Auth, CreatedAt, UserId — Web Push VAPID subscription |
+| `NotificationLog` | Type ("expired-transaction"/"maintenance-due"), EntityId (string), SentDate (DateOnly), UserId — dedupes push sends |
 
 ### Connection string
 
@@ -43,7 +57,7 @@ All user-owned entities carry a `UserId` string (FK to ASP.NET Identity `AspNetU
 Server=(localdb)\MSSQLLocalDB;Database=BudgetApp;Trusted_Connection=True;TrustServerCertificate=True;
 ```
 
-### Backend commands (run from `backend/dotnet/budget-api/`)
+### Backend commands (run from `backend/dotnet/personal-assistant-api/`)
 
 ```bash
 dotnet build
@@ -52,24 +66,43 @@ dotnet ef migrations add <Name>     # requires: dotnet tool install -g dotnet-ef
 dotnet ef database update
 ```
 
-`budget-api.http` in the project root contains ready-made REST client requests for manual testing.
+`personal-assistant-api.http` in the project root contains ready-made REST client requests for manual testing.
 
-### Frontend commands (run from `frontend/angular/budget-front/`)
+### Frontend commands (run from `frontend/angular/personal-assistant-web/`)
 
 ```bash
 npm install
 ng serve        # dev server at http://localhost:4200
-ng build
+ng build        # defaults to the production configuration
 ng test
 ng test --include=src/app/path/to/file.spec.ts   # single file
 ```
 
+### Docker (local full stack)
+
+```bash
+docker compose up --build     # sql (mssql:2022) + api (:5085) + frontend (:4200, nginx)
+```
+
+Requires `SA_PASSWORD` and `JWT_KEY` env vars (or a `.env` file). The `api` service waits on the SQL healthcheck. The frontend image builds with `ng build --configuration docker` and serves through nginx, which reverse-proxies `/api/` to `API_UPSTREAM` (`default.conf.template`, templated by the nginx image at container start).
+
+**Angular build configurations ↔ environment files** (`fileReplacements` in `angular.json`, all replacing `src/environments/environment.ts`):
+
+| Configuration | Environment file | `apiBase` |
+|---|---|---|
+| `development` (default for `ng serve`) | `environment.ts` | `http://localhost:5085` |
+| `production` (default for `ng build`) | `environment.production.ts` | legacy Azure App Service URL (decommissioned — superseded by the `azure` configuration below) |
+| `docker` | `environment.docker.ts` | `http://localhost:5085` |
+| `azure` | `environment.azure.ts` | `''` (relative — same-origin nginx proxies `/api/` to the container app) |
+
+`API_BASE` in `constants/index.ts` reads `environment.apiBase`; `getApiBase()` layers a `localStorage['__PERSONAL_ASSISTANT_API_URL__']` override on top for the PWA/mobile dynamic-URL flow (see `api-url.interceptor.ts`).
+
 ## Architecture
 
-### Backend (`backend/dotnet/budget-api/`)
+### Backend (`backend/dotnet/personal-assistant-api/`)
 
 - `Models/` — EF Core entity classes (one file per entity)
-- `Data/BudgetDbContext.cs` — DbContext; all decimal fields use precision (18,2)
+- `Data/PersonalAssistantDbContext.cs` — DbContext; all decimal fields use precision (18,2)
 - `Controllers/` — one controller per entity plus `DashboardController` and `AuthController`; all entity controllers have `[Authorize]`
 - `Program.cs` — registers DbContext, ASP.NET Core Identity (`AddIdentity<IdentityUser, IdentityRole>`), JWT Bearer auth, CORS (allows any origin), OpenAPI (dev only)
 - `Migrations/` — EF Core migration history
@@ -83,23 +116,29 @@ ng test --include=src/app/path/to/file.spec.ts   # single file
 | AuthController | `api/auth` | POST `/register` (email, password, displayName → JWT); POST `/login` (email, password → JWT); GET `/me` (requires auth) |
 | CategoriesController | `api/categories` | |
 | TransactionsController | `api/transactions` | GET: `?categoryId`, `?type`, `?month`, `?year` — when month+year provided, filters by billing period; DELETE (no id) bulk-deletes with same filters; POST `/import` bulk-creates from CSV rows |
-| BudgetsController | `api/budgets` | GET: `?month`, `?year` |
+| BudgetsController | `api/budgets` | GET: `?month`, `?year`; GET `/year-summary?year=` and POST `/upsert` power the Limits matrix tab |
 | GoalsController | `api/goals` | |
 | RecurringTransactionsController | `api/recurring-transactions` | Sorted by DayOfMonth; POST `/generate?month=&year=` creates transactions from active templates, splitting by CutoffDay |
 | AccountsController | `api/accounts` | GET `/{id}/history` returns last 6 months of AccountHistory ordered by date |
-| LoansController | `api/loans` | Ordered by Name |
+| LoansController | `api/loans` | Ordered by Name; GET/POST `/{id}/payments`, PUT/DELETE `/{id}/payments/{paymentId}` — payment ledger, `effectiveBalance` computed as LoanAmount − payments |
 | BooksController | `api/books` | Ordered Reading→Paused→Wishlist→Completed then by Title (in-memory sort); GET `/{id}/progress` returns full BookProgress history; POST `/{id}/progress` upserts today's entry and updates Book.CurrentPage; GET/POST `/{id}/tasks`, PUT/DELETE `/{id}/tasks/{taskId}` — lab task CRUD |
-| VehiclesController | `api/vehicles` | Ordered by Name |
+| VehiclesController | `api/vehicles` | Ordered by Name; nested sub-resources per vehicle: `/maintenance`, `/fuel`, `/mileage-history` (GET only), `/todos`, `/reminders` — maintenance/fuel writes auto-upsert VehicleMileageHistory and regenerate reminders from NextDate/NextMileage |
 | SupermarketsController | `api/supermarkets` | Ordered by Name; DELETE blocked if purchase history exists |
 | GroceryCategoriesController | `api/grocery-categories` | Ordered by Name |
 | GroceryItemsController | `api/grocery-items` | GET: `?onList=true`, `?supermarketId=X`; returns `SupermarketIds` list; PATCH `/{id}/toggle-list`; POST `/{id}/purchase` creates GroceryPurchase + updates LastPrice/LastQuantity/LastSupermarketId + sets IsOnList=false; GET `/purchases` all purchases |
+| PantryController | `api/pantry` | CRUD + PATCH `/{id}/consume`; optionally links to a GroceryItem |
+| CreditCardsController | `api/credit-cards` | CRUD; GET `/spending`; statement pipeline: POST `/{cardId}/statements` uploads PDF to Blob Storage, POST `/webhook` is the Logic Apps callback (Doc Intelligence + Claude Haiku extraction) that creates CreditCardTransaction rows, POST `/statements/{id}/simulate-webhook` for local testing without Logic Apps; GET/PUT/DELETE under `/statements/{id}` and `/transactions/{id}` for reviewing extracted rows |
+| CreditCardCategoriesController | `api/credit-card-categories` | |
+| CreditCardCategoryLimitsController | `api/credit-card-category-limits` | GET `/year-summary`; POST `/upsert` — mirrors BudgetsController's Limits pattern |
 | AppSettingsController | `api/app-settings` | Singleton; GET auto-creates with defaults; PUT upserts |
+| NotificationsController | `api/notifications` | Web Push (VAPID): GET `/public-key`, POST/DELETE `/subscribe`, POST `/dispatch` sends due notifications and logs to NotificationLog (dedup) |
+| HealthController | `api/health` | Unauthenticated liveness check, used by container/App Service probes |
 | DashboardController | `api/dashboard/summary?month=&year=` | Returns totalIncome, totalExpense, netBalance, totalInvested, spendingByCategory, budgetVsActual, goals |
 | DashboardController | `api/dashboard/trend?months=6` | Returns net balance per billing period for the last N months |
 
 **Auth pattern in controllers:** Every entity controller declares `private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;` and all DB queries filter by `UserId == CurrentUserId`. On POST/PUT, the controller sets `entity.UserId = CurrentUserId` before saving.
 
-**JWT config** (in `appsettings.Development.json`): `Jwt:Key`, `Jwt:Issuer` (`"budget-api"`), `Jwt:Audience` (`"budget-frontend"`), `Jwt:ExpiresInMinutes` (1440). Token carries `NameIdentifier`, `Email`, and `Name` claims.
+**JWT config** (in `appsettings.Development.json`): `Jwt:Key`, `Jwt:Issuer` (`"personal-assistant-api"`), `Jwt:Audience` (`"personal-assistant-frontend"`), `Jwt:ExpiresInMinutes` (1440). Token carries `NameIdentifier`, `Email`, and `Name` claims.
 
 **Billing period logic (used in Transactions, Dashboard, RecurringTransaction generate):**
 - Period starts on `CutoffDay` of the selected month and ends the day before `CutoffDay` of the next month.
@@ -109,15 +148,15 @@ ng test --include=src/app/path/to/file.spec.ts   # single file
 
 **RecurringTransaction generate split rule:** If `DayOfMonth >= CutoffDay`, the transaction lands in the selected month; if `DayOfMonth < CutoffDay`, it lands in the next month.
 
-### Frontend (`frontend/angular/budget-front/src/app/`)
+### Frontend (`frontend/angular/personal-assistant-web/src/app/`)
 
 All components are standalone; routes use `loadComponent` for lazy loading. No NgModules.
 
 **Directory layout:**
-- `views/` — one subfolder per feature: `dashboard`, `transactions`, `categories`, `budgets`, `goals`, `recurring-transactions`, `accounts`, `loans`, `books`, `settings`
+- `views/` — one subfolder per feature: `dashboard`, `transactions`, `categories`, `budgets`, `goals`, `recurring-transactions`, `accounts`, `loans`, `books`, `vehicles`, `grocery`, `pantry`, `credit-cards`, `credit-card-categories`, `credit-card-category-limits`, `settings`, `auth`
 - `layouts/` — `MainLayout` (root shell with `<router-outlet>`), `VerticalLayout` (sidebar + topbar + content + footer), `Sidenav`, `Topbar`, `Footer`
-- `core/services/api/` — one service per entity plus `DashboardService`; all use `HttpClient` with `API_BASE = 'http://localhost:5082'` from `constants/index.ts`
-- `core/services/auth.service.ts` — JWT stored in `localStorage` under `budget_token`; exposes `login()`, `register()`, `logout()`, `isLoggedIn`, `userEmail`, `userName`
+- `core/services/api/` — one service per entity plus `DashboardService`; all use `HttpClient` with `API_BASE` from `constants/index.ts` (resolved from the active environment file — see Docker section above)
+- `core/services/auth.service.ts` — JWT stored in `localStorage` under `personal_assistant_token`; exposes `login()`, `register()`, `logout()`, `isLoggedIn`, `userEmail`, `userName`
 - `core/interceptors/auth.interceptor.ts` — `HttpInterceptorFn` that injects `Authorization: Bearer <token>` on every request
 - `core/interceptors/api-url.interceptor.ts` — rewrites `API_BASE` for PWA/mobile dynamic base URL
 - `core/guards/auth.guard.ts` — redirects unauthenticated users to `/login`
@@ -125,6 +164,8 @@ All components are standalone; routes use `loadComponent` for lazy loading. No N
 - `constants/index.ts` — `API_BASE` URL and `menuItems` array (sidebar nav links); add new pages here
 
 **Routing:** `/login` is a standalone route (no `MainLayout`). All feature routes are children of `MainLayout`, guarded by both `LayoutService` and `authGuard`. The wildcard `**` redirects to `/login`.
+
+**Sub-nav grouping:** `Transactions`, `RecurringTransactions`, `Categories`, and `Budgets` are four separate routes/components, but `Recurring`, `Categories`, and `Limits` are not in the sidebar (`constants/index.ts` menu only links `/transactions`, labeled "Budget") — each of the four views renders its own inline Bootstrap `nav-tabs` bar (`routerLink` + `routerLinkActive`) so they read as one section. `CreditCards`, `CreditCardCategories`, and `CreditCardCategoryLimits` follow the same pattern under the "Credit Cards" sidebar entry.
 
 **Adding a new page** requires three things: a component in `views/<feature>/`, a route entry in `app.routes.ts` (as a child of `MainLayout`), and a menu entry in `constants/index.ts`.
 
@@ -142,14 +183,14 @@ All components are standalone; routes use `loadComponent` for lazy loading. No N
 
 **Transaction date tags:** Past/Today badges shown on transaction rows when `IsExecuted` is false. Colors come from `AppSettings` (PastColor, TodayColor). No Future tag is shown.
 
-### Integration tests (`backend/dotnet/budget-api.Tests/`)
+### Integration tests (`backend/dotnet/personal-assistant-api.Tests/`)
 
 Run with `dotnet test` from the solution root or from `backend/dotnet/`.
 
-- `BudgetApiFactory` extends `WebApplicationFactory<Program>`, swaps SQL Server for `InMemoryDatabase`, and replaces JWT Bearer with `TestAuthHandler` (scheme name `"Test"`) so all requests are automatically authenticated as user id `TestAuthHandler.UserId` (`"test-user-id"`).
+- `PersonalAssistantApiFactory` extends `WebApplicationFactory<Program>`, swaps SQL Server for `InMemoryDatabase`, and replaces JWT Bearer with `TestAuthHandler` (scheme name `"Test"`) so all requests are automatically authenticated as user id `TestAuthHandler.UserId` (`"test-user-id"`).
 - `ResetDatabase()` wipes and recreates the in-memory DB between tests. `Seed<T>()` / `SeedMany<T>()` insert rows directly.
 - When seeding entities that have `UserId`, set it to `TestAuthHandler.UserId` so they pass controller-level ownership filters.
-- Test classes use `IClassFixture<BudgetApiFactory>` and call `factory.ResetDatabase()` in the constructor.
+- Test classes use `IClassFixture<PersonalAssistantApiFactory>` and call `factory.ResetDatabase()` in the constructor.
 
 ## Template Variants (reference only)
 

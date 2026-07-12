@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../personal-assistant-api.Tests/personal-assistant-api.Tests.csproj" />
+  <Project Path="personal-assistant-api.csproj" />
+</Solution>

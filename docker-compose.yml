@@ -24,7 +24,7 @@ services:
       start_period: 30s
 
   api:
-    build: ./backend/dotnet/budget-api
+    build: ./backend/dotnet/personal-assistant-api
     depends_on:
       sql:
         condition: service_healthy
@@ -36,11 +36,13 @@ services:
       Jwt__Key: "${JWT_KEY}"
 
   frontend:
-    build: ./frontend/angular/budget-front
+    build: ./frontend/angular/personal-assistant-web
     depends_on:
       - api
     ports:
       - "4200:80"
+    environment:
+      API_UPSTREAM: "http://api:8080"
 
 volumes:
   mssql-data:

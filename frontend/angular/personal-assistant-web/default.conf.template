@@ -1,0 +1,22 @@
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location /api/ {
+        proxy_pass ${API_UPSTREAM};
+        # Azure Container Apps' shared environment ingress routes TLS by SNI; nginx omits
+        # the SNI extension by default when proxying to an https upstream, so the ingress
+        # resets the handshake without this.
+        proxy_ssl_server_name on;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+}

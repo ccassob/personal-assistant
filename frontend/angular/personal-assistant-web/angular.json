@@ -1,0 +1,182 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "personal-assistant-web": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "src/main.ts",
+            "tsConfig": "tsconfig.app.json",
+            "polyfills": ["@angular/localize/init", "zone.js"],
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              },
+              "src/assets"
+            ],
+            "styles": ["src/styles.scss"],
+            "scripts": [
+  "node_modules/jquery/dist/jquery.js",
+  "node_modules/jszip/dist/jszip.js",
+  "node_modules/pdfmake/build/pdfmake.js",
+  "node_modules/pdfmake/build/vfs_fonts.js",
+  "node_modules/jsvectormap/dist/js/jsvectormap.min.js",
+  "node_modules/datatables.net/js/dataTables.js",
+  "node_modules/datatables.net-buttons/js/dataTables.buttons.min.js",
+  "node_modules/datatables.net-buttons/js/buttons.colVis.min.js",
+  "node_modules/datatables.net-buttons/js/buttons.html5.js",
+  "node_modules/datatables.net-buttons/js/buttons.print.min.js",
+  "node_modules/datatables.net-select/js/dataTables.select.min.js",
+  "node_modules/datatables.net-fixedheader/js/dataTables.fixedHeader.js",
+  "node_modules/datatables.net-fixedcolumns/js/dataTables.fixedColumns.js"
+],
+            "stylePreprocessorOptions": {
+              "sass": {
+                "silenceDeprecations": [
+                  "color-functions",
+                  "global-builtin",
+                  "import",
+                  "if-function"
+                ]
+              }
+            },
+            "allowedCommonJsDependencies": [
+  "sweetalert2",
+  "jsvectormap",
+  "leaflet",
+  "masonry-layout",
+  "quill-delta",
+  "dayjs",
+  "filepond-plugin-file-validate-size",
+  "filepond-plugin-file-validate-type",
+  "filepond-plugin-image-preview",
+  "moment",
+  "filepond",
+  "glightbox",
+  "dropzone",
+  "jquery"
+]
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.production.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "5MB",
+                  "maximumError": "10MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "10kB",
+                  "maximumError": "20kB"
+                }
+              ],
+              "outputHashing": "all",
+              "serviceWorker": "ngsw-config.json"
+            },
+            "docker": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.docker.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "5MB",
+                  "maximumError": "10MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "10kB",
+                  "maximumError": "20kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "azure": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.azure.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "5MB",
+                  "maximumError": "10MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "10kB",
+                  "maximumError": "20kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "personal-assistant-web:build:production"
+            },
+            "development": {
+              "buildTarget": "personal-assistant-web:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular/build:extract-i18n"
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "tsConfig": "tsconfig.spec.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
+            ],
+            "styles": ["src/styles.scss"]
+          }
+        }
+      }
+    }
+  },
+  "cli": {
+    "analytics": "52a3e6ef-09d4-4bf2-94be-ad2a80608b68"
+  }
+}
