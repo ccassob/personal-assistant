@@ -2,7 +2,7 @@
 # Run from any directory. Does NOT need admin rights.
 # After this completes, run iis-setup.ps1 AS ADMINISTRATOR.
 
-$root       = "C:\projects\budget-app"
+$root       = "C:\projects\personal-assistant"
 $frontendSrc = "$root\frontend\angular\personal-assistant-web"
 $backendSrc  = "$root\backend\dotnet\personal-assistant-api"
 $outputDir   = "$root\publish-output"

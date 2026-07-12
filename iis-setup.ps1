@@ -2,7 +2,7 @@
 # MUST be run AS ADMINISTRATOR
 # Prerequisites: ASP.NET Core Hosting Bundle (.NET 10) + IIS URL Rewrite Module installed
 
-$outputDir   = "C:\projects\budget-app\publish-output"
+$outputDir   = "C:\projects\personal-assistant\publish-output"
 $frontSrc    = "$outputDir\personal-assistant-web"
 $apiSrc      = "$outputDir\personal-assistant-api"
 $frontDest   = "C:\inetpub\personal-assistant-web"
