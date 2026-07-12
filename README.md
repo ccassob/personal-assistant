@@ -4,7 +4,7 @@ A full-stack personal management platform — budget, credit cards, loans, vehic
 
 **Live demo:** https://budget-frontend.bluesmoke-64ab0244.centralus.azurecontainerapps.io
 
-> Demo credentials: `TBD` / `TBD` — a dedicated read-only test account, coming soon. (This is my live, actual-use instance, so public self-registration is intentionally not advertised here.)
+> Demo credentials: `demo@demo.com` / `PersonalAssistant123` — a dedicated test account, seeded separately from my own data. (This is my live, actual-use instance, so public self-registration is intentionally not advertised here.)
 
 ---
 
