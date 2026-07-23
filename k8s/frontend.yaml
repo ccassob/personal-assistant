@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: personal-assistant
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: personal-assistant-frontend:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          env:
+            - name: API_UPSTREAM
+              value: "http://api:8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: personal-assistant
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: 80
+      targetPort: 80

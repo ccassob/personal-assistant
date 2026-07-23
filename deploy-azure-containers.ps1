@@ -49,12 +49,12 @@ $ErrorActionPreference = "Continue"
 $env:PYTHONIOENCODING = "utf-8"
 
 $Subscription   = "c235a421-0ebb-4547-99f8-987db527b0bd"   # Hosting Personal
-$ResourceGroup  = "personal-assistant"
+$ResourceGroup  = "budget-app"       # live resource group — deliberately NOT renamed in the WP_037 rebrand
 $Location       = "centralus"
-$AcrName        = "personalassistantacr01"
-$AcaEnvName     = "personal-assistant-env"
-$ApiAppName     = "personal-assistant-api"
-$FrontendName   = "personal-assistant-frontend"
+$AcrName        = "budgetappacr01"   # live ACR — deliberately NOT renamed in the WP_037 rebrand
+$AcaEnvName     = "budget-env"       # live Container Apps environment — deliberately NOT renamed
+$ApiAppName     = "budget-api"       # live Container App — deliberately NOT renamed
+$FrontendName   = "budget-frontend"  # live Container App — deliberately NOT renamed
 $ApiImage       = "personal-assistant-api"
 $FrontendImage  = "personal-assistant-frontend"
 

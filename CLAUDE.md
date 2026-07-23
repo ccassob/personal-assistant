@@ -50,6 +50,11 @@ All user-owned entities carry a `UserId` string (FK to ASP.NET Identity `AspNetU
 | `CreditCardTransaction` | StatementId (FK), CreditCardId (FK), Date (DateOnly), Description, Amount, Type (Expense/…), CreditCardCategoryId?, Notes, IsAiClassified, CreatedAt, UserId |
 | `PushSubscription` | Endpoint, P256dh, Auth, CreatedAt, UserId — Web Push VAPID subscription |
 | `NotificationLog` | Type ("expired-transaction"/"maintenance-due"), EntityId (string), SentDate (DateOnly), UserId — dedupes push sends |
+| `Technology` | Name, Color, Icon, Notes, UserId |
+| `TechnologyPracticeSection` | TechnologyId (FK, cascade), Title — named subsection grouping practice items (e.g. "1. Fundamentos") |
+| `TechnologyPracticeItem` | SectionId (FK, cascade to TechnologyPracticeSection — no direct Technology FK), Title, Subcategory, Points, Order, IsDone, CompletedAt (DateOnly?), Notes — one-time checklist entry; date+notes are set/cleared server-side when IsDone toggles; Order preserves creation/import sequence |
+| `TechnologyTheorySection` | TechnologyId (FK, cascade), Title — same grouping concept as TechnologyPracticeSection, for theory questions |
+| `TechnologyTheoryQuestion` | SectionId (FK, cascade to TechnologyTheorySection), Question, Subcategory, Points, Order, IsMastered, AnsweredAt (DateOnly?), Notes — same toggle pattern as TechnologyPracticeItem |
 
 ### Connection string
 
@@ -127,6 +132,7 @@ Requires `SA_PASSWORD` and `JWT_KEY` env vars (or a `.env` file). The `api` serv
 | GroceryCategoriesController | `api/grocery-categories` | Ordered by Name |
 | GroceryItemsController | `api/grocery-items` | GET: `?onList=true`, `?supermarketId=X`; returns `SupermarketIds` list; PATCH `/{id}/toggle-list`; POST `/{id}/purchase` creates GroceryPurchase + updates LastPrice/LastQuantity/LastSupermarketId + sets IsOnList=false; GET `/purchases` all purchases |
 | PantryController | `api/pantry` | CRUD + PATCH `/{id}/consume`; optionally links to a GroceryItem |
+| TechnologiesController | `api/technologies` | Ordered by Name; GET/GetById merge computed scoring fields (`practiceEarnedPoints`/`practiceTotalPoints`/`theoryEarnedPoints`/`theoryTotalPoints`/`totalScore`/`level`) into the response — `totalScore` is proportional (`round(100 * earned / possible)` over the combined practice+theory pool, not a fixed 70/30 split); nested sub-resources per technology: `/practice-sections`, `/theory-sections` (GET/POST/PUT/DELETE — DELETE cascades its items/questions explicitly in code) and `/practice-items`, `/theory-questions` (GET/POST/PUT/DELETE — POST requires a `sectionId` belonging to that technology and assigns the next `Order`; PUT toggles IsDone/IsMastered and sets/clears CompletedAt/AnsweredAt server-side); POST `/import-csv` bulk-imports topics from raw CSV text (`Category,Subcategory,Name,Type,Points`) — creates/reuses practice/theory sections by **Subcategory** name (col 2, e.g. "Fundamentos"), stores **Category** (col 1) as an informative field on the topic, skips rows duplicating an existing (Subcategory, Name) pair, collects per-row errors instead of failing the whole import, and returns `{ imported, skipped, errors }` |
 | CreditCardsController | `api/credit-cards` | CRUD; GET `/spending`; statement pipeline: POST `/{cardId}/statements` uploads PDF to Blob Storage, POST `/webhook` is the Logic Apps callback (Doc Intelligence + Claude Haiku extraction) that creates CreditCardTransaction rows, POST `/statements/{id}/simulate-webhook` for local testing without Logic Apps; GET/PUT/DELETE under `/statements/{id}` and `/transactions/{id}` for reviewing extracted rows |
 | CreditCardCategoriesController | `api/credit-card-categories` | |
 | CreditCardCategoryLimitsController | `api/credit-card-category-limits` | GET `/year-summary`; POST `/upsert` — mirrors BudgetsController's Limits pattern |
@@ -153,7 +159,7 @@ Requires `SA_PASSWORD` and `JWT_KEY` env vars (or a `.env` file). The `api` serv
 All components are standalone; routes use `loadComponent` for lazy loading. No NgModules.
 
 **Directory layout:**
-- `views/` — one subfolder per feature: `dashboard`, `transactions`, `categories`, `budgets`, `goals`, `recurring-transactions`, `accounts`, `loans`, `books`, `vehicles`, `grocery`, `pantry`, `credit-cards`, `credit-card-categories`, `credit-card-category-limits`, `settings`, `auth`
+- `views/` — one subfolder per feature: `dashboard`, `transactions`, `categories`, `budgets`, `goals`, `recurring-transactions`, `accounts`, `loans`, `books`, `vehicles`, `grocery`, `pantry`, `credit-cards`, `credit-card-categories`, `credit-card-category-limits`, `technologies`, `technology-dashboard`, `settings`, `auth`
 - `layouts/` — `MainLayout` (root shell with `<router-outlet>`), `VerticalLayout` (sidebar + topbar + content + footer), `Sidenav`, `Topbar`, `Footer`
 - `core/services/api/` — one service per entity plus `DashboardService`; all use `HttpClient` with `API_BASE` from `constants/index.ts` (resolved from the active environment file — see Docker section above)
 - `core/services/auth.service.ts` — JWT stored in `localStorage` under `personal_assistant_token`; exposes `login()`, `register()`, `logout()`, `isLoggedIn`, `userEmail`, `userName`
@@ -165,7 +171,7 @@ All components are standalone; routes use `loadComponent` for lazy loading. No N
 
 **Routing:** `/login` is a standalone route (no `MainLayout`). All feature routes are children of `MainLayout`, guarded by both `LayoutService` and `authGuard`. The wildcard `**` redirects to `/login`.
 
-**Sub-nav grouping:** `Transactions`, `RecurringTransactions`, `Categories`, and `Budgets` are four separate routes/components, but `Recurring`, `Categories`, and `Limits` are not in the sidebar (`constants/index.ts` menu only links `/transactions`, labeled "Budget") — each of the four views renders its own inline Bootstrap `nav-tabs` bar (`routerLink` + `routerLinkActive`) so they read as one section. `CreditCards`, `CreditCardCategories`, and `CreditCardCategoryLimits` follow the same pattern under the "Credit Cards" sidebar entry.
+**Sub-nav grouping:** `Transactions`, `RecurringTransactions`, `Categories`, and `Budgets` are four separate routes/components, but `Recurring`, `Categories`, and `Limits` are not in the sidebar (`constants/index.ts` menu only links `/transactions`, labeled "Budget") — each of the four views renders its own inline Bootstrap `nav-tabs` bar (`routerLink` + `routerLinkActive`) so they read as one section. `CreditCards`, `CreditCardCategories`, and `CreditCardCategoryLimits` follow the same pattern under the "Credit Cards" sidebar entry. `Technologies` and `TechnologyDashboard` follow it too, under the "Tech Mastery" sidebar entry (only `/technologies` is in `menuItems`).
 
 **Adding a new page** requires three things: a component in `views/<feature>/`, a route entry in `app.routes.ts` (as a child of `MainLayout`), and a menu entry in `constants/index.ts`.
 

@@ -40,6 +40,12 @@ public class PersonalAssistantDbContext(DbContextOptions<PersonalAssistantDbCont
     public DbSet<CreditCardTransaction> CreditCardTransactions => Set<CreditCardTransaction>();
     public DbSet<CreditCardCategory> CreditCardCategories => Set<CreditCardCategory>();
     public DbSet<CreditCardCategoryLimit> CreditCardCategoryLimits => Set<CreditCardCategoryLimit>();
+    public DbSet<Technology> Technologies => Set<Technology>();
+    public DbSet<TechnologyPracticeSection> TechnologyPracticeSections => Set<TechnologyPracticeSection>();
+    public DbSet<TechnologyPracticeItem> TechnologyPracticeItems => Set<TechnologyPracticeItem>();
+    public DbSet<TechnologyTheorySection> TechnologyTheorySections => Set<TechnologyTheorySection>();
+    public DbSet<TechnologyTheoryQuestion> TechnologyTheoryQuestions => Set<TechnologyTheoryQuestion>();
+    public DbSet<StudyAudioSession> StudyAudioSessions => Set<StudyAudioSession>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -167,5 +173,30 @@ public class PersonalAssistantDbContext(DbContextOptions<PersonalAssistantDbCont
         modelBuilder.Entity<CreditCardCategoryLimit>()
             .HasOne(l => l.CreditCardCategory).WithMany()
             .HasForeignKey(l => l.CreditCardCategoryId).OnDelete(DeleteBehavior.Cascade);
+
+        // Technology mastery tracker
+        modelBuilder.Entity<TechnologyPracticeSection>()
+            .HasOne<Technology>().WithMany()
+            .HasForeignKey(s => s.TechnologyId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<TechnologyPracticeItem>()
+            .HasOne<TechnologyPracticeSection>().WithMany()
+            .HasForeignKey(p => p.SectionId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<TechnologyTheorySection>()
+            .HasOne<Technology>().WithMany()
+            .HasForeignKey(s => s.TechnologyId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<TechnologyTheoryQuestion>()
+            .HasOne<TechnologyTheorySection>().WithMany()
+            .HasForeignKey(q => q.SectionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Study audio: cascade from Technology only. TheorySectionId is left as a plain column
+        // (no FK) to avoid multiple cascade paths to Technology on SQL Server.
+        modelBuilder.Entity<StudyAudioSession>()
+            .HasOne<Technology>().WithMany()
+            .HasForeignKey(a => a.TechnologyId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

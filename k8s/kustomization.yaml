@@ -1,0 +1,7 @@
+namespace: personal-assistant
+resources:
+  - namespace.yaml
+  - sql.yaml
+  - api.yaml
+  - frontend.yaml
+  - ingress.yaml

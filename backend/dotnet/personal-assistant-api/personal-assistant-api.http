@@ -1,6 +1,96 @@
 @personal_assistant_api_HostAddress = http://localhost:5082
+@token = REPLACE_WITH_JWT_FROM_LOGIN
 
 GET {{personal_assistant_api_HostAddress}}/weatherforecast/
 Accept: application/json
+
+###
+
+### Technology Mastery — create technology
+POST {{personal_assistant_api_HostAddress}}/api/technologies
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{ "name": "Kubernetes", "color": "#326ce5", "icon": "tabler:brand-docker", "notes": "" }
+
+###
+
+### List technologies (verify computed scoring fields)
+GET {{personal_assistant_api_HostAddress}}/api/technologies
+Authorization: Bearer {{token}}
+
+###
+
+### Add a practice section (subtítulo)
+POST {{personal_assistant_api_HostAddress}}/api/technologies/1/practice-sections
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{ "title": "1. Fundamentos" }
+
+###
+
+### Add practice item (sectionId from the section created above)
+POST {{personal_assistant_api_HostAddress}}/api/technologies/1/practice-items
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{ "sectionId": 1, "title": "Crear un Deployment", "points": 2 }
+
+###
+
+### Mark practice item done with a bitácora note
+PUT {{personal_assistant_api_HostAddress}}/api/technologies/1/practice-items/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{ "isDone": true, "notes": "Desplegué nginx con 3 réplicas en minikube" }
+
+###
+
+### Add a theory section (subtítulo)
+POST {{personal_assistant_api_HostAddress}}/api/technologies/1/theory-sections
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{ "title": "Fundamentos" }
+
+###
+
+### Add theory question (sectionId from the section created above)
+POST {{personal_assistant_api_HostAddress}}/api/technologies/1/theory-questions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{ "sectionId": 1, "question": "¿Qué es un Pod?", "points": 5 }
+
+###
+
+### Mark theory question mastered
+PUT {{personal_assistant_api_HostAddress}}/api/technologies/1/theory-questions/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{ "isMastered": true, "notes": "" }
+
+###
+
+### Re-fetch technology — confirm totalScore/level reflect both toggles proportionally
+GET {{personal_assistant_api_HostAddress}}/api/technologies/1
+Authorization: Bearer {{token}}
+
+###
+
+### Import topics from CSV (Category,Subcategory,Name,Type,Points)
+### Creates/reuses practice-sections and theory-sections by Subcategory name (col 2, e.g. "Fundamentos"),
+### stores Category (col 1) as an informative field on each topic, skips duplicates
+### (same Subcategory+Name), and preserves row order via the Order field.
+POST {{personal_assistant_api_HostAddress}}/api/technologies/1/import-csv
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "csv": "Practice,Fundamentos,Instalar Minikube o Kind,Practice,5\nPractice,Fundamentos,Instalar kubectl,Practice,3\nPractice,Networking,Configurar Ingress,Practice,20\nTheory,Arquitectura,¿Qué es Kubernetes?,Theory,5"
+}
 
 ###

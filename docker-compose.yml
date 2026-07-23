@@ -30,10 +30,17 @@ services:
         condition: service_healthy
     ports:
       - "5085:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Server=sql,1433;Database=BudgetApp;User Id=sa;Password=${SA_PASSWORD};Encrypt=False;TrustServerCertificate=True;"
       Jwt__Key: "${JWT_KEY}"
+      # Blob storage → Azurite running on the host (study-audio + credit-card containers)
+      AzureStorage__ConnectionString: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:10000/devstoreaccount1;"
+      # Study-audio: Azure Speech Text-to-Speech (SSML is authored by the user)
+      AzureSpeech__Region: "westus3"
+      AzureSpeech__ApiKey: "${AZURE_SPEECH_KEY}"
 
   frontend:
     build: ./frontend/angular/personal-assistant-web

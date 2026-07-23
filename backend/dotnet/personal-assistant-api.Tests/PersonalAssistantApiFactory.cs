@@ -63,4 +63,11 @@ public class PersonalAssistantApiFactory : WebApplicationFactory<Program>
         db.Set<T>().AddRange(entities);
         db.SaveChanges();
     }
+
+    public int CountAll<T>() where T : class
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PersonalAssistantDbContext>();
+        return db.Set<T>().Count();
+    }
 }

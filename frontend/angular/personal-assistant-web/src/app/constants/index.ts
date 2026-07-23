@@ -34,5 +34,6 @@ export const menuItems: MenuItemType[] = [
   { slug: 'accounts', label: 'Accounts', icon: 'wallet', url: '/accounts' },
   { slug: 'grocery', label: 'Grocery', icon: 'shopping-cart', url: '/grocery' },
   { slug: 'pantry', label: 'Pantry', icon: 'fridge', url: '/pantry' },
+  { slug: 'technologies', label: 'Tech Mastery', icon: 'cpu', url: '/technologies' },
   { slug: 'settings', label: 'Settings', icon: 'settings', url: '/settings' },
 ]

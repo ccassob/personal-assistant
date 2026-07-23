@@ -57,6 +57,14 @@ Desktop.ini
 SECRETS.local.md
 
 # ============================================================
+# Kubernetes secrets (deploy.ps1 creates these in-cluster; never commit a local copy)
+# ============================================================
+k8s/secret.yaml
+
+# ============================================================
 # Claude Code (local settings only)
 # ============================================================
 .claude/settings.local.json
+/backup
+/imports
+/work-plans

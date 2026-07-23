@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: personal-assistant
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      initContainers:
+        - name: wait-for-sql
+          image: mcr.microsoft.com/mssql/server:2022-latest
+          command:
+            - /bin/bash
+            - -c
+            - >
+              until /opt/mssql-tools18/bin/sqlcmd -S sql,1433 -U sa -P "$MSSQL_SA_PASSWORD" -C -Q "SELECT 1"; do sleep 5; done
+          env:
+            - name: MSSQL_SA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: personal-assistant-secrets
+                  key: SA_PASSWORD
+      containers:
+        - name: api
+          image: personal-assistant-api:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: personal-assistant-secrets
+                  key: CONNECTION_STRING
+            - name: Jwt__Key
+              valueFrom:
+                secretKeyRef:
+                  name: personal-assistant-secrets
+                  key: JWT_KEY
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: personal-assistant
+spec:
+  selector:
+    app: api
+  ports:
+    - port: 8080
+      targetPort: 8080
