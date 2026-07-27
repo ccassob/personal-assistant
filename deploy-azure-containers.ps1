@@ -137,13 +137,23 @@ if ($CreateInfra) {
 # Step 2: Build both images in ACR (cloud build — no local Docker required)
 # ---------------------------------------------------------------------------
 Write-Host "==> Building API image ($ApiImage`:$Tag)"
-Invoke-Az @("acr", "build", "--no-logs", "--registry", $AcrName, "--resource-group", $ResourceGroup, "--image", "$ApiImage`:$Tag", "./backend/dotnet/personal-assistant-api")
+# `az acr build`'s local packing step only honors a .gitignore sitting directly in the given
+# context directory (it does NOT read .dockerignore, and does NOT walk up to parent .gitignore
+# files the way real git does). Running from inside each project directory (context ".") keeps
+# every anchored pattern in that directory's own .gitignore resolving correctly — passing a
+# relative subpath from the repo root let root-level-only patterns (e.g. frontend's .angular/
+# cache, only excluded via the repo-root .gitignore) silently leak into the upload archive.
+Push-Location "./backend/dotnet/personal-assistant-api"
+Invoke-Az @("acr", "build", "--no-logs", "--registry", $AcrName, "--resource-group", $ResourceGroup, "--image", "$ApiImage`:$Tag", ".")
+Pop-Location
 
 Write-Host "==> Building frontend image ($FrontendImage`:$Tag)"
 # --no-logs: Angular CLI prints Unicode (e.g. "❯") in its build summary, which crashes az's
 # bundled colorama console wrapper with UnicodeEncodeError when it streams logs on Windows.
 # Suppressing log streaming avoids that crash; the build still runs and blocks until done.
-Invoke-Az @("acr", "build", "--no-logs", "--registry", $AcrName, "--resource-group", $ResourceGroup, "--image", "$FrontendImage`:$Tag", "--build-arg", "BUILD_CONFIG=azure", "./frontend/angular/personal-assistant-web")
+Push-Location "./frontend/angular/personal-assistant-web"
+Invoke-Az @("acr", "build", "--no-logs", "--registry", $AcrName, "--resource-group", $ResourceGroup, "--image", "$FrontendImage`:$Tag", "--build-arg", "BUILD_CONFIG=azure", ".")
+Pop-Location
 
 $AcrLoginServer = az acr show --name $AcrName --resource-group $ResourceGroup --query loginServer -o tsv
 if ($LASTEXITCODE -ne 0 -or -not $AcrLoginServer) { throw "Failed to resolve ACR login server for '$AcrName'" }
