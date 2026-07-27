@@ -24,6 +24,34 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
             .Where(t => t.UserId == CurrentUserId)
             .OrderBy(t => t.Name)
             .ToListAsync();
+        return Ok(await BuildResponses(technologies));
+    }
+
+    [HttpGet("paged")]
+    public async Task<IActionResult> GetPaged([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
+    {
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var query = db.Technologies.Where(t => t.UserId == CurrentUserId);
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(t => t.Name.ToLower().Contains(term));
+        }
+
+        var totalCount = await query.CountAsync();
+        var technologies = await query
+            .OrderBy(t => t.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return Ok(new { items = await BuildResponses(technologies), totalCount, page, pageSize });
+    }
+
+    private async Task<List<object>> BuildResponses(List<Technology> technologies)
+    {
         var ids = technologies.Select(t => t.Id).ToList();
 
         var practiceSections = await db.TechnologyPracticeSections.Where(s => ids.Contains(s.TechnologyId)).ToListAsync();
@@ -34,15 +62,14 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         var theorySectionIds = theorySections.Select(s => s.Id).ToList();
         var theoryQuestions = await db.TechnologyTheoryQuestions.Where(q => theorySectionIds.Contains(q.SectionId)).ToListAsync();
 
-        var result = technologies.Select(t =>
+        return technologies.Select(t =>
         {
             var mySectionIds = practiceSections.Where(s => s.TechnologyId == t.Id).Select(s => s.Id).ToHashSet();
             var myTheorySectionIds = theorySections.Where(s => s.TechnologyId == t.Id).Select(s => s.Id).ToHashSet();
             return BuildResponse(t,
                 practiceItems.Where(p => mySectionIds.Contains(p.SectionId)),
                 theoryQuestions.Where(q => myTheorySectionIds.Contains(q.SectionId)));
-        });
-        return Ok(result);
+        }).ToList();
     }
 
     [HttpGet("{id}")]
@@ -97,9 +124,63 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         db.TechnologyTheoryQuestions.RemoveRange(await db.TechnologyTheoryQuestions.Where(q => theorySectionIds.Contains(q.SectionId)).ToListAsync());
         db.TechnologyTheorySections.RemoveRange(await db.TechnologyTheorySections.Where(s => s.TechnologyId == id).ToListAsync());
 
+        db.TechnologyCompletionHistories.RemoveRange(await db.TechnologyCompletionHistories.Where(h => h.TechnologyId == id).ToListAsync());
+
         db.Technologies.Remove(technology);
         await db.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpGet("history")]
+    public async Task<IActionResult> GetHistory()
+    {
+        var technologyIds = await db.Technologies.Where(t => t.UserId == CurrentUserId).Select(t => t.Id).ToListAsync();
+        var entries = await db.TechnologyCompletionHistories
+            .Where(h => technologyIds.Contains(h.TechnologyId))
+            .OrderByDescending(h => h.CompletedDate)
+            .Select(h => new
+            {
+                h.SectionTitle,
+                h.ItemTitle,
+                h.ItemType,
+                h.Points,
+                h.CompletedDate
+            })
+            .ToListAsync();
+        return Ok(entries);
+    }
+
+    private async Task UpsertCompletionHistory(int technologyId, TopicType type, int itemId, string sectionTitle, string itemTitle, int points, bool isComplete, DateOnly date)
+    {
+        var existing = await db.TechnologyCompletionHistories
+            .FirstOrDefaultAsync(h => h.TechnologyId == technologyId && h.ItemType == type && h.ItemId == itemId);
+
+        if (!isComplete)
+        {
+            if (existing is not null) db.TechnologyCompletionHistories.Remove(existing);
+            return;
+        }
+
+        if (existing is not null)
+        {
+            existing.SectionTitle = sectionTitle;
+            existing.ItemTitle = itemTitle;
+            existing.Points = points;
+            existing.CompletedDate = date;
+        }
+        else
+        {
+            db.TechnologyCompletionHistories.Add(new TechnologyCompletionHistory
+            {
+                TechnologyId = technologyId,
+                ItemType = type,
+                ItemId = itemId,
+                SectionTitle = sectionTitle,
+                ItemTitle = itemTitle,
+                Points = points,
+                CompletedDate = date
+            });
+        }
     }
 
     // ── Practice sections ────────────────────────────────────────────────────
@@ -189,6 +270,10 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         item.IsDone = req.IsDone;
         item.Notes = req.Notes ?? "";
         item.CompletedAt = req.IsDone ? DateOnly.FromDateTime(DateTime.Today) : null;
+
+        var sectionTitle = await db.TechnologyPracticeSections.Where(s => s.Id == item.SectionId).Select(s => s.Title).FirstOrDefaultAsync() ?? "";
+        await UpsertCompletionHistory(id, TopicType.Practice, item.Id, sectionTitle, item.Title, item.Points, item.IsDone, item.CompletedAt ?? DateOnly.FromDateTime(DateTime.Today));
+
         await db.SaveChangesAsync();
         return Ok(item);
     }
@@ -200,6 +285,8 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         var item = await FindOwnedPracticeItem(id, itemId);
         if (item is null) return NotFound();
         db.TechnologyPracticeItems.Remove(item);
+        db.TechnologyCompletionHistories.RemoveRange(await db.TechnologyCompletionHistories
+            .Where(h => h.ItemType == TopicType.Practice && h.ItemId == itemId).ToListAsync());
         await db.SaveChangesAsync();
         return NoContent();
     }
@@ -297,6 +384,10 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         question.IsMastered = req.IsMastered;
         question.Notes = req.Notes ?? "";
         question.AnsweredAt = req.IsMastered ? DateOnly.FromDateTime(DateTime.Today) : null;
+
+        var sectionTitle = await db.TechnologyTheorySections.Where(s => s.Id == question.SectionId).Select(s => s.Title).FirstOrDefaultAsync() ?? "";
+        await UpsertCompletionHistory(id, TopicType.Theory, question.Id, sectionTitle, question.Question, question.Points, question.IsMastered, question.AnsweredAt ?? DateOnly.FromDateTime(DateTime.Today));
+
         await db.SaveChangesAsync();
         return Ok(question);
     }
@@ -308,6 +399,8 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         var question = await FindOwnedTheoryQuestion(id, questionId);
         if (question is null) return NotFound();
         db.TechnologyTheoryQuestions.Remove(question);
+        db.TechnologyCompletionHistories.RemoveRange(await db.TechnologyCompletionHistories
+            .Where(h => h.ItemType == TopicType.Theory && h.ItemId == questionId).ToListAsync());
         await db.SaveChangesAsync();
         return NoContent();
     }

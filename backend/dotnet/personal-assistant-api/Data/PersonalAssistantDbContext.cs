@@ -46,6 +46,7 @@ public class PersonalAssistantDbContext(DbContextOptions<PersonalAssistantDbCont
     public DbSet<TechnologyTheorySection> TechnologyTheorySections => Set<TechnologyTheorySection>();
     public DbSet<TechnologyTheoryQuestion> TechnologyTheoryQuestions => Set<TechnologyTheoryQuestion>();
     public DbSet<StudyAudioSession> StudyAudioSessions => Set<StudyAudioSession>();
+    public DbSet<TechnologyCompletionHistory> TechnologyCompletionHistories => Set<TechnologyCompletionHistory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -197,6 +198,13 @@ public class PersonalAssistantDbContext(DbContextOptions<PersonalAssistantDbCont
         modelBuilder.Entity<StudyAudioSession>()
             .HasOne<Technology>().WithMany()
             .HasForeignKey(a => a.TechnologyId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Completion history: cascade from Technology only, same reasoning as StudyAudioSession
+        // above (ItemId points at a practice item or theory question without a real FK).
+        modelBuilder.Entity<TechnologyCompletionHistory>()
+            .HasOne<Technology>().WithMany()
+            .HasForeignKey(h => h.TechnologyId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

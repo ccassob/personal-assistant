@@ -1,8 +1,15 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 import { RouterLink, RouterLinkActive } from '@angular/router'
 import { NgApexchartsModule } from 'ng-apexcharts'
-import { ApexChart, ApexNonAxisChartSeries, ApexPlotOptions, ApexAxisChartSeries, ApexXAxis, ApexDataLabels } from 'ng-apexcharts'
-import { Technology, TechnologyService } from '../../core/services/api/technology.service'
+import { ApexChart, ApexNonAxisChartSeries, ApexPlotOptions, ApexAxisChartSeries, ApexXAxis, ApexDataLabels, ApexStroke, ApexFill } from 'ng-apexcharts'
+import { Technology, TechnologyService, TechnologyCompletionHistoryEntry } from '../../core/services/api/technology.service'
+
+interface WeeklyBucket {
+  weekStart: Date
+  weekLabel: string
+  totalPoints: number
+  entries: TechnologyCompletionHistoryEntry[]
+}
 
 @Component({
   selector: 'app-technology-dashboard',
@@ -161,6 +168,73 @@ import { Technology, TechnologyService } from '../../core/services/api/technolog
           </div>
         </div>
       </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header"><h5 class="card-title mb-0">Puntos Ganados por Semana</h5></div>
+            <div class="card-body">
+              @if (weeklyBuckets.length > 0) {
+                <apx-chart
+                  [series]="weeklySeries"
+                  [chart]="weeklyChart"
+                  [xaxis]="weeklyXaxis"
+                  [stroke]="weeklyStroke"
+                  [fill]="weeklyFill"
+                  [dataLabels]="weeklyDataLabels">
+                </apx-chart>
+              } @else {
+                <div class="text-center text-muted py-5">Todavía no completaste ningún ítem.</div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header"><h5 class="card-title mb-0">Detalle de Completados</h5></div>
+            <div class="card-body">
+              @if (weeklyBuckets.length > 0) {
+                <div>
+                  @for (bucket of weeklyBuckets; track bucket.weekStart.getTime()) {
+                    <div class="mb-3">
+                      <h6 class="mb-2">{{ bucket.weekLabel }} — {{ bucket.totalPoints }} pts</h6>
+                      <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                          <thead>
+                            <tr>
+                              <th>Sección</th>
+                              <th>Ítem</th>
+                              <th>Tipo</th>
+                              <th>Puntos</th>
+                              <th>Fecha</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (entry of bucket.entries; track entry.itemTitle + entry.completedDate) {
+                              <tr>
+                                <td>{{ entry.sectionTitle }}</td>
+                                <td>{{ entry.itemTitle }}</td>
+                                <td>{{ entry.itemType === 0 ? 'Práctica' : 'Teoría' }}</td>
+                                <td>{{ entry.points }}</td>
+                                <td>{{ formatDate(entry.completedDate) }}</td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="text-center text-muted py-5">Todavía no completaste ningún ítem.</div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `,
 })
@@ -195,6 +269,14 @@ export class TechnologyDashboard implements OnInit {
   rankBarPlotOptions: ApexPlotOptions = { bar: { horizontal: true, barHeight: '60%' } }
   rankBarDataLabels: ApexDataLabels = { enabled: true, formatter: (val: number) => `${Number(val).toFixed(0)}%` }
 
+  weeklyBuckets: WeeklyBucket[] = []
+  weeklySeries: ApexAxisChartSeries = []
+  weeklyXaxis: ApexXAxis = { categories: [] }
+  weeklyChart: ApexChart = { type: 'area', height: 300, toolbar: { show: false } }
+  weeklyStroke: ApexStroke = { curve: 'smooth', width: 2 }
+  weeklyFill: ApexFill = { type: 'gradient', gradient: { shadeIntensity: 1, type: 'vertical', colorStops: [] } }
+  weeklyDataLabels: ApexDataLabels = { enabled: false }
+
   constructor(private svc: TechnologyService) {}
 
   ngOnInit() { this.load() }
@@ -213,6 +295,7 @@ export class TechnologyDashboard implements OnInit {
       this.buildRadial(data)
       this.buildRankBar(data)
     })
+    this.svc.getCompletionHistory().subscribe(entries => this.buildWeekly(entries))
   }
 
   buildRadial(data: Technology[]) {
@@ -226,5 +309,37 @@ export class TechnologyDashboard implements OnInit {
     this.rankBarHasData = sorted.length > 0
     this.rankBarXaxis = { categories: sorted.map(t => t.name) }
     this.rankBarSeries = [{ name: 'Dominio', data: sorted.map(t => t.totalScore) }]
+  }
+
+  buildWeekly(entries: TechnologyCompletionHistoryEntry[]) {
+    const byWeek = new Map<number, WeeklyBucket>()
+    for (const entry of entries) {
+      const weekStart = this.isoWeekStart(entry.completedDate)
+      const key = weekStart.getTime()
+      let bucket = byWeek.get(key)
+      if (!bucket) {
+        bucket = { weekStart, weekLabel: `Semana del ${this.formatDate(weekStart)}`, totalPoints: 0, entries: [] }
+        byWeek.set(key, bucket)
+      }
+      bucket.totalPoints += entry.points
+      bucket.entries.push(entry)
+    }
+
+    this.weeklyBuckets = [...byWeek.values()].sort((a, b) => b.weekStart.getTime() - a.weekStart.getTime())
+
+    const chronological = [...this.weeklyBuckets].sort((a, b) => a.weekStart.getTime() - b.weekStart.getTime())
+    this.weeklyXaxis = { categories: chronological.map(b => this.formatDate(b.weekStart)) }
+    this.weeklySeries = [{ name: 'Puntos', data: chronological.map(b => b.totalPoints) }]
+  }
+
+  private isoWeekStart(date: Date | string): Date {
+    const d = new Date(date)
+    const dayIndex = (d.getDay() + 6) % 7 // Monday = 0 ... Sunday = 6
+    const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - dayIndex)
+    return monday
+  }
+
+  formatDate(date: Date | string): string {
+    return new Date(date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
   }
 }

@@ -5,10 +5,11 @@ import {
   Technology, TechnologyPracticeSection, TechnologyPracticeItem,
   TechnologyTheorySection, TechnologyTheoryQuestion, TechnologyService, ImportTopicsResult
 } from '../../core/services/api/technology.service'
+import { CustomPagination } from '../../components/custom-pagination/custom-pagination'
 
 @Component({
   selector: 'app-technologies',
-  imports: [FormsModule, RouterLink, RouterLinkActive],
+  imports: [FormsModule, RouterLink, RouterLinkActive, CustomPagination],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="container-fluid">
@@ -39,6 +40,18 @@ import {
           </ul>
         </div>
       </div>
+
+      @if (technologies.length > 0 || searchTerm) {
+        <div class="row mb-3">
+          <div class="col-12 col-md-4">
+            <div class="input-group">
+              <span class="input-group-text"><iconify-icon icon="tabler:search" width="16"></iconify-icon></span>
+              <input type="text" class="form-control" placeholder="Buscar tecnología..."
+                [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()">
+            </div>
+          </div>
+        </div>
+      }
 
       <div class="row g-3">
         @for (t of technologies; track t.id) {
@@ -258,9 +271,30 @@ import {
             </div>
           </div>
         } @empty {
-          <div class="col-12 text-center text-muted py-5">No technologies yet. Add one to start tracking your mastery!</div>
+          <div class="col-12 text-center text-muted py-5">
+            @if (!searchTerm) {
+              No technologies yet. Add one to start tracking your mastery!
+            } @else {
+              Ninguna tecnología coincide con "{{ searchTerm }}".
+            }
+          </div>
         }
       </div>
+
+      @if (totalCount > 0) {
+        <div class="row mt-3">
+          <div class="col-12">
+            <app-custom-pagination
+              itemsName="tecnologías"
+              [showingRange]="showingRange"
+              [collectionSize]="totalCount"
+              [page]="page"
+              [pageSize]="pageSize"
+              (pageChange)="onPageChange($event)">
+            </app-custom-pagination>
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Technology modal -->
@@ -354,6 +388,12 @@ import {
 export class Technologies implements OnInit {
   technologies: Technology[] = []
 
+  searchTerm = ''
+  page = 1
+  pageSize = 5
+  totalCount = 0
+  private searchDebounce?: ReturnType<typeof setTimeout>
+
   showModal = false
   form: Partial<Technology> = this.emptyForm()
 
@@ -389,17 +429,43 @@ export class Technologies implements OnInit {
   ngOnInit() { this.load() }
 
   load() {
-    this.svc.getAll().subscribe(data => {
-      this.technologies = data
-      data.forEach(t => {
+    this.svc.getPaged(this.searchTerm, this.page, this.pageSize).subscribe(result => {
+      if (result.items.length === 0 && this.page > 1 && result.totalCount > 0) {
+        this.page = Math.max(1, Math.ceil(result.totalCount / this.pageSize))
+        this.load()
+        return
+      }
+      this.technologies = result.items
+      this.totalCount = result.totalCount
+      result.items.forEach(t => {
         this.svc.getPracticeItems(t.id).subscribe(items => this.practiceItems.set(t.id, items))
         this.svc.getTheoryQuestions(t.id).subscribe(qs => this.theoryQuestions.set(t.id, qs))
       })
     })
   }
 
+  onSearchChange() {
+    clearTimeout(this.searchDebounce)
+    this.searchDebounce = setTimeout(() => {
+      this.page = 1
+      this.load()
+    }, 300)
+  }
+
+  onPageChange(newPage: number) {
+    this.page = newPage
+    this.load()
+  }
+
   emptyForm(): Partial<Technology> {
     return { name: '', color: '#3b82f6', icon: '', notes: '' }
+  }
+
+  get showingRange(): string {
+    if (this.totalCount === 0) return 'Showing 0 to 0 of 0'
+    const start = (this.page - 1) * this.pageSize + 1
+    const end = Math.min(this.page * this.pageSize, this.totalCount)
+    return `Showing ${start} to ${end} of ${this.totalCount}`
   }
 
   levelBadgeClass(level: string): string {
@@ -555,7 +621,14 @@ export class Technologies implements OnInit {
 
   private reloadPractice(t: Technology, refreshTechnologies = true) {
     this.svc.getPracticeItems(t.id).subscribe(items => this.practiceItems.set(t.id, items))
-    if (refreshTechnologies) this.svc.getAll().subscribe(data => this.technologies = data)
+    if (refreshTechnologies) this.refreshTechnologyScore(t)
+  }
+
+  private refreshTechnologyScore(t: Technology) {
+    this.svc.getById(t.id).subscribe(updated => {
+      const idx = this.technologies.findIndex(x => x.id === t.id)
+      if (idx !== -1) this.technologies[idx] = updated
+    })
   }
 
   addPracticeSection(t: Technology) {
@@ -620,7 +693,7 @@ export class Technologies implements OnInit {
 
   private reloadTheory(t: Technology, refreshTechnologies = true) {
     this.svc.getTheoryQuestions(t.id).subscribe(qs => this.theoryQuestions.set(t.id, qs))
-    if (refreshTechnologies) this.svc.getAll().subscribe(data => this.technologies = data)
+    if (refreshTechnologies) this.refreshTechnologyScore(t)
   }
 
   addTheorySection(t: Technology) {

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using personal_assistant_api.Controllers;
 using personal_assistant_api.Models;
 
 namespace personal_assistant_api.Tests.Controllers;
@@ -90,6 +91,71 @@ public class TechnologiesControllerTests : IClassFixture<PersonalAssistantApiFac
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    // ── Paged catalog ────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetPaged_ReturnsFirstPage_OrderedByName()
+    {
+        SeedTechnologyId(name: "Zookeeper");
+        SeedTechnologyId(name: "Angular");
+        SeedTechnologyId(name: "Docker");
+
+        var result = await _client.GetFromJsonAsync<PagedResponse>("/api/technologies/paged?page=1&pageSize=2");
+
+        result!.totalCount.Should().Be(3);
+        result.page.Should().Be(1);
+        result.pageSize.Should().Be(2);
+        result.items.Should().HaveCount(2);
+        result.items.Select(t => t.name).Should().ContainInOrder("Angular", "Docker");
+    }
+
+    [Fact]
+    public async Task GetPaged_ReturnsSecondPage()
+    {
+        SeedTechnologyId(name: "Zookeeper");
+        SeedTechnologyId(name: "Angular");
+        SeedTechnologyId(name: "Docker");
+
+        var result = await _client.GetFromJsonAsync<PagedResponse>("/api/technologies/paged?page=2&pageSize=2");
+
+        result!.items.Should().ContainSingle(t => t.name == "Zookeeper");
+    }
+
+    [Fact]
+    public async Task GetPaged_FiltersByCaseInsensitiveSearch()
+    {
+        SeedTechnologyId(name: "Kubernetes");
+        SeedTechnologyId(name: "Docker");
+
+        var result = await _client.GetFromJsonAsync<PagedResponse>("/api/technologies/paged?search=KUBE");
+
+        result!.totalCount.Should().Be(1);
+        result.items.Should().ContainSingle(t => t.name == "Kubernetes");
+    }
+
+    [Fact]
+    public async Task GetPaged_OnlyReturnsTechnologiesOwnedByCurrentUser()
+    {
+        SeedTechnologyId(name: "Mine");
+        SeedTechnologyId(name: "Theirs", userId: "other-user");
+
+        var result = await _client.GetFromJsonAsync<PagedResponse>("/api/technologies/paged");
+
+        result!.totalCount.Should().Be(1);
+        result.items.Should().ContainSingle(t => t.name == "Mine");
+    }
+
+    [Fact]
+    public async Task GetPaged_ReturnsEmptyItems_WhenSearchMatchesNothing()
+    {
+        SeedTechnologyId(name: "Kubernetes");
+
+        var result = await _client.GetFromJsonAsync<PagedResponse>("/api/technologies/paged?search=zzz");
+
+        result!.totalCount.Should().Be(0);
+        result.items.Should().BeEmpty();
+    }
+
     [Fact]
     public async Task Delete_RemovesTechnology_AndCascadesSectionsAndItems()
     {
@@ -98,6 +164,16 @@ public class TechnologiesControllerTests : IClassFixture<PersonalAssistantApiFac
         _factory.Seed(new TechnologyPracticeItem { SectionId = practiceSectionId, Title = "Crear un Deployment", Points = 2 });
         var theorySectionId = SeedTheorySectionId(techId);
         _factory.Seed(new TechnologyTheoryQuestion { SectionId = theorySectionId, Question = "¿Qué es un Pod?", Points = 5 });
+        _factory.Seed(new TechnologyCompletionHistory
+        {
+            TechnologyId = techId,
+            ItemType = TopicType.Practice,
+            ItemId = 999,
+            SectionTitle = "Fundamentos",
+            ItemTitle = "Crear un Deployment",
+            Points = 2,
+            CompletedDate = new DateOnly(2026, 1, 1)
+        });
 
         var deleteResponse = await _client.DeleteAsync($"/api/technologies/{techId}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
@@ -106,6 +182,7 @@ public class TechnologiesControllerTests : IClassFixture<PersonalAssistantApiFac
         _factory.CountAll<TechnologyPracticeItem>().Should().Be(0);
         _factory.CountAll<TechnologyTheorySection>().Should().Be(0);
         _factory.CountAll<TechnologyTheoryQuestion>().Should().Be(0);
+        _factory.CountAll<TechnologyCompletionHistory>().Should().Be(0);
     }
 
     // ── Scoring ──────────────────────────────────────────────────────────────
@@ -484,6 +561,153 @@ public class TechnologiesControllerTests : IClassFixture<PersonalAssistantApiFac
         questions.Should().BeEmpty();
     }
 
+    // ── Completion history ───────────────────────────────────────────────────
+
+    [Fact]
+    public async Task UpdatePracticeItem_CreatesHistoryEntry_WhenMarkedDone()
+    {
+        var techId = SeedTechnologyId();
+        var sectionId = SeedPracticeSectionId(techId, "Fundamentos");
+        var itemId = _factory.Seed(new TechnologyPracticeItem { SectionId = sectionId, Title = "Crear un Deployment", Points = 7 });
+
+        var response = await _client.PutAsJsonAsync($"/api/technologies/{techId}/practice-items/{itemId}", new { isDone = true, notes = (string?)null });
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var history = await _client.GetFromJsonAsync<HistoryEntry[]>("/api/technologies/history");
+        history.Should().ContainSingle(h =>
+            h.sectionTitle == "Fundamentos" &&
+            h.itemTitle == "Crear un Deployment" &&
+            h.points == 7 &&
+            h.itemType == TopicType.Practice &&
+            h.completedDate == DateOnly.FromDateTime(DateTime.Today));
+    }
+
+    [Fact]
+    public async Task UpdateTheoryQuestion_CreatesHistoryEntry_WhenMarkedMastered()
+    {
+        var techId = SeedTechnologyId();
+        var sectionId = SeedTheorySectionId(techId, "Fundamentos");
+        var questionId = _factory.Seed(new TechnologyTheoryQuestion { SectionId = sectionId, Question = "¿Qué es un Pod?", Points = 5 });
+
+        var response = await _client.PutAsJsonAsync($"/api/technologies/{techId}/theory-questions/{questionId}", new { isMastered = true, notes = "" });
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var history = await _client.GetFromJsonAsync<HistoryEntry[]>("/api/technologies/history");
+        history.Should().ContainSingle(h =>
+            h.sectionTitle == "Fundamentos" &&
+            h.itemTitle == "¿Qué es un Pod?" &&
+            h.points == 5 &&
+            h.itemType == TopicType.Theory &&
+            h.completedDate == DateOnly.FromDateTime(DateTime.Today));
+    }
+
+    [Fact]
+    public async Task UpdatePracticeItem_RemovesHistoryEntry_WhenUndone()
+    {
+        var techId = SeedTechnologyId();
+        var sectionId = SeedPracticeSectionId(techId);
+        var itemId = _factory.Seed(new TechnologyPracticeItem { SectionId = sectionId, Title = "Crear un Deployment", Points = 2 });
+        await _client.PutAsJsonAsync($"/api/technologies/{techId}/practice-items/{itemId}", new { isDone = true, notes = (string?)null });
+
+        var response = await _client.PutAsJsonAsync($"/api/technologies/{techId}/practice-items/{itemId}", new { isDone = false, notes = (string?)null });
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var history = await _client.GetFromJsonAsync<HistoryEntry[]>("/api/technologies/history");
+        history.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task UpdatePracticeItem_DoesNotDuplicateHistoryEntry_WhenRetoggledDone()
+    {
+        var techId = SeedTechnologyId();
+        var sectionId = SeedPracticeSectionId(techId);
+        var itemId = _factory.Seed(new TechnologyPracticeItem { SectionId = sectionId, Title = "Crear un Deployment", Points = 2 });
+
+        await _client.PutAsJsonAsync($"/api/technologies/{techId}/practice-items/{itemId}", new { isDone = true, notes = (string?)null });
+        await _client.PutAsJsonAsync($"/api/technologies/{techId}/practice-items/{itemId}", new { isDone = false, notes = (string?)null });
+        var response = await _client.PutAsJsonAsync($"/api/technologies/{techId}/practice-items/{itemId}", new { isDone = true, notes = (string?)null });
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        _factory.CountAll<TechnologyCompletionHistory>().Should().Be(1);
+    }
+
+    [Fact]
+    public async Task DeletePracticeItem_RemovesOrphanedHistoryEntry()
+    {
+        var techId = SeedTechnologyId();
+        var sectionId = SeedPracticeSectionId(techId);
+        var itemId = _factory.Seed(new TechnologyPracticeItem { SectionId = sectionId, Title = "Crear un Deployment", Points = 2 });
+        await _client.PutAsJsonAsync($"/api/technologies/{techId}/practice-items/{itemId}", new { isDone = true, notes = (string?)null });
+
+        var deleteResponse = await _client.DeleteAsync($"/api/technologies/{techId}/practice-items/{itemId}");
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        _factory.CountAll<TechnologyCompletionHistory>().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetHistory_OnlyReturnsEntriesForCurrentUser()
+    {
+        var techId = SeedTechnologyId();
+        var otherTechId = SeedTechnologyId(name: "Other", userId: "other-user");
+        _factory.Seed(new TechnologyCompletionHistory
+        {
+            TechnologyId = techId,
+            ItemType = TopicType.Practice,
+            ItemId = 1,
+            SectionTitle = "Mine",
+            ItemTitle = "Mine item",
+            Points = 3,
+            CompletedDate = new DateOnly(2026, 1, 1)
+        });
+        _factory.Seed(new TechnologyCompletionHistory
+        {
+            TechnologyId = otherTechId,
+            ItemType = TopicType.Practice,
+            ItemId = 2,
+            SectionTitle = "Theirs",
+            ItemTitle = "Their item",
+            Points = 3,
+            CompletedDate = new DateOnly(2026, 1, 1)
+        });
+
+        var history = await _client.GetFromJsonAsync<HistoryEntry[]>("/api/technologies/history");
+
+        history.Should().ContainSingle(h => h.itemTitle == "Mine item");
+    }
+
+    [Fact]
+    public async Task GetHistory_OrdersByCompletedDateDescending()
+    {
+        var techId = SeedTechnologyId();
+        _factory.Seed(new TechnologyCompletionHistory
+        {
+            TechnologyId = techId,
+            ItemType = TopicType.Practice,
+            ItemId = 1,
+            SectionTitle = "S",
+            ItemTitle = "Older",
+            Points = 1,
+            CompletedDate = new DateOnly(2026, 1, 1)
+        });
+        _factory.Seed(new TechnologyCompletionHistory
+        {
+            TechnologyId = techId,
+            ItemType = TopicType.Practice,
+            ItemId = 2,
+            SectionTitle = "S",
+            ItemTitle = "Newer",
+            Points = 1,
+            CompletedDate = new DateOnly(2026, 1, 15)
+        });
+
+        var history = await _client.GetFromJsonAsync<HistoryEntry[]>("/api/technologies/history");
+
+        history!.Select(h => h.itemTitle).Should().ContainInOrder("Newer", "Older");
+    }
+
+    private record HistoryEntry(string sectionTitle, string itemTitle, TopicType itemType, int points, DateOnly completedDate);
+
     // ── CSV import ───────────────────────────────────────────────────────────
 
     [Fact]
@@ -630,4 +854,6 @@ public class TechnologiesControllerTests : IClassFixture<PersonalAssistantApiFac
     private record TechnologyResponse(int id, string name, string color, string icon, string notes,
         int practiceEarnedPoints, int practiceTotalPoints, int theoryEarnedPoints, int theoryTotalPoints,
         int totalScore, string level);
+
+    private record PagedResponse(TechnologyResponse[] items, int totalCount, int page, int pageSize);
 }

@@ -59,6 +59,21 @@ export interface ImportTopicsResult {
   errors: string[]
 }
 
+export interface PagedResult<T> {
+  items: T[]
+  totalCount: number
+  page: number
+  pageSize: number
+}
+
+export interface TechnologyCompletionHistoryEntry {
+  sectionTitle: string
+  itemTitle: string
+  itemType: 0 | 1 // 0 = Practice, 1 = Theory (backend TopicType enum, serialized as its numeric value)
+  points: number
+  completedDate: string
+}
+
 @Injectable({ providedIn: 'root' })
 export class TechnologyService {
   private url = `${API_BASE}/api/technologies`
@@ -66,6 +81,11 @@ export class TechnologyService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<Technology[]> { return this.http.get<Technology[]>(this.url) }
+  getById(id: number): Observable<Technology> { return this.http.get<Technology>(`${this.url}/${id}`) }
+  getPaged(search: string, page: number, pageSize: number): Observable<PagedResult<Technology>> {
+    const params = new URLSearchParams({ search: search ?? '', page: String(page), pageSize: String(pageSize) })
+    return this.http.get<PagedResult<Technology>>(`${this.url}/paged?${params}`)
+  }
   create(t: { name: string; color: string; icon: string; notes: string }): Observable<Technology> { return this.http.post<Technology>(this.url, t) }
   update(t: { id: number; name: string; color: string; icon: string; notes: string }): Observable<void> { return this.http.put<void>(`${this.url}/${t.id}`, t) }
   delete(id: number): Observable<void> { return this.http.delete<void>(`${this.url}/${id}`) }
@@ -98,5 +118,9 @@ export class TechnologyService {
 
   importCsv(techId: number, csv: string): Observable<ImportTopicsResult> {
     return this.http.post<ImportTopicsResult>(`${this.url}/${techId}/import-csv`, { csv })
+  }
+
+  getCompletionHistory(): Observable<TechnologyCompletionHistoryEntry[]> {
+    return this.http.get<TechnologyCompletionHistoryEntry[]>(`${this.url}/history`)
   }
 }
