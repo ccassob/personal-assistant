@@ -28,6 +28,7 @@ export const routes: Routes = [
       { path: 'pantry', loadComponent: () => import('./views/pantry/pantry').then(m => m.Pantry), data: { title: 'Pantry' } },
       { path: 'technologies', loadComponent: () => import('./views/technologies/technologies').then(m => m.Technologies), data: { title: 'Tech Mastery' } },
       { path: 'technology-dashboard', loadComponent: () => import('./views/technology-dashboard/technology-dashboard').then(m => m.TechnologyDashboard), data: { title: 'Tech Dashboard' } },
+      { path: 'technology-categories', loadComponent: () => import('./views/technology-categories/technology-categories').then(m => m.TechnologyCategories), data: { title: 'Categorías de Tecnología' } },
       { path: 'technology-audio', loadComponent: () => import('./views/technology-audio/technology-audio').then(m => m.TechnologyAudio), data: { title: 'Audios de estudio' } },
       { path: 'settings', loadComponent: () => import('./views/settings/settings').then(m => m.Settings), data: { title: 'Settings' } },
     ],

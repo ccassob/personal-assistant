@@ -2,7 +2,7 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 import { RouterLink, RouterLinkActive } from '@angular/router'
 import { NgApexchartsModule } from 'ng-apexcharts'
 import { ApexChart, ApexNonAxisChartSeries, ApexPlotOptions, ApexAxisChartSeries, ApexXAxis, ApexDataLabels, ApexStroke, ApexFill } from 'ng-apexcharts'
-import { Technology, TechnologyService, TechnologyCompletionHistoryEntry } from '../../core/services/api/technology.service'
+import { Technology, TechnologyService, TechnologyCompletionHistoryEntry, levelBadgeClass as sharedLevelBadgeClass } from '../../core/services/api/technology.service'
 
 interface WeeklyBucket {
   weekStart: Date
@@ -34,6 +34,9 @@ interface WeeklyBucket {
             </li>
             <li class="nav-item">
               <a class="nav-link" routerLink="/technology-dashboard" routerLinkActive="active">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/technology-categories" routerLinkActive="active">Categorías</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" routerLink="/technology-audio" routerLinkActive="active">Audios</a>
@@ -153,14 +156,92 @@ interface WeeklyBucket {
           <div class="card">
             <div class="card-header"><h5 class="card-title mb-0">Ranking de Dominio</h5></div>
             <div class="card-body">
-              @if (rankBarHasData) {
-                <apx-chart
-                  [series]="rankBarSeries"
-                  [chart]="rankBarChart"
-                  [xaxis]="rankBarXaxis"
-                  [plotOptions]="rankBarPlotOptions"
-                  [dataLabels]="rankBarDataLabels">
-                </apx-chart>
+              @if (technologies.length > 0) {
+                <div class="d-flex mb-2" style="height: 28px; border-radius: 4px; overflow: hidden;">
+                  @for (bucket of rankBuckets; track bucket.level) {
+                    @if (bucket.count > 0) {
+                      <div [class]="'d-flex align-items-center justify-content-center text-white small fw-semibold ' + levelBadgeClass(bucket.level)"
+                           [style.flex]="bucket.count"
+                           [title]="bucket.level + ': ' + bucket.count">
+                        {{ bucket.count }}
+                      </div>
+                    }
+                  }
+                </div>
+                <div class="d-flex flex-wrap gap-3 small text-muted mb-2">
+                  @for (bucket of rankBuckets; track bucket.level) {
+                    @if (bucket.count > 0) {
+                      <span><span class="badge {{ levelBadgeClass(bucket.level) }}">{{ bucket.level }}</span> {{ bucket.count }}</span>
+                    }
+                  }
+                </div>
+
+                <button class="btn btn-sm btn-outline-secondary" (click)="showAllRankings = !showAllRankings">
+                  {{ showAllRankings ? 'Ocultar detalle' : 'Ver detalle completo (' + technologies.length + ')' }}
+                </button>
+
+                @if (showAllRankings) {
+                  <div class="table-responsive mt-3" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-sm mb-0">
+                      <thead>
+                        <tr>
+                          <th>Tecnología</th>
+                          <th>Nivel</th>
+                          <th>Dominio</th>
+                          <th class="text-end">Score</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (t of technologies; track t.id) {
+                          <tr>
+                            <td>
+                              @if (t.icon) { <iconify-icon [attr.icon]="t.icon" width="16" [style.color]="t.color" class="me-1"></iconify-icon> }
+                              {{ t.name }}
+                            </td>
+                            <td><span class="badge {{ levelBadgeClass(t.level) }}">{{ t.level }}</span></td>
+                            <td style="min-width: 120px;">
+                              <div class="progress" style="height: 8px">
+                                <div class="progress-bar" [style.width.%]="t.totalScore" [style.background]="t.color"></div>
+                              </div>
+                            </td>
+                            <td class="text-end">{{ t.totalScore }}%</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              } @else {
+                <div class="text-center text-muted py-5">No hay tecnologías todavía.</div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header"><h5 class="card-title mb-0">Categorías</h5></div>
+            <div class="card-body">
+              @if (categoryStats.length > 0) {
+                <div class="table-responsive">
+                  <table class="table table-sm mb-0">
+                    <thead><tr><th>Categoría</th><th class="text-end">Tecnologías</th><th class="text-end">Score Promedio</th></tr></thead>
+                    <tbody>
+                      @for (c of categoryStats; track c.key) {
+                        <tr>
+                          <td>
+                            @if (c.icon) { <iconify-icon [attr.icon]="c.icon" width="16" [style.color]="c.color" class="me-1"></iconify-icon> }
+                            {{ c.name }}
+                          </td>
+                          <td class="text-end">{{ c.count }}</td>
+                          <td class="text-end">{{ c.avgScore }}%</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
               } @else {
                 <div class="text-center text-muted py-5">No hay tecnologías todavía.</div>
               }
@@ -262,12 +343,11 @@ export class TechnologyDashboard implements OnInit {
     radialBar: { dataLabels: { name: { show: true }, value: { formatter: (v: number) => `${v.toFixed(0)}%` } } }
   }
 
-  rankBarSeries: ApexAxisChartSeries = []
-  rankBarXaxis: ApexXAxis = { categories: [] }
-  rankBarHasData = false
-  rankBarChart: ApexChart = { type: 'bar', height: 300, toolbar: { show: false } }
-  rankBarPlotOptions: ApexPlotOptions = { bar: { horizontal: true, barHeight: '60%' } }
-  rankBarDataLabels: ApexDataLabels = { enabled: true, formatter: (val: number) => `${Number(val).toFixed(0)}%` }
+  private readonly levelOrder = ['Principiante', 'Básico', 'Intermedio', 'Avanzado', 'Experto', 'Dominio demostrado']
+  rankBuckets: { level: string; count: number }[] = []
+  showAllRankings = false
+
+  categoryStats: { key: number; name: string; color: string | null; icon: string | null; count: number; avgScore: number }[] = []
 
   weeklyBuckets: WeeklyBucket[] = []
   weeklySeries: ApexAxisChartSeries = []
@@ -293,7 +373,8 @@ export class TechnologyDashboard implements OnInit {
 
       this.overallRadialSeries = [this.avgScore]
       this.buildRadial(data)
-      this.buildRankBar(data)
+      this.buildRankBuckets(data)
+      this.buildCategoryStats(data)
     })
     this.svc.getCompletionHistory().subscribe(entries => this.buildWeekly(entries))
   }
@@ -304,11 +385,40 @@ export class TechnologyDashboard implements OnInit {
     this.radialSeries = data.map(t => t.totalScore)
   }
 
-  buildRankBar(data: Technology[]) {
-    const sorted = [...data].sort((a, b) => b.totalScore - a.totalScore)
-    this.rankBarHasData = sorted.length > 0
-    this.rankBarXaxis = { categories: sorted.map(t => t.name) }
-    this.rankBarSeries = [{ name: 'Dominio', data: sorted.map(t => t.totalScore) }]
+  buildRankBuckets(data: Technology[]) {
+    this.rankBuckets = this.levelOrder.map(level => ({
+      level,
+      count: data.filter(t => t.level === level).length
+    }))
+  }
+
+  levelBadgeClass(level: string): string {
+    return sharedLevelBadgeClass(level)
+  }
+
+  buildCategoryStats(data: Technology[]) {
+    const map = new Map<number, { key: number; name: string; color: string | null; icon: string | null; technologies: Technology[] }>()
+    for (const t of data) {
+      const key = t.categoryId ?? -1
+      if (!map.has(key)) {
+        map.set(key, { key, name: t.categoryName ?? 'Sin categoría', color: t.categoryColor, icon: t.categoryIcon, technologies: [] })
+      }
+      map.get(key)!.technologies.push(t)
+    }
+    this.categoryStats = [...map.values()]
+      .map(g => ({
+        key: g.key,
+        name: g.name,
+        color: g.color,
+        icon: g.icon,
+        count: g.technologies.length,
+        avgScore: Math.round(g.technologies.reduce((s, t) => s + t.totalScore, 0) / g.technologies.length)
+      }))
+      .sort((a, b) => {
+        if (a.key === -1) return 1
+        if (b.key === -1) return -1
+        return b.avgScore - a.avgScore
+      })
   }
 
   buildWeekly(entries: TechnologyCompletionHistoryEntry[]) {

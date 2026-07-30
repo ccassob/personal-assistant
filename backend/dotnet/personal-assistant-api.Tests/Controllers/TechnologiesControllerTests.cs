@@ -34,6 +34,39 @@ public class TechnologiesControllerTests : IClassFixture<PersonalAssistantApiFac
     private int SeedTheorySectionId(int techId, string title = "Fundamentos") =>
         _factory.Seed(new TechnologyTheorySection { TechnologyId = techId, Title = title });
 
+    private int SeedCategoryId(string name = "Azure") =>
+        _factory.Seed(new TechnologyCategory { Name = name, Color = "#0078d4", Icon = "tabler:brand-azure", UserId = TestAuthHandler.UserId });
+
+    // Seeds a technology with a fixed 100-point practice pool, `score` points done,
+    // so totalScore == score exactly (round(100 * score / 100)).
+    private int SeedTechnologyWithScore(string name, int score)
+    {
+        var techId = SeedTechnologyId(name: name);
+        var sectionId = SeedPracticeSectionId(techId);
+        if (score > 0)
+        {
+            _factory.Seed(new TechnologyPracticeItem
+            {
+                SectionId = sectionId,
+                Title = "Done item",
+                Points = score,
+                IsDone = true,
+                CompletedAt = new DateOnly(2026, 1, 1)
+            });
+        }
+        if (score < 100)
+        {
+            _factory.Seed(new TechnologyPracticeItem
+            {
+                SectionId = sectionId,
+                Title = "Remaining item",
+                Points = 100 - score,
+                IsDone = false
+            });
+        }
+        return techId;
+    }
+
     // ── CRUD ─────────────────────────────────────────────────────────────────
 
     [Fact]
@@ -91,14 +124,58 @@ public class TechnologiesControllerTests : IClassFixture<PersonalAssistantApiFac
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    // ── Categories ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Update_AssignsCategory_AndGetReturnsPopulatedFields()
+    {
+        var techId = SeedTechnologyId();
+        var categoryId = SeedCategoryId("Azure");
+        var payload = new { id = techId, name = "Kubernetes", color = "#326ce5", icon = "cpu", notes = "", categoryId };
+
+        var response = await _client.PutAsJsonAsync($"/api/technologies/{techId}", payload);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var fetched = await _client.GetFromJsonAsync<TechnologyResponse>($"/api/technologies/{techId}");
+        fetched!.categoryId.Should().Be(categoryId);
+        fetched.categoryName.Should().Be("Azure");
+        fetched.categoryColor.Should().Be("#0078d4");
+        fetched.categoryIcon.Should().Be("tabler:brand-azure");
+    }
+
+    [Fact]
+    public async Task Update_ClearsCategory_WhenCategoryIdIsNull()
+    {
+        var categoryId = SeedCategoryId("Azure");
+        var techId = SeedTechnologyId();
+        await _client.PutAsJsonAsync($"/api/technologies/{techId}", new { id = techId, name = "Kubernetes", color = "#326ce5", icon = "cpu", notes = "", categoryId });
+
+        var response = await _client.PutAsJsonAsync($"/api/technologies/{techId}", new { id = techId, name = "Kubernetes", color = "#326ce5", icon = "cpu", notes = "", categoryId = (int?)null });
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var fetched = await _client.GetFromJsonAsync<TechnologyResponse>($"/api/technologies/{techId}");
+        fetched!.categoryId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetAll_LeavesCategoryFieldsNull_ForTechnologyWithoutCategory()
+    {
+        SeedTechnologyId();
+
+        var technologies = await _client.GetFromJsonAsync<TechnologyResponse[]>("/api/technologies");
+
+        technologies!.Single().categoryId.Should().BeNull();
+        technologies.Single().categoryName.Should().BeNull();
+    }
+
     // ── Paged catalog ────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task GetPaged_ReturnsFirstPage_OrderedByName()
+    public async Task GetPaged_ReturnsFirstPage_OrderedByTotalScoreDescending()
     {
-        SeedTechnologyId(name: "Zookeeper");
-        SeedTechnologyId(name: "Angular");
-        SeedTechnologyId(name: "Docker");
+        SeedTechnologyWithScore("Zookeeper", 20);
+        SeedTechnologyWithScore("Angular", 90);
+        SeedTechnologyWithScore("Docker", 50);
 
         var result = await _client.GetFromJsonAsync<PagedResponse>("/api/technologies/paged?page=1&pageSize=2");
 
@@ -110,15 +187,42 @@ public class TechnologiesControllerTests : IClassFixture<PersonalAssistantApiFac
     }
 
     [Fact]
-    public async Task GetPaged_ReturnsSecondPage()
+    public async Task GetPaged_ReturnsSecondPage_OrderedByTotalScoreDescending()
     {
-        SeedTechnologyId(name: "Zookeeper");
-        SeedTechnologyId(name: "Angular");
-        SeedTechnologyId(name: "Docker");
+        SeedTechnologyWithScore("Zookeeper", 20);
+        SeedTechnologyWithScore("Angular", 90);
+        SeedTechnologyWithScore("Docker", 50);
 
         var result = await _client.GetFromJsonAsync<PagedResponse>("/api/technologies/paged?page=2&pageSize=2");
 
         result!.items.Should().ContainSingle(t => t.name == "Zookeeper");
+    }
+
+    [Fact]
+    public async Task GetAll_OrdersByTotalScoreDescending()
+    {
+        SeedTechnologyWithScore("Low", 20);
+        SeedTechnologyWithScore("High", 80);
+        SeedTechnologyWithScore("Mid", 50);
+
+        var technologies = await _client.GetFromJsonAsync<TechnologyResponse[]>("/api/technologies");
+
+        technologies!.Select(t => t.name).Should().ContainInOrder("High", "Mid", "Low");
+    }
+
+    [Fact]
+    public async Task GetPaged_OrdersByTotalScoreDescending_AcrossPages()
+    {
+        SeedTechnologyWithScore("Score10", 10);
+        SeedTechnologyWithScore("Score90", 90);
+        SeedTechnologyWithScore("Score70", 70);
+        SeedTechnologyWithScore("Score30", 30);
+
+        var firstPage = await _client.GetFromJsonAsync<PagedResponse>("/api/technologies/paged?page=1&pageSize=2");
+        var secondPage = await _client.GetFromJsonAsync<PagedResponse>("/api/technologies/paged?page=2&pageSize=2");
+
+        firstPage!.items.Select(t => t.name).Should().ContainInOrder("Score90", "Score70");
+        secondPage!.items.Select(t => t.name).Should().ContainInOrder("Score30", "Score10");
     }
 
     [Fact]
@@ -852,6 +956,7 @@ public class TechnologiesControllerTests : IClassFixture<PersonalAssistantApiFac
     private record ImportResult(int imported, int skipped, string[] errors);
 
     private record TechnologyResponse(int id, string name, string color, string icon, string notes,
+        int? categoryId, string? categoryName, string? categoryColor, string? categoryIcon,
         int practiceEarnedPoints, int practiceTotalPoints, int theoryEarnedPoints, int theoryTotalPoints,
         int totalScore, string level);
 

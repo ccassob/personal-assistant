@@ -22,7 +22,6 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
     {
         var technologies = await db.Technologies
             .Where(t => t.UserId == CurrentUserId)
-            .OrderBy(t => t.Name)
             .ToListAsync();
         return Ok(await BuildResponses(technologies));
     }
@@ -41,16 +40,14 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         }
 
         var totalCount = await query.CountAsync();
-        var technologies = await query
-            .OrderBy(t => t.Name)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        var technologies = await query.ToListAsync();
+        var allResponses = await BuildResponses(technologies);
+        var pageItems = allResponses.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-        return Ok(new { items = await BuildResponses(technologies), totalCount, page, pageSize });
+        return Ok(new { items = pageItems, totalCount, page, pageSize });
     }
 
-    private async Task<List<object>> BuildResponses(List<Technology> technologies)
+    private async Task<List<TechnologyResponse>> BuildResponses(List<Technology> technologies)
     {
         var ids = technologies.Select(t => t.Id).ToList();
 
@@ -62,14 +59,19 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         var theorySectionIds = theorySections.Select(s => s.Id).ToList();
         var theoryQuestions = await db.TechnologyTheoryQuestions.Where(q => theorySectionIds.Contains(q.SectionId)).ToListAsync();
 
+        var categoryIds = technologies.Where(t => t.CategoryId.HasValue).Select(t => t.CategoryId!.Value).Distinct().ToList();
+        var categories = await db.TechnologyCategories.Where(c => categoryIds.Contains(c.Id)).ToListAsync();
+
         return technologies.Select(t =>
         {
             var mySectionIds = practiceSections.Where(s => s.TechnologyId == t.Id).Select(s => s.Id).ToHashSet();
             var myTheorySectionIds = theorySections.Where(s => s.TechnologyId == t.Id).Select(s => s.Id).ToHashSet();
+            var category = categories.FirstOrDefault(c => c.Id == t.CategoryId);
             return BuildResponse(t,
                 practiceItems.Where(p => mySectionIds.Contains(p.SectionId)),
-                theoryQuestions.Where(q => myTheorySectionIds.Contains(q.SectionId)));
-        }).ToList();
+                theoryQuestions.Where(q => myTheorySectionIds.Contains(q.SectionId)),
+                category);
+        }).OrderByDescending(r => r.TotalScore).ToList();
     }
 
     [HttpGet("{id}")]
@@ -84,7 +86,11 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         var theorySectionIds = await db.TechnologyTheorySections.Where(s => s.TechnologyId == id).Select(s => s.Id).ToListAsync();
         var theoryQuestions = await db.TechnologyTheoryQuestions.Where(q => theorySectionIds.Contains(q.SectionId)).ToListAsync();
 
-        return Ok(BuildResponse(technology, practiceItems, theoryQuestions));
+        TechnologyCategory? category = technology.CategoryId.HasValue
+            ? await db.TechnologyCategories.FirstOrDefaultAsync(c => c.Id == technology.CategoryId)
+            : null;
+
+        return Ok(BuildResponse(technology, practiceItems, theoryQuestions, category));
     }
 
     [HttpPost]
@@ -106,6 +112,7 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         existing.Color = technology.Color;
         existing.Icon = technology.Icon;
         existing.Notes = technology.Notes;
+        existing.CategoryId = technology.CategoryId;
         await db.SaveChangesAsync();
         return NoContent();
     }
@@ -587,7 +594,7 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
 
     // ── Scoring ──────────────────────────────────────────────────────────────
 
-    private static object BuildResponse(Technology t, IEnumerable<TechnologyPracticeItem> practiceItems, IEnumerable<TechnologyTheoryQuestion> theoryQuestions)
+    private static TechnologyResponse BuildResponse(Technology t, IEnumerable<TechnologyPracticeItem> practiceItems, IEnumerable<TechnologyTheoryQuestion> theoryQuestions, TechnologyCategory? category)
     {
         var practiceEarned = practiceItems.Where(p => p.IsDone).Sum(p => p.Points);
         var practiceTotal = practiceItems.Sum(p => p.Points);
@@ -598,20 +605,22 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         var totalPossible = practiceTotal + theoryTotal;
         var totalScore = totalPossible > 0 ? (int)Math.Round(100.0 * totalEarned / totalPossible) : 0;
 
-        return new
-        {
+        return new TechnologyResponse(
             t.Id,
             t.Name,
             t.Color,
             t.Icon,
             t.Notes,
-            practiceEarnedPoints = practiceEarned,
-            practiceTotalPoints = practiceTotal,
-            theoryEarnedPoints = theoryEarned,
-            theoryTotalPoints = theoryTotal,
+            category?.Id,
+            category?.Name,
+            category?.Color,
+            category?.Icon,
+            practiceEarned,
+            practiceTotal,
+            theoryEarned,
+            theoryTotal,
             totalScore,
-            level = GetLevel(totalScore)
-        };
+            GetLevel(totalScore));
     }
 
     private static string GetLevel(int score) => score switch
@@ -624,6 +633,13 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         _ => "Principiante"
     };
 }
+
+public record TechnologyResponse(
+    int Id, string Name, string Color, string Icon, string Notes,
+    int? CategoryId, string? CategoryName, string? CategoryColor, string? CategoryIcon,
+    int PracticeEarnedPoints, int PracticeTotalPoints,
+    int TheoryEarnedPoints, int TheoryTotalPoints,
+    int TotalScore, string Level);
 
 public record CreateSectionRequest(string Title);
 public record CreatePracticeItemRequest(int SectionId, string Title, int Points, string? Subcategory = null);

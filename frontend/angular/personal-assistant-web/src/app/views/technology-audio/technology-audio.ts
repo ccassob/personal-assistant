@@ -30,6 +30,9 @@ import { StudyAudioSession, StudyAudioService } from '../../core/services/api/st
               <a class="nav-link" routerLink="/technology-dashboard" routerLinkActive="active">Dashboard</a>
             </li>
             <li class="nav-item">
+              <a class="nav-link" routerLink="/technology-categories" routerLinkActive="active">Categorías</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" routerLink="/technology-audio" routerLinkActive="active">Audios</a>
             </li>
           </ul>

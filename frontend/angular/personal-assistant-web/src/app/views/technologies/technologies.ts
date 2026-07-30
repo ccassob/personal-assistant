@@ -3,9 +3,23 @@ import { FormsModule } from '@angular/forms'
 import { RouterLink, RouterLinkActive } from '@angular/router'
 import {
   Technology, TechnologyPracticeSection, TechnologyPracticeItem,
-  TechnologyTheorySection, TechnologyTheoryQuestion, TechnologyService, ImportTopicsResult
+  TechnologyTheorySection, TechnologyTheoryQuestion, TechnologyService, ImportTopicsResult,
+  levelBadgeClass as sharedLevelBadgeClass
 } from '../../core/services/api/technology.service'
+import { TechnologyCategory, TechnologyCategoryService } from '../../core/services/api/technology-category.service'
 import { CustomPagination } from '../../components/custom-pagination/custom-pagination'
+
+interface CategoryGroup {
+  key: number
+  name: string
+  color: string | null
+  icon: string | null
+  technologies: Technology[]
+}
+
+type DisplayRow =
+  | { kind: 'header'; key: number; name: string; color: string | null; icon: string | null; count: number }
+  | { kind: 'tech'; tech: Technology }
 
 @Component({
   selector: 'app-technologies',
@@ -35,6 +49,9 @@ import { CustomPagination } from '../../components/custom-pagination/custom-pagi
               <a class="nav-link" routerLink="/technology-dashboard" routerLinkActive="active">Dashboard</a>
             </li>
             <li class="nav-item">
+              <a class="nav-link" routerLink="/technology-categories" routerLinkActive="active">Categorías</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" routerLink="/technology-audio" routerLinkActive="active">Audios</a>
             </li>
           </ul>
@@ -54,8 +71,24 @@ import { CustomPagination } from '../../components/custom-pagination/custom-pagi
       }
 
       <div class="row g-3">
-        @for (t of technologies; track t.id) {
-          <div class="col-12">
+        @for (row of displayRows; track row.kind === 'header' ? ('cat-' + row.key) : ('tech-' + row.tech.id)) {
+          @if (row.kind === 'header') {
+            <div class="col-12">
+              <button class="btn btn-light border w-100 d-flex justify-content-between align-items-center"
+                (click)="toggleCategoryGroup(row.key)">
+                <span class="d-flex align-items-center gap-2">
+                  @if (row.icon) {
+                    <iconify-icon [attr.icon]="row.icon" width="18" [style.color]="row.color"></iconify-icon>
+                  }
+                  <span class="fw-semibold">{{ row.name }}</span>
+                  <span class="badge bg-secondary">{{ row.count }}</span>
+                </span>
+                <iconify-icon [attr.icon]="collapsedCategories.has(row.key) ? 'tabler:chevron-down' : 'tabler:chevron-up'" width="16"></iconify-icon>
+              </button>
+            </div>
+          } @else {
+            @let t = row.tech;
+            <div class="col-12">
             <div class="card" style="border-top: 4px solid {{ t.color }}">
               <div class="card-body">
 
@@ -269,7 +302,8 @@ import { CustomPagination } from '../../components/custom-pagination/custom-pagi
                 <button class="btn btn-sm btn-outline-danger flex-fill" (click)="delete(t.id)">Delete</button>
               </div>
             </div>
-          </div>
+            </div>
+          }
         } @empty {
           <div class="col-12 text-center text-muted py-5">
             @if (!searchTerm) {
@@ -318,6 +352,15 @@ import { CustomPagination } from '../../components/custom-pagination/custom-pagi
               <div class="mb-3">
                 <label class="form-label">Icon <small class="text-muted">(Iconify, e.g. tabler:brand-docker)</small></label>
                 <input class="form-control" [(ngModel)]="form.icon" placeholder="tabler:brand-docker">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Categoría <span class="text-muted">(opcional)</span></label>
+                <select class="form-select" [(ngModel)]="form.categoryId">
+                  <option [ngValue]="null">Sin categoría</option>
+                  @for (c of categories; track c.id) {
+                    <option [ngValue]="c.id">{{ c.name }}</option>
+                  }
+                </select>
               </div>
               <div class="mb-3">
                 <label class="form-label">Notes <span class="text-muted">(optional)</span></label>
@@ -387,6 +430,8 @@ import { CustomPagination } from '../../components/custom-pagination/custom-pagi
 })
 export class Technologies implements OnInit {
   technologies: Technology[] = []
+  categories: TechnologyCategory[] = []
+  collapsedCategories = new Set<number>()
 
   searchTerm = ''
   page = 1
@@ -424,23 +469,50 @@ export class Technologies implements OnInit {
   importResult: ImportTopicsResult | null = null
   importError = ''
 
-  constructor(private svc: TechnologyService) {}
+  constructor(private svc: TechnologyService, private categorySvc: TechnologyCategoryService) {}
 
-  ngOnInit() { this.load() }
+  ngOnInit() {
+    this.load()
+    this.categorySvc.getAll().subscribe(cats => this.categories = cats)
+  }
+
+  get isSearching(): boolean {
+    return !!this.searchTerm.trim()
+  }
 
   load() {
+    if (this.isSearching) {
+      this.loadPaged()
+    } else {
+      this.loadAll()
+    }
+  }
+
+  private loadPaged() {
     this.svc.getPaged(this.searchTerm, this.page, this.pageSize).subscribe(result => {
       if (result.items.length === 0 && this.page > 1 && result.totalCount > 0) {
         this.page = Math.max(1, Math.ceil(result.totalCount / this.pageSize))
-        this.load()
+        this.loadPaged()
         return
       }
       this.technologies = result.items
       this.totalCount = result.totalCount
-      result.items.forEach(t => {
-        this.svc.getPracticeItems(t.id).subscribe(items => this.practiceItems.set(t.id, items))
-        this.svc.getTheoryQuestions(t.id).subscribe(qs => this.theoryQuestions.set(t.id, qs))
-      })
+      this.loadDetailsFor(result.items)
+    })
+  }
+
+  private loadAll() {
+    this.svc.getAll().subscribe(data => {
+      this.technologies = data
+      this.totalCount = 0
+      this.loadDetailsFor(data)
+    })
+  }
+
+  private loadDetailsFor(items: Technology[]) {
+    items.forEach(t => {
+      this.svc.getPracticeItems(t.id).subscribe(items => this.practiceItems.set(t.id, items))
+      this.svc.getTheoryQuestions(t.id).subscribe(qs => this.theoryQuestions.set(t.id, qs))
     })
   }
 
@@ -457,8 +529,45 @@ export class Technologies implements OnInit {
     this.load()
   }
 
+  groupedByCategory(): CategoryGroup[] {
+    const map = new Map<number, CategoryGroup>()
+    for (const t of this.technologies) {
+      const key = t.categoryId ?? -1
+      if (!map.has(key)) {
+        map.set(key, { key, name: t.categoryName ?? 'Sin categoría', color: t.categoryColor, icon: t.categoryIcon, technologies: [] })
+      }
+      map.get(key)!.technologies.push(t)
+    }
+    const avgScore = (g: CategoryGroup) => g.technologies.reduce((sum, t) => sum + t.totalScore, 0) / g.technologies.length
+    return [...map.values()].sort((a, b) => {
+      if (a.key === -1) return 1
+      if (b.key === -1) return -1
+      return avgScore(b) - avgScore(a)
+    })
+  }
+
+  get displayRows(): DisplayRow[] {
+    if (this.isSearching) return this.technologies.map(t => ({ kind: 'tech', tech: t }))
+    const rows: DisplayRow[] = []
+    for (const g of this.groupedByCategory()) {
+      rows.push({ kind: 'header', key: g.key, name: g.name, color: g.color, icon: g.icon, count: g.technologies.length })
+      if (!this.collapsedCategories.has(g.key)) {
+        for (const t of g.technologies) rows.push({ kind: 'tech', tech: t })
+      }
+    }
+    return rows
+  }
+
+  toggleCategoryGroup(key: number) {
+    if (this.collapsedCategories.has(key)) {
+      this.collapsedCategories.delete(key)
+    } else {
+      this.collapsedCategories.add(key)
+    }
+  }
+
   emptyForm(): Partial<Technology> {
-    return { name: '', color: '#3b82f6', icon: '', notes: '' }
+    return { name: '', color: '#3b82f6', icon: '', notes: '', categoryId: null }
   }
 
   get showingRange(): string {
@@ -469,14 +578,7 @@ export class Technologies implements OnInit {
   }
 
   levelBadgeClass(level: string): string {
-    switch (level) {
-      case 'Básico': return 'bg-info text-dark'
-      case 'Intermedio': return 'bg-primary'
-      case 'Avanzado': return 'bg-warning text-dark'
-      case 'Experto': return 'bg-success'
-      case 'Dominio demostrado': return 'bg-dark'
-      default: return 'bg-secondary' // Principiante
-    }
+    return sharedLevelBadgeClass(level)
   }
 
   // ---- Section toggles ----
@@ -548,7 +650,7 @@ export class Technologies implements OnInit {
   closeForm() { this.showModal = false }
 
   save() {
-    const payload = { name: this.form.name ?? '', color: this.form.color ?? '#3b82f6', icon: this.form.icon ?? '', notes: this.form.notes ?? '' }
+    const payload = { name: this.form.name ?? '', color: this.form.color ?? '#3b82f6', icon: this.form.icon ?? '', notes: this.form.notes ?? '', categoryId: this.form.categoryId ?? null }
     if (this.form.id) {
       this.svc.update({ id: this.form.id, ...payload }).subscribe(() => { this.load(); this.closeForm() })
     } else {

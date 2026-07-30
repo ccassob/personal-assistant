@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using personal_assistant_api.Data;
 
@@ -11,9 +12,11 @@ using personal_assistant_api.Data;
 namespace personal_assistant_api.Migrations
 {
     [DbContext(typeof(PersonalAssistantDbContext))]
-    partial class PersonalAssistantDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260730160309_AddTechnologyCategory")]
+    partial class AddTechnologyCategory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

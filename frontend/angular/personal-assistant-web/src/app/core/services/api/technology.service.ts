@@ -9,6 +9,10 @@ export interface Technology {
   color: string
   icon: string
   notes: string
+  categoryId: number | null
+  categoryName: string | null
+  categoryColor: string | null
+  categoryIcon: string | null
   practiceEarnedPoints: number
   practiceTotalPoints: number
   theoryEarnedPoints: number
@@ -74,6 +78,17 @@ export interface TechnologyCompletionHistoryEntry {
   completedDate: string
 }
 
+export function levelBadgeClass(level: string): string {
+  switch (level) {
+    case 'Básico': return 'bg-info text-dark'
+    case 'Intermedio': return 'bg-primary'
+    case 'Avanzado': return 'bg-warning text-dark'
+    case 'Experto': return 'bg-success'
+    case 'Dominio demostrado': return 'bg-dark'
+    default: return 'bg-secondary' // Principiante
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class TechnologyService {
   private url = `${API_BASE}/api/technologies`
@@ -86,8 +101,8 @@ export class TechnologyService {
     const params = new URLSearchParams({ search: search ?? '', page: String(page), pageSize: String(pageSize) })
     return this.http.get<PagedResult<Technology>>(`${this.url}/paged?${params}`)
   }
-  create(t: { name: string; color: string; icon: string; notes: string }): Observable<Technology> { return this.http.post<Technology>(this.url, t) }
-  update(t: { id: number; name: string; color: string; icon: string; notes: string }): Observable<void> { return this.http.put<void>(`${this.url}/${t.id}`, t) }
+  create(t: { name: string; color: string; icon: string; notes: string; categoryId: number | null }): Observable<Technology> { return this.http.post<Technology>(this.url, t) }
+  update(t: { id: number; name: string; color: string; icon: string; notes: string; categoryId: number | null }): Observable<void> { return this.http.put<void>(`${this.url}/${t.id}`, t) }
   delete(id: number): Observable<void> { return this.http.delete<void>(`${this.url}/${id}`) }
 
   getPracticeSections(techId: number): Observable<TechnologyPracticeSection[]> { return this.http.get<TechnologyPracticeSection[]>(`${this.url}/${techId}/practice-sections`) }

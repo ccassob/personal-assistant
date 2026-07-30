@@ -41,6 +41,7 @@ public class PersonalAssistantDbContext(DbContextOptions<PersonalAssistantDbCont
     public DbSet<CreditCardCategory> CreditCardCategories => Set<CreditCardCategory>();
     public DbSet<CreditCardCategoryLimit> CreditCardCategoryLimits => Set<CreditCardCategoryLimit>();
     public DbSet<Technology> Technologies => Set<Technology>();
+    public DbSet<TechnologyCategory> TechnologyCategories => Set<TechnologyCategory>();
     public DbSet<TechnologyPracticeSection> TechnologyPracticeSections => Set<TechnologyPracticeSection>();
     public DbSet<TechnologyPracticeItem> TechnologyPracticeItems => Set<TechnologyPracticeItem>();
     public DbSet<TechnologyTheorySection> TechnologyTheorySections => Set<TechnologyTheorySection>();
@@ -176,6 +177,10 @@ public class PersonalAssistantDbContext(DbContextOptions<PersonalAssistantDbCont
             .HasForeignKey(l => l.CreditCardCategoryId).OnDelete(DeleteBehavior.Cascade);
 
         // Technology mastery tracker
+        modelBuilder.Entity<Technology>()
+            .HasOne<TechnologyCategory>().WithMany()
+            .HasForeignKey(t => t.CategoryId)
+            .OnDelete(DeleteBehavior.SetNull);
         modelBuilder.Entity<TechnologyPracticeSection>()
             .HasOne<Technology>().WithMany()
             .HasForeignKey(s => s.TechnologyId)
