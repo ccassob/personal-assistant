@@ -68,3 +68,4 @@ k8s/secret.yaml
 /backup
 /imports
 /work-plans
+*.ps1
