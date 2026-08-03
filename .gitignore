@@ -70,3 +70,4 @@ k8s/secret.yaml
 /work-plans
 *.ps1
 *.bacpac
+*.png
