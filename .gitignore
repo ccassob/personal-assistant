@@ -71,3 +71,4 @@ k8s/secret.yaml
 *.ps1
 *.bacpac
 *.png
+*.csv
