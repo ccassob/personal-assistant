@@ -72,3 +72,6 @@ k8s/secret.yaml
 *.bacpac
 *.png
 *.csv
+*.txt
+/WP_035.md
+/.claude
