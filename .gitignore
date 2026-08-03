@@ -69,3 +69,4 @@ k8s/secret.yaml
 /imports
 /work-plans
 *.ps1
+*.bacpac
