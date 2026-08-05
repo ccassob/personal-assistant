@@ -1,5 +1,6 @@
 using System.Text;
 using personal_assistant_api.Data;
+using personal_assistant_api.HealthChecks;
 using personal_assistant_api.Options;
 using personal_assistant_api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -63,7 +64,8 @@ builder.Services.AddScoped<StudyAudioService>();
 builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
 
 var app = builder.Build();
 
@@ -81,7 +83,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
 app.MapControllers();
 app.Run();
 
