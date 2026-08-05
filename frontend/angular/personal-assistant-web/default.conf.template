@@ -5,6 +5,12 @@ server {
 
     location /api/ {
         proxy_pass ${API_UPSTREAM};
+        # min-replicas:0 cold starts (API container start + possible SQL serverless
+        # auto-resume) can take longer than nginx's ~60s default; keep this comfortably
+        # above the 45s client-side timeout in auth.service.ts so the Angular "waking up"
+        # message always wins the race, not a bare nginx 502/504.
+        proxy_connect_timeout 75s;
+        proxy_read_timeout 90s;
         # Azure Container Apps' shared environment ingress routes TLS by SNI; nginx omits
         # the SNI extension by default when proxying to an https upstream, so the ingress
         # resets the handshake without this.

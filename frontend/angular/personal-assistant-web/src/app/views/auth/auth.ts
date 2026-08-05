@@ -1,7 +1,11 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { Router } from '@angular/router'
+import { HttpErrorResponse } from '@angular/common/http'
+import { TimeoutError } from 'rxjs'
 import { AuthService } from '@core/services/auth.service'
+
+const COLD_START_MESSAGE = 'The server is waking up after a period of inactivity. Please wait a moment and try again.'
 
 @Component({
   selector: 'app-auth',
@@ -104,13 +108,21 @@ export class Auth {
 
   constructor(private auth: AuthService, private router: Router) {}
 
+  private isLikelyColdStart(e: unknown): boolean {
+    if (e instanceof TimeoutError) return true
+    if (e instanceof HttpErrorResponse) {
+      return e.status === 0 || e.status === 502 || e.status === 503 || e.status === 504
+    }
+    return false
+  }
+
   login() {
     this.loading = true
     this.error = ''
     this.auth.login(this.email, this.password).subscribe({
       next: () => this.router.navigate(['/dashboard']),
       error: (e) => {
-        this.error = e?.error?.message ?? 'Invalid email or password.'
+        this.error = this.isLikelyColdStart(e) ? COLD_START_MESSAGE : (e?.error?.message ?? 'Invalid email or password.')
         this.loading = false
       },
     })
@@ -122,7 +134,7 @@ export class Auth {
     this.auth.register(this.email, this.password, this.displayName).subscribe({
       next: () => this.router.navigate(['/dashboard']),
       error: (e) => {
-        this.error = e?.error?.message ?? 'Registration failed. Check your details and try again.'
+        this.error = this.isLikelyColdStart(e) ? COLD_START_MESSAGE : (e?.error?.message ?? 'Registration failed. Check your details and try again.')
         this.loading = false
       },
     })

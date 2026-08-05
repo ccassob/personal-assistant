@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { Router } from '@angular/router'
-import { tap } from 'rxjs/operators'
+import { tap, timeout } from 'rxjs/operators'
 import { API_BASE } from '../../constants'
 
 interface JwtPayload {
@@ -17,17 +17,24 @@ interface JwtPayload {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly TOKEN_KEY = 'personal_assistant_token'
+  private readonly REQUEST_TIMEOUT_MS = 45_000
 
   constructor(private http: HttpClient, private router: Router) {}
 
   login(email: string, password: string) {
     return this.http.post<{ token: string }>(`${API_BASE}/api/auth/login`, { email, password })
-      .pipe(tap(r => localStorage.setItem(this.TOKEN_KEY, r.token)))
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT_MS),
+        tap(r => localStorage.setItem(this.TOKEN_KEY, r.token)),
+      )
   }
 
   register(email: string, password: string, displayName: string) {
     return this.http.post<{ token: string }>(`${API_BASE}/api/auth/register`, { email, password, displayName })
-      .pipe(tap(r => localStorage.setItem(this.TOKEN_KEY, r.token)))
+      .pipe(
+        timeout(this.REQUEST_TIMEOUT_MS),
+        tap(r => localStorage.setItem(this.TOKEN_KEY, r.token)),
+      )
   }
 
   logout() {
