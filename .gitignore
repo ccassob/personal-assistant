@@ -71,6 +71,8 @@ k8s/secret.yaml
 *.ps1
 *.bacpac
 *.png
+!frontend/angular/personal-assistant-web/public/**/*.png
+!frontend/angular/personal-assistant-web/src/assets/**/*.png
 *.csv
 *.txt
 /WP_035.md
