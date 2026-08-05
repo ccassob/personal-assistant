@@ -209,20 +209,55 @@ export class Accounts implements OnInit {
   totalChartYAxis: ApexYAxis = { min: 0, labels: { formatter: (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 0 }) } }
   totalChartColors: string[] = ['#198754']
 
+  get weeklyTotalHistory(): { week: string; avgAmount: number }[] {
+    return this.computeWeeklyAverages(this.totalHistory, h => h.totalAmount)
+  }
+
   get chartSeries(): ApexAxisChartSeries {
-    return [{ name: 'Total Balance', data: this.totalHistory.map(h => h.totalAmount) }]
+    return [{ name: 'Total Balance', data: this.weeklyTotalHistory.map(h => h.avgAmount) }]
   }
 
   get chartXAxis(): ApexXAxis {
-    return { categories: this.totalHistory.map(h => h.date), type: 'category' }
+    return { categories: this.weeklyTotalHistory.map(h => `Week ${this.isoWeekNumber(h.week)}`), type: 'category' }
+  }
+
+  get weeklyAccountHistory(): { week: string; avgAmount: number }[] {
+    return this.computeWeeklyAverages(this.accountHistory, h => h.amount)
   }
 
   get accountChartSeries(): ApexAxisChartSeries {
-    return [{ name: 'Balance', data: this.accountHistory.map(h => h.amount) }]
+    return [{ name: 'Balance', data: this.weeklyAccountHistory.map(h => h.avgAmount) }]
   }
 
   get accountChartXAxis(): ApexXAxis {
-    return { categories: this.accountHistory.map(h => h.date), type: 'category' }
+    return { categories: this.weeklyAccountHistory.map(h => `Week ${this.isoWeekNumber(h.week)}`), type: 'category' }
+  }
+
+  private weekStart(dateStr: string): string {
+    const d = new Date(dateStr)
+    const day = d.getDay()
+    const diff = day === 0 ? -6 : 1 - day
+    d.setDate(d.getDate() + diff)
+    return d.toISOString().split('T')[0]
+  }
+
+  private isoWeekNumber(dateStr: string): number {
+    const d = new Date(dateStr)
+    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7)
+    const week1 = new Date(d.getFullYear(), 0, 4)
+    return 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7)
+  }
+
+  private computeWeeklyAverages<T extends { date: string }>(data: T[], valueOf: (item: T) => number): { week: string; avgAmount: number }[] {
+    const map = new Map<string, number[]>()
+    data.forEach(h => {
+      const week = this.weekStart(h.date)
+      if (!map.has(week)) map.set(week, [])
+      map.get(week)!.push(valueOf(h))
+    })
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([week, amounts]) => ({ week, avgAmount: amounts.reduce((sum, v) => sum + v, 0) / amounts.length }))
   }
 
   constructor(private svc: AccountService) {}
@@ -237,7 +272,7 @@ export class Accounts implements OnInit {
   loadTotalHistory() {
     this.svc.getTotalHistory().subscribe(data => {
       this.totalHistory = data
-      const amounts = data.map(h => h.totalAmount)
+      const amounts = this.computeWeeklyAverages(data, h => h.totalAmount).map(h => h.avgAmount)
       const max = amounts.length > 0 ? Math.max(...amounts) * 1.5 : undefined
       const min = amounts.length > 0 ? Math.min(...amounts) / 2 : 0
       this.totalChartYAxis = {

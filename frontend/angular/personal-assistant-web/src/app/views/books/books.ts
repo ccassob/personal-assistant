@@ -410,7 +410,7 @@ export class Books implements OnInit {
       })
     })
 
-    const sorted = Array.from(weeklyMap.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+    const sorted = Array.from(weeklyMap.entries()).sort((a, b) => a[0].localeCompare(b[0])).slice(-5)
     const weeks = sorted.map(([d]) => `Week ${this.isoWeekNumber(d)}`)
     const pages = sorted.map(([, p]) => p)
 
