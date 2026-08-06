@@ -1,7 +1,7 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 
-namespace personal_assistant_api.Services;
+namespace PersonalAssistant.Api.Services;
 
 public class BlobStorageService(IConfiguration configuration)
 {

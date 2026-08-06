@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using personal_assistant_api.Data;
+using PersonalAssistant.Api.Data;
 
 #nullable disable
 
-namespace personal_assistant_api.Migrations
+namespace PersonalAssistant.Api.Migrations
 {
     [DbContext(typeof(PersonalAssistantDbContext))]
     [Migration("20260617160900_AddCreditCardCategory")]
@@ -223,7 +223,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Account", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Account", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -255,7 +255,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Accounts");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.AccountHistory", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.AccountHistory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -280,7 +280,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("AccountHistories");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.AppSettings", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.AppSettings", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -316,7 +316,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("AppSettings");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Book", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Book", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -369,7 +369,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Books");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.BookProgress", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.BookProgress", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -393,7 +393,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("BookProgresses");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.BookTask", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.BookTask", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -418,7 +418,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("BookTasks");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Budget", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Budget", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -450,7 +450,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Budgets");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Category", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -483,7 +483,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.CreditCard", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.CreditCard", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -519,7 +519,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("CreditCards");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.CreditCardCategory", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.CreditCardCategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -548,7 +548,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("CreditCardCategories");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.CreditCardStatement", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.CreditCardStatement", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -602,7 +602,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("CreditCardStatements");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.CreditCardTransaction", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.CreditCardTransaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -657,7 +657,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("CreditCardTransactions");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Goal", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Goal", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -697,7 +697,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Goals");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.GroceryCategory", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.GroceryCategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -722,7 +722,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("GroceryCategories");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.GroceryItem", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.GroceryItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -774,7 +774,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("GroceryItems");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.GroceryItemSupermarket", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.GroceryItemSupermarket", b =>
                 {
                     b.Property<int>("GroceryItemId")
                         .HasColumnType("int");
@@ -789,7 +789,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("GroceryItemSupermarkets");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.GroceryPurchase", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.GroceryPurchase", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -827,7 +827,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("GroceryPurchases");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Loan", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Loan", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -881,7 +881,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Loans");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.LoanPayment", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.LoanPayment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -922,7 +922,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("LoanPayments");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.NotificationLog", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.NotificationLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -950,7 +950,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("NotificationLogs");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.PantryItem", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.PantryItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -993,7 +993,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("PantryItems");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.PushSubscription", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.PushSubscription", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1025,7 +1025,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("PushSubscriptions");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.RecurringTransaction", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.RecurringTransaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1069,7 +1069,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("RecurringTransactions");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Supermarket", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Supermarket", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1090,7 +1090,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Supermarkets");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Transaction", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Transaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1134,7 +1134,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Vehicle", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Vehicle", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1181,7 +1181,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Vehicles");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.VehicleFuel", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.VehicleFuel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1214,7 +1214,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("VehicleFuels");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.VehicleMaintenance", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.VehicleMaintenance", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1256,7 +1256,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("VehicleMaintenances");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.VehicleMileageHistory", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.VehicleMileageHistory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1280,7 +1280,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("VehicleMileageHistories");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.VehicleReminder", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.VehicleReminder", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1309,7 +1309,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("VehicleReminders");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.VehicleTodo", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.VehicleTodo", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1385,9 +1385,9 @@ namespace personal_assistant_api.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.AccountHistory", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.AccountHistory", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Account", "Account")
+                    b.HasOne("PersonalAssistant.Api.Models.Account", "Account")
                         .WithMany()
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1396,27 +1396,27 @@ namespace personal_assistant_api.Migrations
                     b.Navigation("Account");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.BookProgress", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.BookProgress", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Book", null)
+                    b.HasOne("PersonalAssistant.Api.Models.Book", null)
                         .WithMany()
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.BookTask", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.BookTask", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Book", null)
+                    b.HasOne("PersonalAssistant.Api.Models.Book", null)
                         .WithMany()
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Budget", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Budget", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Category", "Category")
+                    b.HasOne("PersonalAssistant.Api.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1425,23 +1425,23 @@ namespace personal_assistant_api.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.CreditCardStatement", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.CreditCardStatement", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.CreditCard", null)
+                    b.HasOne("PersonalAssistant.Api.Models.CreditCard", null)
                         .WithMany()
                         .HasForeignKey("CreditCardId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.CreditCardTransaction", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.CreditCardTransaction", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.CreditCardCategory", "CreditCardCategory")
+                    b.HasOne("PersonalAssistant.Api.Models.CreditCardCategory", "CreditCardCategory")
                         .WithMany()
                         .HasForeignKey("CreditCardCategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("personal_assistant_api.Models.CreditCardStatement", null)
+                    b.HasOne("PersonalAssistant.Api.Models.CreditCardStatement", null)
                         .WithMany()
                         .HasForeignKey("StatementId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1450,52 +1450,52 @@ namespace personal_assistant_api.Migrations
                     b.Navigation("CreditCardCategory");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.GroceryItem", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.GroceryItem", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.GroceryCategory", null)
+                    b.HasOne("PersonalAssistant.Api.Models.GroceryCategory", null)
                         .WithMany()
                         .HasForeignKey("GroceryCategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("personal_assistant_api.Models.Supermarket", null)
+                    b.HasOne("PersonalAssistant.Api.Models.Supermarket", null)
                         .WithMany()
                         .HasForeignKey("LastSupermarketId")
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.GroceryItemSupermarket", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.GroceryItemSupermarket", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.GroceryItem", null)
+                    b.HasOne("PersonalAssistant.Api.Models.GroceryItem", null)
                         .WithMany()
                         .HasForeignKey("GroceryItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("personal_assistant_api.Models.Supermarket", null)
+                    b.HasOne("PersonalAssistant.Api.Models.Supermarket", null)
                         .WithMany()
                         .HasForeignKey("SupermarketId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.GroceryPurchase", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.GroceryPurchase", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.GroceryItem", null)
+                    b.HasOne("PersonalAssistant.Api.Models.GroceryItem", null)
                         .WithMany()
                         .HasForeignKey("GroceryItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("personal_assistant_api.Models.Supermarket", null)
+                    b.HasOne("PersonalAssistant.Api.Models.Supermarket", null)
                         .WithMany()
                         .HasForeignKey("SupermarketId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.LoanPayment", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.LoanPayment", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Loan", "Loan")
+                    b.HasOne("PersonalAssistant.Api.Models.Loan", "Loan")
                         .WithMany()
                         .HasForeignKey("LoanId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1504,17 +1504,17 @@ namespace personal_assistant_api.Migrations
                     b.Navigation("Loan");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.PantryItem", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.PantryItem", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.GroceryItem", null)
+                    b.HasOne("PersonalAssistant.Api.Models.GroceryItem", null)
                         .WithMany()
                         .HasForeignKey("GroceryItemId")
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.RecurringTransaction", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.RecurringTransaction", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Category", "Category")
+                    b.HasOne("PersonalAssistant.Api.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1523,9 +1523,9 @@ namespace personal_assistant_api.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Transaction", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Transaction", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Category", "Category")
+                    b.HasOne("PersonalAssistant.Api.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1534,45 +1534,45 @@ namespace personal_assistant_api.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.VehicleFuel", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.VehicleFuel", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Vehicle", null)
+                    b.HasOne("PersonalAssistant.Api.Models.Vehicle", null)
                         .WithMany()
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.VehicleMaintenance", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.VehicleMaintenance", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Vehicle", null)
+                    b.HasOne("PersonalAssistant.Api.Models.Vehicle", null)
                         .WithMany()
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.VehicleMileageHistory", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.VehicleMileageHistory", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Vehicle", null)
+                    b.HasOne("PersonalAssistant.Api.Models.Vehicle", null)
                         .WithMany()
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.VehicleReminder", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.VehicleReminder", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Vehicle", null)
+                    b.HasOne("PersonalAssistant.Api.Models.Vehicle", null)
                         .WithMany()
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.VehicleTodo", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.VehicleTodo", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Vehicle", null)
+                    b.HasOne("PersonalAssistant.Api.Models.Vehicle", null)
                         .WithMany()
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Cascade)

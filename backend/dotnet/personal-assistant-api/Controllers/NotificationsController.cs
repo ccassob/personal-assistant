@@ -1,15 +1,15 @@
 using System.Security.Claims;
 using System.Text.Json;
-using personal_assistant_api.Data;
-using personal_assistant_api.Models;
-using personal_assistant_api.Options;
-using personal_assistant_api.Services;
+using PersonalAssistant.Api.Data;
+using PersonalAssistant.Api.Models;
+using PersonalAssistant.Api.Options;
+using PersonalAssistant.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace personal_assistant_api.Controllers;
+namespace PersonalAssistant.Api.Controllers;
 
 [ApiController]
 [Route("api/notifications")]

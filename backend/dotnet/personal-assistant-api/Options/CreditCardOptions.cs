@@ -1,4 +1,4 @@
-namespace personal_assistant_api.Options;
+namespace PersonalAssistant.Api.Options;
 
 public class CreditCardOptions
 {

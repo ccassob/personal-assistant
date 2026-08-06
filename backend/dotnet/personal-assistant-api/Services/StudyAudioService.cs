@@ -1,6 +1,6 @@
-using personal_assistant_api.Models;
+using PersonalAssistant.Api.Models;
 
-namespace personal_assistant_api.Services;
+namespace PersonalAssistant.Api.Services;
 
 /// <summary>
 /// Synthesizes user-provided SSML into a tagged MP3 stored in Blob Storage, and wraps blob

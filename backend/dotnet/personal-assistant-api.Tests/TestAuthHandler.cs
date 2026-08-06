@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace personal_assistant_api.Tests;
+namespace PersonalAssistant.Tests;
 
 public class TestAuthHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options,

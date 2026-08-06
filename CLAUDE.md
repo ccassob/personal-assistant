@@ -9,7 +9,7 @@ A boilerplate template collection for full-stack web apps. The working templates
 ## Personal Assistant Application
 
 A full personal-management app (budget, loans, vehicles, books, grocery, pantry, goals, credit cards) using:
-- **Backend:** `backend/dotnet/personal-assistant-api/` — ASP.NET Core 10 Web API, namespace `personal_assistant_api`, EF Core with SQL Server `(localdb)\MSSQLLocalDB`, database `BudgetApp`
+- **Backend:** `backend/dotnet/personal-assistant-api/` — ASP.NET Core 10 Web API, namespace `PersonalAssistant.Api`, EF Core with SQL Server `(localdb)\MSSQLLocalDB`, database `BudgetApp`
 - **Frontend:** `frontend/angular/personal-assistant-web/` — Angular 21.1 standalone components, lazy-loaded routes, Bootstrap 5.3.8
 
 ### Domain model
@@ -65,7 +65,7 @@ Server=(localdb)\MSSQLLocalDB;Database=BudgetApp;Trusted_Connection=True;TrustSe
 ### Backend commands (run from `backend/dotnet/personal-assistant-api/`)
 
 ```bash
-dotnet build
+dotnet build PersonalAssistant.Api.csproj   # bare `dotnet build` is ambiguous — folder also holds PersonalAssistantApi.slnx
 dotnet run                          # API at https://localhost:7146 / http://localhost:5082
 dotnet ef migrations add <Name>     # requires: dotnet tool install -g dotnet-ef
 dotnet ef database update
@@ -191,7 +191,7 @@ All components are standalone; routes use `loadComponent` for lazy loading. No N
 
 ### Integration tests (`backend/dotnet/personal-assistant-api.Tests/`)
 
-Run with `dotnet test` from the solution root or from `backend/dotnet/`.
+Run with `dotnet test PersonalAssistantApi.slnx` from `backend/dotnet/personal-assistant-api/` (bare `dotnet test` is ambiguous there — the folder also holds `PersonalAssistant.Api.csproj`), or `dotnet test` from `backend/dotnet/personal-assistant-api.Tests/` directly.
 
 - `PersonalAssistantApiFactory` extends `WebApplicationFactory<Program>`, swaps SQL Server for `InMemoryDatabase`, and replaces JWT Bearer with `TestAuthHandler` (scheme name `"Test"`) so all requests are automatically authenticated as user id `TestAuthHandler.UserId` (`"test-user-id"`).
 - `ResetDatabase()` wipes and recreates the in-memory DB between tests. `Seed<T>()` / `SeedMany<T>()` insert rows directly.

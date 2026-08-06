@@ -1,9 +1,9 @@
-using personal_assistant_api.Models;
+using PersonalAssistant.Api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace personal_assistant_api.Data;
+namespace PersonalAssistant.Api.Data;
 
 public class PersonalAssistantDbContext(DbContextOptions<PersonalAssistantDbContext> options)
     : IdentityDbContext<IdentityUser>(options)

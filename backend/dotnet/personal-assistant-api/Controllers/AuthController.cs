@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
-namespace personal_assistant_api.Controllers;
+namespace PersonalAssistant.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]

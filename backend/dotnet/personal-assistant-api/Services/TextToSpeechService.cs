@@ -1,8 +1,8 @@
 using System.Text;
 using Microsoft.Extensions.Options;
-using personal_assistant_api.Options;
+using PersonalAssistant.Api.Options;
 
-namespace personal_assistant_api.Services;
+namespace PersonalAssistant.Api.Services;
 
 /// <summary>
 /// Synthesizes SSML into MP3 bytes via the Azure Speech REST v1 endpoint

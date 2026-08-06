@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace personal_assistant_api.Migrations
+namespace PersonalAssistant.Api.Migrations
 {
     /// <inheritdoc />
     public partial class AddTechnologyTopicOrderAndSubcategory : Migration

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>personal_assistant_api.Tests</RootNamespace>
+    <RootNamespace>PersonalAssistant.Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\personal-assistant-api\personal-assistant-api.csproj" />
+    <ProjectReference Include="..\personal-assistant-api\PersonalAssistant.Api.csproj" />
   </ItemGroup>
 
 </Project>

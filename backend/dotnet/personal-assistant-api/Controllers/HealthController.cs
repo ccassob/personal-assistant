@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace personal_assistant_api.Controllers;
+namespace PersonalAssistant.Api.Controllers;
 
 [ApiController]
 [Route("api/health")]

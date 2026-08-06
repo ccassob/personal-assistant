@@ -1,10 +1,10 @@
 using System.Security.Claims;
-using personal_assistant_api.Data;
+using PersonalAssistant.Api.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace personal_assistant_api.Controllers;
+namespace PersonalAssistant.Api.Controllers;
 
 [ApiController]
 [Authorize]

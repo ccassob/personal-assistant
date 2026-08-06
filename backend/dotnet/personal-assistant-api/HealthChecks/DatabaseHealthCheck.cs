@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using personal_assistant_api.Data;
+using PersonalAssistant.Api.Data;
 
-namespace personal_assistant_api.HealthChecks;
+namespace PersonalAssistant.Api.HealthChecks;
 
 public class DatabaseHealthCheck(PersonalAssistantDbContext db) : IHealthCheck
 {

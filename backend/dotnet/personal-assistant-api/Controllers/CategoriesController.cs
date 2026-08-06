@@ -1,60 +1,78 @@
 using System.Security.Claims;
-using personal_assistant_api.Data;
-using personal_assistant_api.Models;
+using PersonalAssistant.Api.Models;
+using PersonalAssistant.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
-namespace personal_assistant_api.Controllers;
+namespace PersonalAssistant.Api.Controllers;
 
+/// <summary>
+/// CRUD endpoints for the current user's transaction categories.
+/// Thin HTTP translator over <see cref="ICategoryService"/> — no business logic here.
+/// </summary>
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
-public class CategoriesController(PersonalAssistantDbContext db) : ControllerBase
+public class CategoriesController(ICategoryService categoryService) : ControllerBase
 {
     private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
+    /// <summary>Returns all categories owned by the current user.</summary>
     [HttpGet]
-    public async Task<IActionResult> GetAll() =>
-        Ok(await db.Categories.Where(c => c.UserId == CurrentUserId).ToListAsync());
+    public async Task<IActionResult> GetAll()
+    {
+        var result = await categoryService.GetAllAsync(CurrentUserId);
 
+        return result.ToActionResult(this);
+    }
+
+    /// <summary>Returns a single category by id, scoped to the current user.</summary>
+    /// <param name="id">Category id.</param>
+    /// <returns>200 with the category, or 404 if it doesn't exist or isn't owned by the current user.</returns>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var category = await db.Categories.FirstOrDefaultAsync(c => c.Id == id && c.UserId == CurrentUserId);
-        return category is null ? NotFound() : Ok(category);
+        var result = await categoryService.GetByIdAsync(id, CurrentUserId);
+
+        return result.ToActionResult(this);
     }
 
+    /// <summary>Creates a new category for the current user.</summary>
+    /// <param name="request">Fields for the new category.</param>
+    /// <returns>201 with a Location header pointing at <see cref="GetById"/>.</returns>
     [HttpPost]
-    public async Task<IActionResult> Create(Category category)
+    public async Task<IActionResult> Create(CreateCategoryRequest request)
     {
-        category.UserId = CurrentUserId;
-        db.Categories.Add(category);
-        await db.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
+        var result = await categoryService.CreateAsync(request, CurrentUserId);
+
+        if (result.Succeeded)
+        {
+            return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
+        }
+
+        return BadRequest(result.ErrorMessage);
     }
 
+    /// <summary>Updates an existing category owned by the current user.</summary>
+    /// <param name="id">Category id from the route.</param>
+    /// <param name="request">Updated fields; <see cref="UpdateCategoryRequest.Id"/> must match <paramref name="id"/>.</param>
+    /// <returns>204 on success, 400 if the route/body ids don't match, 404 if not found.</returns>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, Category category)
+    public async Task<IActionResult> Update(int id, UpdateCategoryRequest request)
     {
-        if (id != category.Id) return BadRequest();
-        var existing = await db.Categories.FirstOrDefaultAsync(c => c.Id == id && c.UserId == CurrentUserId);
-        if (existing is null) return NotFound();
-        existing.Name = category.Name;
-        existing.Type = category.Type;
-        existing.Color = category.Color;
-        existing.Icon = category.Icon;
-        await db.SaveChangesAsync();
-        return NoContent();
+        var result = await categoryService.UpdateAsync(id, request, CurrentUserId);
+
+        return result.ToNoContentResult(this);
     }
 
+    /// <summary>Deletes a category owned by the current user.</summary>
+    /// <param name="id">Category id.</param>
+    /// <returns>204 on success, 404 if not found.</returns>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var category = await db.Categories.FirstOrDefaultAsync(c => c.Id == id && c.UserId == CurrentUserId);
-        if (category is null) return NotFound();
-        db.Categories.Remove(category);
-        await db.SaveChangesAsync();
-        return NoContent();
+        var result = await categoryService.DeleteAsync(id, CurrentUserId);
+
+        return result.ToNoContentResult(this);
     }
 }

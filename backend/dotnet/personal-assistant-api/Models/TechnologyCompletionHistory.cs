@@ -1,6 +1,6 @@
-using personal_assistant_api.Controllers;
+using PersonalAssistant.Api.Controllers;
 
-namespace personal_assistant_api.Models;
+namespace PersonalAssistant.Api.Models;
 
 public class TechnologyCompletionHistory
 {

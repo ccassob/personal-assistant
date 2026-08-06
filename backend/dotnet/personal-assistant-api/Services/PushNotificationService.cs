@@ -1,12 +1,12 @@
 using System.Net;
 using System.Text.Json;
-using personal_assistant_api.Data;
-using personal_assistant_api.Options;
+using PersonalAssistant.Api.Data;
+using PersonalAssistant.Api.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using WebPush;
 
-namespace personal_assistant_api.Services;
+namespace PersonalAssistant.Api.Services;
 
 public class PushNotificationService(PersonalAssistantDbContext db, IOptions<NotificationOptions> opts)
 {

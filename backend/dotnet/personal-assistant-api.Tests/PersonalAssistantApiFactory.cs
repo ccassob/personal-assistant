@@ -1,4 +1,4 @@
-using personal_assistant_api.Data;
+using PersonalAssistant.Api.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace personal_assistant_api.Tests;
+namespace PersonalAssistant.Tests;
 
 public class PersonalAssistantApiFactory : WebApplicationFactory<Program>
 {

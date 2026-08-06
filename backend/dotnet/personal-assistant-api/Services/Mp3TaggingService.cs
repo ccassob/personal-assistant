@@ -1,4 +1,4 @@
-namespace personal_assistant_api.Services;
+namespace PersonalAssistant.Api.Services;
 
 public record Mp3Tags(string Title, string Artist, string Album, string Genre, int Year, int TrackNumber);
 

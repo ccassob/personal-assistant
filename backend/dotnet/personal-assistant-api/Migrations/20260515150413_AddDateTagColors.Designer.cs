@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using personal_assistant_api.Data;
+using PersonalAssistant.Api.Data;
 
 #nullable disable
 
-namespace personal_assistant_api.Migrations
+namespace PersonalAssistant.Api.Migrations
 {
     [DbContext(typeof(PersonalAssistantDbContext))]
     [Migration("20260515150413_AddDateTagColors")]
@@ -25,7 +25,7 @@ namespace personal_assistant_api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("personal_assistant_api.Models.AppSettings", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.AppSettings", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -53,7 +53,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("AppSettings");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Budget", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Budget", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -81,7 +81,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Budgets");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Category", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -110,7 +110,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Goal", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Goal", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -146,7 +146,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Goals");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.RecurringTransaction", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.RecurringTransaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -186,7 +186,7 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("RecurringTransactions");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Transaction", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Transaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -226,9 +226,9 @@ namespace personal_assistant_api.Migrations
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Budget", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Budget", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Category", "Category")
+                    b.HasOne("PersonalAssistant.Api.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -237,9 +237,9 @@ namespace personal_assistant_api.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.RecurringTransaction", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.RecurringTransaction", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Category", "Category")
+                    b.HasOne("PersonalAssistant.Api.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -248,9 +248,9 @@ namespace personal_assistant_api.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("personal_assistant_api.Models.Transaction", b =>
+            modelBuilder.Entity("PersonalAssistant.Api.Models.Transaction", b =>
                 {
-                    b.HasOne("personal_assistant_api.Models.Category", "Category")
+                    b.HasOne("PersonalAssistant.Api.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)

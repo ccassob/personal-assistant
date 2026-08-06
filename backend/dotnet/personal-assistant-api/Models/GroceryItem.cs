@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace personal_assistant_api.Models;
+namespace PersonalAssistant.Api.Models;
 
 public class GroceryItem
 {

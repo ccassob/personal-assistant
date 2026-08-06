@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using personal_assistant_api.Controllers;
-using personal_assistant_api.Models;
+using PersonalAssistant.Api.Controllers;
+using PersonalAssistant.Api.Models;
 
-namespace personal_assistant_api.Tests.Controllers;
+namespace PersonalAssistant.Tests.Controllers;
 
 public class TechnologiesControllerTests : IClassFixture<PersonalAssistantApiFactory>
 {

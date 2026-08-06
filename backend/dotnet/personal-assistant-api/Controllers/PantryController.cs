@@ -1,11 +1,11 @@
-using personal_assistant_api.Data;
-using personal_assistant_api.Models;
+using PersonalAssistant.Api.Data;
+using PersonalAssistant.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
-namespace personal_assistant_api.Controllers;
+namespace PersonalAssistant.Api.Controllers;
 
 [ApiController]
 [Route("api/pantry")]
