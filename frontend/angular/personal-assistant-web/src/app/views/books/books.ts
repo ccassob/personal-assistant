@@ -39,6 +39,7 @@ import { Book, BookProgress, BookTask, BookService } from '../../core/services/a
                   [colors]="histOpts.colors"
                   [grid]="histOpts.grid"
                   [tooltip]="histOpts.tooltip"
+                  [annotations]="histOpts.annotations"
                 ></apx-chart>
               </div>
             </div>
@@ -413,6 +414,7 @@ export class Books implements OnInit {
     const sorted = Array.from(weeklyMap.entries()).sort((a, b) => a[0].localeCompare(b[0])).slice(-5)
     const weeks = sorted.map(([d]) => `Week ${this.isoWeekNumber(d)}`)
     const pages = sorted.map(([, p]) => p)
+    const avg = pages.length > 0 ? pages.reduce((sum, p) => sum + p, 0) / pages.length : 0
 
     this.histSeries = [{ name: 'Pages Read', data: pages }]
     this.histOpts = {
@@ -425,6 +427,18 @@ export class Books implements OnInit {
       colors: ['#0d6efd'],
       grid: { borderColor: '#e9ecef' },
       tooltip: { y: { formatter: (v: number) => v + ' pages' } },
+      annotations: {
+        yaxis: [{
+          y: avg,
+          borderColor: '#dc3545',
+          strokeDashArray: 4,
+          label: {
+            text: `Avg: ${avg.toFixed(1)} pages`,
+            style: { color: '#fff', background: '#dc3545', fontSize: '11px' },
+            position: 'right',
+          },
+        }],
+      },
     }
   }
 
