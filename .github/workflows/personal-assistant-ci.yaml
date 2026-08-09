@@ -1,4 +1,4 @@
-name: Continuous Integration PA
+name: CI-PersonalAssisntant
 
 on:
   pull_request:
