@@ -102,6 +102,15 @@ Requires `SA_PASSWORD` and `JWT_KEY` env vars (or a `.env` file). The `api` serv
 
 `API_BASE` in `constants/index.ts` reads `environment.apiBase`; `getApiBase()` layers a `localStorage['__PERSONAL_ASSISTANT_API_URL__']` override on top for the PWA/mobile dynamic-URL flow (see `api-url.interceptor.ts`).
 
+### Deployment
+
+Two paths to ship to production (Azure Container Apps):
+
+- **Manual:** `deploy-azure-containers.ps1` — builds+pushes both Docker images locally and updates the two live Container Apps in place (add `-CreateInfra` only for a first-time provision). Requires Docker Desktop running and a `-DockerHubToken`.
+- **GitHub Actions:** `.github/workflows/personal-assistant-ci.yaml`. The `backend`/`frontend` jobs (build+test) run automatically on every push/PR to `main`. The `docker` job (build+push both images to Docker Hub, tagged `latest` + a UTC `yyyyMMddHHmmss` timestamp) and the `deploy` job (`az containerapp update` on both apps to that tag) only run when a GitHub **Release is published** — pushing to `main` alone never builds images or touches production. Requires repo secrets `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`, `AZURE_CREDENTIALS` (a service principal JSON, `contributor` scoped to the resource group).
+
+**Live Azure resource names don't match the `personal-assistant-*` rebrand** — deliberately left as-is to avoid downtime risk on the actively-used production instance: resource group `budget-app`, Container Apps environment `budget-env`, Container Apps `budget-api`/`budget-frontend`. Docker Hub repos (`ccassob/personal-assistant-api`, `ccassob/personal-assistant-web`) and the local database name (`BudgetApp`, see [Connection string](#connection-string)) each follow their own separate, also-mismatched naming — don't assume any of these three naming schemes align with each other or with the codebase's `PersonalAssistant.*` namespaces.
+
 ## Architecture
 
 ### Backend (`backend/dotnet/personal-assistant-api/`)
