@@ -163,6 +163,7 @@
           "builder": "@angular/build:karma",
           "options": {
             "tsConfig": "tsconfig.spec.json",
+            "polyfills": ["@angular/localize/init", "zone.js"],
             "inlineStyleLanguage": "scss",
             "assets": [
               {

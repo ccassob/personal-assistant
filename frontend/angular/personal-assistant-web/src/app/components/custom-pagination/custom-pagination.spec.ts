@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { provideRouter } from '@angular/router'
 import { CustomPagination } from './custom-pagination'
 
 describe('CustomPagination', () => {
@@ -8,6 +9,7 @@ describe('CustomPagination', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CustomPagination],
+      providers: [provideRouter([])],
     }).compileComponents()
 
     fixture = TestBed.createComponent(CustomPagination)
