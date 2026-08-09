@@ -85,6 +85,10 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Set image tag
+        id: image-tag
+        run: echo "value=$(date -u +%Y%m%d%H%M%S)" >> "$GITHUB_OUTPUT"
+
       - name: Build and push API image
         uses: docker/build-push-action@v6
         with:
@@ -92,7 +96,7 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/personal-assistant-api:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/personal-assistant-api:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/personal-assistant-api:${{ steps.image-tag.outputs.value }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -105,6 +109,6 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/personal-assistant-web:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/personal-assistant-web:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/personal-assistant-web:${{ steps.image-tag.outputs.value }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
