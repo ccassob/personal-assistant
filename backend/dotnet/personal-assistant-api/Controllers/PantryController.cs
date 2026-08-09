@@ -17,9 +17,7 @@ public class PantryController(PersonalAssistantDbContext db) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] string? filter)
     {
-        var items = await db.PantryItems
-            .Where(p => p.UserId == CurrentUserId)
-            .ToListAsync();
+        var items = await db.PantryItems.Where(p => p.UserId == CurrentUserId).ToListAsync();
 
         var today = DateOnly.FromDateTime(DateTime.Today);
 
