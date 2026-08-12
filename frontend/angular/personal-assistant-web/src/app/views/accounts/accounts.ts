@@ -4,7 +4,7 @@ import { DecimalPipe } from '@angular/common'
 import { NgApexchartsModule } from 'ng-apexcharts'
 import {
   ApexChart, ApexAxisChartSeries, ApexXAxis,
-  ApexFill, ApexStroke, ApexDataLabels, ApexTooltip, ApexYAxis
+  ApexFill, ApexStroke, ApexDataLabels, ApexTooltip, ApexYAxis, ApexAnnotations
 } from 'ng-apexcharts'
 import { Account, AccountHistory, AccountHistoryTotal, AccountService } from '../../core/services/api/account.service'
 
@@ -58,7 +58,7 @@ import { Account, AccountHistory, AccountHistoryTotal, AccountService } from '..
             <div class="card-body">
               <h6 class="card-title mb-3">
                 <iconify-icon icon="tabler:chart-area-line" width="18" class="me-1"></iconify-icon>
-                Total Portfolio — Last 6 Months
+                Total Portfolio — Last 12 Weeks
               </h6>
               @if (totalHistory.length > 0) {
                 <apx-chart
@@ -71,6 +71,7 @@ import { Account, AccountHistory, AccountHistoryTotal, AccountService } from '..
                   [dataLabels]="chartDataLabels"
                   [tooltip]="chartTooltip"
                   [colors]="totalChartColors"
+                  [annotations]="totalChartAnnotations"
                 ></apx-chart>
               } @else {
                 <p class="text-muted text-center py-3 mb-0">No history yet. Save an account to start tracking.</p>
@@ -208,9 +209,30 @@ export class Accounts implements OnInit {
   chartYAxis: ApexYAxis = { labels: { formatter: (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 0 }) } }
   totalChartYAxis: ApexYAxis = { min: 0, labels: { formatter: (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 0 }) } }
   totalChartColors: string[] = ['#198754']
+  totalChartWeeksLimit = 12
 
   get weeklyTotalHistory(): { week: string; avgAmount: number }[] {
-    return this.computeWeeklyAverages(this.totalHistory, h => h.totalAmount)
+    return this.computeWeeklyAverages(this.totalHistory, h => h.totalAmount).slice(-this.totalChartWeeksLimit)
+  }
+
+  get totalChartAverage(): number {
+    const amounts = this.weeklyTotalHistory.map(h => h.avgAmount)
+    return amounts.length > 0 ? amounts.reduce((sum, v) => sum + v, 0) / amounts.length : 0
+  }
+
+  get totalChartAnnotations(): ApexAnnotations {
+    const avg = this.totalChartAverage
+    return {
+      yaxis: [{
+        y: avg,
+        borderColor: '#6c757d',
+        strokeDashArray: 4,
+        label: {
+          text: `Avg: ${avg.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+          style: { color: '#fff', background: '#6c757d' },
+        },
+      }],
+    }
   }
 
   get chartSeries(): ApexAxisChartSeries {
@@ -272,7 +294,7 @@ export class Accounts implements OnInit {
   loadTotalHistory() {
     this.svc.getTotalHistory().subscribe(data => {
       this.totalHistory = data
-      const amounts = this.computeWeeklyAverages(data, h => h.totalAmount).map(h => h.avgAmount)
+      const amounts = this.weeklyTotalHistory.map(h => h.avgAmount)
       const max = amounts.length > 0 ? Math.max(...amounts) * 1.5 : undefined
       const min = amounts.length > 0 ? Math.min(...amounts) / 2 : 0
       this.totalChartYAxis = {
