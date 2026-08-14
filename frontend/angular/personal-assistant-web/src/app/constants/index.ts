@@ -25,10 +25,10 @@ import { MenuItemType } from '../types'
 
 export const menuItems: MenuItemType[] = [
   { slug: 'dashboard', label: 'Dashboard', icon: 'dashboard', url: '/dashboard' },
-  { slug: 'transactions', label: 'Budget', icon: 'arrows-exchange', url: '/transactions' },
+  { slug: 'transactions', label: 'Account Transactions', icon: 'arrows-exchange', url: '/transactions' },
   { slug: 'goals', label: 'Goals', icon: 'target', url: '/goals' },
   { slug: 'loans', label: 'Loans', icon: 'credit-card', url: '/loans' },
-  { slug: 'credit-cards', label: 'Credit Cards', icon: 'cards', url: '/credit-cards' },
+  { slug: 'credit-cards', label: 'Credit Card Transactions', icon: 'cards', url: '/credit-cards' },
   { slug: 'vehicles', label: 'Vehicles', icon: 'car', url: '/vehicles' },
   { slug: 'books', label: 'Books', icon: 'book', url: '/books' },
   { slug: 'accounts', label: 'Accounts', icon: 'wallet', url: '/accounts' },
