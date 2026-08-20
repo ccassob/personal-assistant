@@ -54,14 +54,19 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()));
 
 builder.Services.Configure<NotificationOptions>(builder.Configuration.GetSection("Notifications"));
-builder.Services.Configure<CreditCardOptions>(builder.Configuration.GetSection("CreditCards"));
 builder.Services.Configure<AzureSpeechOptions>(builder.Configuration.GetSection("AzureSpeech"));
+builder.Services.Configure<DocumentIntelligenceOptions>(builder.Configuration.GetSection("DocumentIntelligence"));
+builder.Services.Configure<AnthropicOptions>(builder.Configuration.GetSection("Anthropic"));
 builder.Services.AddScoped<PushNotificationService>();
 builder.Services.AddScoped<BlobStorageService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 builder.Services.AddScoped<TextToSpeechService>();
 builder.Services.AddScoped<Mp3TaggingService>();
 builder.Services.AddScoped<StudyAudioService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<DocumentIntelligenceService>();
+builder.Services.AddScoped<AnthropicClassificationService>();
+builder.Services.AddScoped<IStatementExtractionPipeline, StatementExtractionPipeline>();
 builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

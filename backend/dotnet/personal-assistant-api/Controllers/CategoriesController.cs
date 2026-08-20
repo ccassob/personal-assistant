@@ -13,7 +13,7 @@ namespace PersonalAssistant.Api.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
-public class CategoriesController(ICategoryService categoryService) : ControllerBase
+public class CategoriesController(ICategoryService _categoryService) : ControllerBase
 {
     private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -21,7 +21,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var result = await categoryService.GetAllAsync(CurrentUserId);
+        var result = await _categoryService.GetAllAsync(CurrentUserId);
 
         return result.ToActionResult(this);
     }
@@ -32,7 +32,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var result = await categoryService.GetByIdAsync(id, CurrentUserId);
+        var result = await _categoryService.GetByIdAsync(id, CurrentUserId);
 
         return result.ToActionResult(this);
     }
@@ -43,7 +43,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     [HttpPost]
     public async Task<IActionResult> Create(CreateCategoryRequest request)
     {
-        var result = await categoryService.CreateAsync(request, CurrentUserId);
+        var result = await _categoryService.CreateAsync(request, CurrentUserId);
 
         if (result.Succeeded)
         {
@@ -60,7 +60,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, UpdateCategoryRequest request)
     {
-        var result = await categoryService.UpdateAsync(id, request, CurrentUserId);
+        var result = await _categoryService.UpdateAsync(id, request, CurrentUserId);
 
         return result.ToNoContentResult(this);
     }
@@ -71,7 +71,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var result = await categoryService.DeleteAsync(id, CurrentUserId);
+        var result = await _categoryService.DeleteAsync(id, CurrentUserId);
 
         return result.ToNoContentResult(this);
     }

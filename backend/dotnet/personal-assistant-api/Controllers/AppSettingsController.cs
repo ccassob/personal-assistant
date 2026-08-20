@@ -18,6 +18,7 @@ public class AppSettingsController(PersonalAssistantDbContext db) : ControllerBa
     public async Task<IActionResult> Get()
     {
         var settings = await db.AppSettings.FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
+
         if (settings is null)
         {
             settings = new AppSettings { CutoffDay = 1, UserId = CurrentUserId };
@@ -31,6 +32,7 @@ public class AppSettingsController(PersonalAssistantDbContext db) : ControllerBa
             if (string.IsNullOrEmpty(settings.FutureColor)) settings.FutureColor = "#fd7e14";
             if (string.IsNullOrEmpty(settings.DistanceUnit)) settings.DistanceUnit = "km";
         }
+
         return Ok(settings);
     }
 
@@ -38,16 +40,19 @@ public class AppSettingsController(PersonalAssistantDbContext db) : ControllerBa
     public async Task<IActionResult> Update(AppSettings incoming)
     {
         var settings = await db.AppSettings.FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
+
         if (settings is null)
         {
             settings = new AppSettings { UserId = CurrentUserId };
             db.AppSettings.Add(settings);
         }
+
         settings.CutoffDay = Math.Clamp(incoming.CutoffDay, 1, 31);
         settings.PastColor = incoming.PastColor ?? "#6c757d";
         settings.TodayColor = incoming.TodayColor ?? "#0d6efd";
         settings.FutureColor = incoming.FutureColor ?? "#fd7e14";
         settings.DistanceUnit = incoming.DistanceUnit is "km" or "mi" ? incoming.DistanceUnit : "km";
+
         await db.SaveChangesAsync();
         return Ok(settings);
     }

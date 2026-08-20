@@ -44,7 +44,6 @@ flowchart LR
 
     DB[("SQL Server\nEF Core")]
     Blob["Azure Blob Storage\n(credit card PDFs)"]
-    Logic["Azure Logic App"]
     DocAI["Azure Document Intelligence"]
     Claude["Claude Haiku\n(Anthropic API)"]
     Push["Web Push\n(VAPID)"]
@@ -53,15 +52,13 @@ flowchart LR
     FE -- "/api/* reverse proxy" --> API
     API -- "EF Core" --> DB
     API -- "upload statement" --> Blob
-    Blob -- "blob-created trigger" --> Logic
-    Logic -- "OCR + table extraction" --> DocAI
-    Logic -- "classify & clean rows" --> Claude
-    Logic -- "webhook: structured transactions" --> API
+    API -- "OCR + table extraction" --> DocAI
+    API -- "classify & clean rows" --> Claude
     API -- "expiring items / maintenance due" --> Push
     Push -.-> Browser
 ```
 
-Two containers, one database, and one asynchronous document pipeline. The frontend never talks to the API cross-origin — nginx proxies `/api/*` to the API container so the browser only ever sees a single origin, which sidesteps CORS and lets the JWT live in `localStorage` without extra cookie/SameSite complexity.
+Two containers, one database, and one synchronous document pipeline. The frontend never talks to the API cross-origin — nginx proxies `/api/*` to the API container so the browser only ever sees a single origin, which sidesteps CORS and lets the JWT live in `localStorage` without extra cookie/SameSite complexity.
 
 ## Tech stack
 
@@ -74,7 +71,7 @@ Two containers, one database, and one asynchronous document pipeline. The fronte
 | UI | Bootstrap 5, Iconify (Tabler icons), ApexCharts | Fast to build with, no heavyweight component library lock-in |
 | PWA | Angular Service Worker, Web Push (VAPID) | This is a daily-use app on my phone — needed offline resilience and home-screen installability, not just a desktop dashboard |
 | Containers | Docker, docker-compose (local), Azure Container Apps (prod) | Reproducible builds locally and in the cloud; Container Apps over App Service for cheaper scale-to-zero-friendly hosting once the AI pipeline made "always-on App Service" wasteful |
-| Document AI | Azure Blob Storage → Azure Logic Apps → Azure Document Intelligence → Claude Haiku (Anthropic API) | See [Technical highlights](#technical-highlights) — this is the one part of the app that isn't "just CRUD" |
+| Document AI | Azure Blob Storage → Azure Document Intelligence → Claude Haiku (Anthropic API), orchestrated synchronously by the API | See [Technical highlights](#technical-highlights) — this is the one part of the app that isn't "just CRUD" |
 | Testing | xUnit + FluentAssertions (backend, in-memory DB), Karma/Jasmine (frontend) | Integration tests hit real controller/EF Core wiring against `InMemoryDatabase`, not mocks — catches wiring bugs mocks would hide |
 
 ## Modules
@@ -97,7 +94,7 @@ Each module below is a vertical slice: EF Core entity → `[Authorize]`-protecte
 
 ## Technical highlights
 
-**AI-assisted credit card statement import.** The tedious part of budgeting is always data entry, and credit card statements are the worst offender — dozens of line items a month, every month. Instead of typing them in, you upload the statement PDF; a blob-storage trigger kicks off an Azure Logic App that runs the PDF through Azure Document Intelligence for OCR/table extraction, hands the extracted rows to Claude Haiku for cleanup and category classification, and calls back into the API with structured `CreditCardTransaction` rows ready for a quick human review pass. This is the one part of the system that isn't "just CRUD," and it's the reason the credit cards module exists as an async pipeline (`Pending` → processed statement) instead of a synchronous form.
+**AI-assisted credit card statement import.** The tedious part of budgeting is always data entry, and credit card statements are the worst offender — dozens of line items a month, every month. Instead of typing them in, you upload the statement PDF; the API uploads it to Blob Storage, runs it through Azure Document Intelligence for OCR/table extraction, hands the extracted rows to Claude Haiku for cleanup and category classification, and returns the finished, structured `CreditCardTransaction` rows in the same response — ready for a quick human review pass. This is the one part of the system that isn't "just CRUD." It used to run as an async pipeline behind an Azure Logic App (and later a dedicated Azure Function + Storage Queue) so the upload request could return immediately, but for one user's statement volume that extra infrastructure wasn't worth the operational overhead — the whole thing now runs synchronously inside the API request, which is simpler to deploy, debug, and reason about at the cost of a slower upload response (mitigated with longer timeouts, see [Design notes](#design-notes--trade-offs)).
 
 **Billing-period logic, not calendar months.** A private `GetPeriod(cutoffDay, month, year)` helper (duplicated deliberately in `TransactionsController` and `DashboardController` rather than abstracted — small enough that a shared dependency wasn't worth the coupling) computes a period starting on a user-configurable cutoff day. Every dashboard stat, transaction filter, and recurring-transaction generation run is period-aware, not calendar-month-aware.
 
@@ -174,7 +171,7 @@ Two Docker images (API, frontend+nginx) built with `az acr build` and deployed t
 
 A few deliberate choices worth calling out, since a portfolio README that only lists what went right isn't very useful:
 
-- **No message queue for the credit card pipeline.** The Logic App → webhook flow is simple enough that a queue would be over-engineering for one user's statement volume. If this needed to scale past personal use, that's the first thing I'd swap in.
+- **No message queue for the credit card pipeline.** Document Intelligence + Claude Haiku run synchronously inside the upload/reprocess request — simple enough for one user's statement volume, and it means one project to deploy instead of three (API + Function + Storage Queue, an approach this repo actually tried and reverted — see `work-plans/WP_044.md`/`WP_045.md`). A queue would be the first thing to add back if this needed to scale past personal use.
 - **`GetPeriod` is duplicated, not shared.** Two call sites, ~15 lines, genuinely different enough contexts (dashboard aggregation vs. transaction filtering) that a shared abstraction would have added an indirection layer for no real benefit yet. Worth revisiting if a third call site shows up.
 - **No row-level security / multi-tenancy framework.** Manual `UserId` filtering in every controller is more code than a framework would need, but it's explicit, greppable, and testable — I'd rather have 21 controllers doing the same obvious thing than one clever abstraction hiding how authorization actually works.
 - **The database name (`BudgetApp`) doesn't match the product name.** The app was rebranded from "BudgetApp" to "Personal Assistant" as it outgrew being just a budget tracker (see `work-plans/WP_037.md`), but the live database wasn't renamed to avoid an unnecessary migration risk on data that already existed. Cosmetic, but flagged here so it doesn't look like an oversight.

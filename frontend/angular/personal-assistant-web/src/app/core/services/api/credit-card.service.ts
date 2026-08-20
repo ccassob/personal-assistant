@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { Observable } from 'rxjs'
+import { timeout } from 'rxjs/operators'
 import { API_BASE } from '../../../constants'
 
 export interface CreditCard {
@@ -42,6 +43,7 @@ export interface CreditCardTransaction {
 @Injectable({ providedIn: 'root' })
 export class CreditCardService {
   private base = `${API_BASE}/api/credit-cards`
+  private readonly STATEMENT_TIMEOUT_MS = 150_000
 
   constructor(private http: HttpClient) {}
 
@@ -52,12 +54,17 @@ export class CreditCardService {
 
   getStatements(cardId: number): Observable<CreditCardStatement[]> { return this.http.get<CreditCardStatement[]>(`${this.base}/${cardId}/statements`) }
   getStatement(id: number): Observable<CreditCardStatement> { return this.http.get<CreditCardStatement>(`${this.base}/statements/${id}`) }
-  uploadStatement(cardId: number, file: File): Observable<{ statementId: number; status: string }> {
+  uploadStatement(cardId: number, file: File): Observable<CreditCardStatement> {
     const fd = new FormData()
     fd.append('file', file)
-    return this.http.post<{ statementId: number; status: string }>(`${this.base}/${cardId}/statements`, fd)
+    return this.http.post<CreditCardStatement>(`${this.base}/${cardId}/statements`, fd)
+      .pipe(timeout(this.STATEMENT_TIMEOUT_MS))
   }
   deleteStatement(id: number): Observable<void> { return this.http.delete<void>(`${this.base}/statements/${id}`) }
+  reprocessStatement(id: number): Observable<CreditCardStatement> {
+    return this.http.post<CreditCardStatement>(`${this.base}/statements/${id}/reprocess`, {})
+      .pipe(timeout(this.STATEMENT_TIMEOUT_MS))
+  }
 
   getTransactions(statementId: number): Observable<CreditCardTransaction[]> { return this.http.get<CreditCardTransaction[]>(`${this.base}/statements/${statementId}/transactions`) }
   updateTransaction(id: number, body: { creditCardCategoryId?: number | null; notes: string; type: string }): Observable<void> { return this.http.put<void>(`${this.base}/transactions/${id}`, body) }

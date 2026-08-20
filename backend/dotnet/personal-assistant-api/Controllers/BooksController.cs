@@ -72,6 +72,7 @@ public class BooksController(PersonalAssistantDbContext db) : ControllerBase
     public async Task<IActionResult> GetProgress(int id)
     {
         if (!await db.Books.AnyAsync(b => b.Id == id && b.UserId == CurrentUserId)) return NotFound();
+
         return Ok(await db.BookProgresses
             .Where(p => p.BookId == id)
             .OrderBy(p => p.Date)

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { DecimalPipe, DatePipe } from '@angular/common'
 import { RouterLink, RouterLinkActive } from '@angular/router'
@@ -151,14 +151,8 @@ import { CreditCardCategoryService, CreditCardCategory } from '../../core/servic
                             <td class="small text-center">{{ stmt.transactionCount }}</td>
                             <td>
                               <span class="badge"
-                                [class.bg-warning]="stmt.status === 'Pending'"
-                                [class.text-dark]="stmt.status === 'Pending'"
-                                [class.bg-info]="stmt.status === 'Processing'"
                                 [class.bg-success]="stmt.status === 'Processed'"
                                 [class.bg-danger]="stmt.status === 'Failed'">
-                                @if (stmt.status === 'Pending' || stmt.status === 'Processing') {
-                                  <span class="spinner-border spinner-border-sm me-1" style="width:10px;height:10px"></span>
-                                }
                                 {{ stmt.status }}
                               </span>
                               @if (stmt.status === 'Failed' && stmt.errorMessage) {
@@ -170,6 +164,15 @@ import { CreditCardCategoryService, CreditCardCategory } from '../../core/servic
                                 @if (stmt.status === 'Processed' && stmt.transactionCount > 0) {
                                   <button class="btn btn-sm btn-outline-primary" (click)="selectStatement(stmt)">
                                     View
+                                  </button>
+                                }
+                                @if (stmt.status === 'Failed') {
+                                  <button class="btn btn-sm btn-outline-warning" [disabled]="retrying[stmt.id]" (click)="retryStatement(stmt.id)">
+                                    @if (retrying[stmt.id]) {
+                                      <span class="spinner-border spinner-border-sm"></span>
+                                    } @else {
+                                      <iconify-icon icon="tabler:refresh" width="14"></iconify-icon> Retry
+                                    }
                                   </button>
                                 }
                                 <button class="btn btn-sm btn-outline-danger" (click)="deleteStatement(stmt.id)">
@@ -355,7 +358,7 @@ import { CreditCardCategoryService, CreditCardCategory } from '../../core/servic
     </div>
   `
 })
-export class CreditCards implements OnInit, OnDestroy {
+export class CreditCards implements OnInit {
   cards: CreditCard[] = []
   selectedCard: CreditCard | null = null
   statements: CreditCardStatement[] = []
@@ -369,7 +372,7 @@ export class CreditCards implements OnInit, OnDestroy {
   txForm: (Partial<CreditCardTransaction> & { id: number }) | null = null
 
   uploading: Record<number, boolean> = {}
-  private pollIntervalId: ReturnType<typeof setInterval> | null = null
+  retrying: Record<number, boolean> = {}
 
   constructor(
     private svc: CreditCardService,
@@ -379,10 +382,6 @@ export class CreditCards implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadCards()
     this.catSvc.getAll().subscribe(c => this.categories = c)
-  }
-
-  ngOnDestroy() {
-    this.stopPolling()
   }
 
   loadCards() {
@@ -397,10 +396,7 @@ export class CreditCards implements OnInit, OnDestroy {
   }
 
   loadStatements(cardId: number) {
-    this.svc.getStatements(cardId).subscribe(stmts => {
-      this.statements = stmts
-      this.startPollingIfNeeded()
-    })
+    this.svc.getStatements(cardId).subscribe(stmts => this.statements = stmts)
   }
 
   selectStatement(stmt: CreditCardStatement) {
@@ -465,10 +461,24 @@ export class CreditCards implements OnInit, OnDestroy {
           this.selectCard(this.cards.find(c => c.id === cardId)!)
         }
       },
-      error: () => {
+      error: (err) => {
         this.uploading[cardId] = false
         input.value = ''
-        alert('Upload failed. Please try again.')
+        alert(err.error?.error ?? 'Upload failed. Please try again.')
+      }
+    })
+  }
+
+  retryStatement(id: number) {
+    this.retrying[id] = true
+    this.svc.reprocessStatement(id).subscribe({
+      next: () => {
+        this.retrying[id] = false
+        if (this.selectedCard) this.loadStatements(this.selectedCard.id)
+      },
+      error: (err) => {
+        this.retrying[id] = false
+        alert(err.error?.error ?? 'Retry failed. Please try again.')
       }
     })
   }
@@ -503,40 +513,6 @@ export class CreditCards implements OnInit, OnDestroy {
       if (this.selectedStatement) this.svc.getTransactions(this.selectedStatement.id).subscribe(txs => this.transactions = txs)
       this.closeTxEdit()
     })
-  }
-
-  // ── Polling ────────────────────────────────────────────────────────────
-
-  private startPollingIfNeeded() {
-    const hasPending = this.statements.some(s => s.status === 'Pending' || s.status === 'Processing')
-    if (hasPending && !this.pollIntervalId) {
-      this.pollIntervalId = setInterval(() => this.refreshPendingStatements(), 5000)
-    } else if (!hasPending) {
-      this.stopPolling()
-    }
-  }
-
-  private refreshPendingStatements() {
-    const pending = this.statements.filter(s => s.status === 'Pending' || s.status === 'Processing')
-    if (pending.length === 0) { this.stopPolling(); return }
-
-    pending.forEach(stmt => {
-      this.svc.getStatement(stmt.id).subscribe(updated => {
-        const idx = this.statements.findIndex(s => s.id === updated.id)
-        if (idx >= 0) this.statements[idx] = updated
-        if (updated.status !== 'Pending' && updated.status !== 'Processing') {
-          const stillPending = this.statements.some(s => s.status === 'Pending' || s.status === 'Processing')
-          if (!stillPending) this.stopPolling()
-        }
-      })
-    })
-  }
-
-  private stopPolling() {
-    if (this.pollIntervalId) {
-      clearInterval(this.pollIntervalId)
-      this.pollIntervalId = null
-    }
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────

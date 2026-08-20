@@ -3,7 +3,20 @@ using Azure.Storage.Blobs.Models;
 
 namespace PersonalAssistant.Api.Services;
 
-public class BlobStorageService(IConfiguration configuration)
+// Interface exists only for the CreditCardsController injection point, so tests can substitute a
+// fake instead of hitting Azure Storage. Other consumers (StudyAudioService) keep injecting the
+// concrete class per the usual no-interface convention.
+public interface IBlobStorageService
+{
+    Task<string> UploadAsync(Stream stream, string blobName, string contentType,
+        Dictionary<string, string>? metadata = null, string? containerName = null);
+
+    Task<byte[]> DownloadBytesAsync(string blobName, string? containerName = null);
+
+    Task DeleteAsync(string blobName, string? containerName = null);
+}
+
+public class BlobStorageService(IConfiguration configuration) : IBlobStorageService
 {
     private readonly string _connectionString = configuration["AzureStorage:ConnectionString"] ?? "";
     private readonly string _containerName = configuration["AzureStorage:ContainerName"] ?? "credit-card-statements";

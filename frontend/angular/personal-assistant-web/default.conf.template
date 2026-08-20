@@ -8,9 +8,12 @@ server {
         # min-replicas:0 cold starts (API container start + possible SQL serverless
         # auto-resume) can take longer than nginx's ~60s default; keep this comfortably
         # above the 45s client-side timeout in auth.service.ts so the Angular "waking up"
-        # message always wins the race, not a bare nginx 502/504.
+        # message always wins the race, not a bare nginx 502/504. Also covers the credit
+        # card statement pipeline (Document Intelligence OCR + Claude Haiku classification,
+        # both run synchronously in-request — see credit-card.service.ts's own 150s timeout),
+        # which can legitimately take well over a minute for a multi-page statement.
         proxy_connect_timeout 75s;
-        proxy_read_timeout 90s;
+        proxy_read_timeout 180s;
         # Azure Container Apps' shared environment ingress routes TLS by SNI; nginx omits
         # the SNI extension by default when proxying to an https upstream, so the ingress
         # resets the handshake without this.

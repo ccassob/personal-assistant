@@ -1,15 +1,10 @@
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
 using PersonalAssistant.Api.Data;
 using PersonalAssistant.Api.Models;
-using PersonalAssistant.Api.Options;
 using PersonalAssistant.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace PersonalAssistant.Api.Controllers;
 
@@ -18,11 +13,10 @@ namespace PersonalAssistant.Api.Controllers;
 [Authorize]
 public class CreditCardsController(
     PersonalAssistantDbContext ctx,
-    BlobStorageService blobService,
-    IOptions<CreditCardOptions> creditCardOptions) : ControllerBase
+    IBlobStorageService blobService,
+    IStatementExtractionPipeline pipeline) : ControllerBase
 {
     private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-    private readonly CreditCardOptions _opts = creditCardOptions.Value;
 
     // ── Cards ─────────────────────────────────────────────────────────────
 
@@ -123,9 +117,9 @@ public class CreditCardsController(
     }
 
     [HttpPost("{cardId}/statements")]
-    public async Task<IActionResult> UploadStatement(int cardId, IFormFile file)
+    public async Task<IActionResult> UploadStatement(int cardId, IFormFile file, CancellationToken ct)
     {
-        var card = await ctx.CreditCards.FirstOrDefaultAsync(c => c.Id == cardId && c.UserId == CurrentUserId);
+        var card = await ctx.CreditCards.FirstOrDefaultAsync(c => c.Id == cardId && c.UserId == CurrentUserId, ct);
         if (card is null) return NotFound();
 
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
@@ -133,19 +127,18 @@ public class CreditCardsController(
 
         var categories = await ctx.CreditCardCategories
             .Where(c => c.UserId == CurrentUserId)
-            .Select(c => new { c.Id, c.Name })
-            .ToListAsync();
+            .Select(c => new CategoryRef(c.Id, c.Name))
+            .ToListAsync(ct);
 
         if (categories.Count == 0)
             return UnprocessableEntity(new { error = "No credit card categories found. Create at least one category before uploading a statement." });
 
+        await using var ms = new MemoryStream();
+        await file.CopyToAsync(ms, ct);
+        var pdfBytes = ms.ToArray();
+
         var blobName = $"statements/{CurrentUserId}/{Guid.NewGuid()}.pdf";
-        var metadata = new Dictionary<string, string>
-        {
-            ["statementid"]    = "0",
-            ["userid"]         = CurrentUserId,
-            ["categoriesjson"] = JsonSerializer.Serialize(categories)
-        };
+        await blobService.UploadAsync(new MemoryStream(pdfBytes), blobName, "application/pdf");
 
         var stmt = new CreditCardStatement
         {
@@ -153,16 +146,41 @@ public class CreditCardsController(
             UserId = CurrentUserId,
             FileName = file.FileName,
             BlobName = blobName,
-            Status = "Pending",
             UploadedAt = DateTime.UtcNow
         };
+
+        var transactions = await RunPipelineAsync(stmt, pdfBytes, categories, ct);
+
         ctx.CreditCardStatements.Add(stmt);
-        await ctx.SaveChangesAsync();
+        await ctx.SaveChangesAsync(ct);
 
-        metadata["statementid"] = stmt.Id.ToString();
-        await blobService.UploadAsync(file.OpenReadStream(), blobName, "application/pdf", metadata);
+        ReplaceTransactions(stmt, transactions);
+        await ctx.SaveChangesAsync(ct);
 
-        return Accepted(new { statementId = stmt.Id, status = stmt.Status });
+        return Ok(await BuildStatementResponseAsync(stmt.Id, ct));
+    }
+
+    [HttpPost("statements/{id}/reprocess")]
+    public async Task<IActionResult> ReprocessStatement(int id, CancellationToken ct)
+    {
+        var stmt = await ctx.CreditCardStatements.FirstOrDefaultAsync(s => s.Id == id && s.UserId == CurrentUserId, ct);
+        if (stmt is null) return NotFound();
+
+        var categories = await ctx.CreditCardCategories
+            .Where(c => c.UserId == CurrentUserId)
+            .Select(c => new CategoryRef(c.Id, c.Name))
+            .ToListAsync(ct);
+
+        if (categories.Count == 0)
+            return UnprocessableEntity(new { error = "No credit card categories found. Create at least one category before uploading a statement." });
+
+        var pdfBytes = await blobService.DownloadBytesAsync(stmt.BlobName);
+
+        var transactions = await RunPipelineAsync(stmt, pdfBytes, categories, ct);
+        ReplaceTransactions(stmt, transactions);
+        await ctx.SaveChangesAsync(ct);
+
+        return Ok(await BuildStatementResponseAsync(stmt.Id, ct));
     }
 
     [HttpDelete("statements/{id}")]
@@ -170,6 +188,7 @@ public class CreditCardsController(
     {
         var stmt = await ctx.CreditCardStatements.FirstOrDefaultAsync(s => s.Id == id && s.UserId == CurrentUserId);
         if (stmt is null) return NotFound();
+        await blobService.DeleteAsync(stmt.BlobName);
         ctx.CreditCardStatements.Remove(stmt);
         await ctx.SaveChangesAsync();
         return NoContent();
@@ -215,74 +234,56 @@ public class CreditCardsController(
         return NoContent();
     }
 
-    // ── Webhook (called by Logic Apps) ────────────────────────────────────
+    // ── Helpers ───────────────────────────────────────────────────────────
 
-    [HttpPost("webhook")]
-    [AllowAnonymous]
-    public async Task<IActionResult> Webhook([FromBody] WebhookPayload payload)
+    // Runs Document Intelligence + Claude synchronously and sets the statement's terminal fields
+    // in-memory (no DB write here — callers persist afterward). Catches every exception, not just
+    // StatementProcessingBusinessException: there is no queue retry anymore, so a transient
+    // failure (network blip, a 5xx from either AI provider) must still land as a Failed row the
+    // user can inspect and retry via "Reintentar" instead of a bare 500 with no trace and an
+    // orphaned blob.
+    private async Task<List<ExtractedTransaction>?> RunPipelineAsync(
+        CreditCardStatement stmt, byte[] pdfBytes, List<CategoryRef> categories, CancellationToken ct)
     {
-        var secret = Request.Headers["X-Webhook-Secret"].FirstOrDefault() ?? "";
-        var expected = _opts.WebhookSecret;
-
-        if (string.IsNullOrEmpty(expected) || !CryptographicEquals(secret, expected))
-            return Unauthorized();
-
-        var stmt = await ctx.CreditCardStatements.FirstOrDefaultAsync(s => s.Id == payload.StatementId);
-        if (stmt is null) return NotFound();
-        if (stmt.UserId != payload.UserId) return Unauthorized();
-
-        // Idempotent: remove any previously inserted transactions
-        var existing = ctx.CreditCardTransactions.Where(t => t.StatementId == stmt.Id);
-        ctx.CreditCardTransactions.RemoveRange(existing);
-
-        if (payload.Transactions is not null)
+        try
         {
-            var newTxs = payload.Transactions.Select(t => new CreditCardTransaction
-            {
-                StatementId = stmt.Id,
-                CreditCardId = stmt.CreditCardId,
-                UserId = stmt.UserId,
-                Date = t.Date,
-                Description = t.Description,
-                Amount = t.Amount,
-                Type = t.Type,
-                CreditCardCategoryId = t.CreditCardCategoryId,
-                Notes = t.Notes ?? "",
-                IsAiClassified = true,
-                CreatedAt = DateTime.UtcNow
-            });
-            ctx.CreditCardTransactions.AddRange(newTxs);
+            var transactions = await pipeline.ProcessAsync(pdfBytes, categories, ct);
+            var (month, year) = ComputeStatementPeriod(transactions);
+
+            stmt.Status = "Processed";
+            stmt.ErrorMessage = "";
+            stmt.StatementMonth = month;
+            stmt.StatementYear = year;
+            stmt.TotalAmount = transactions.Where(t => t.Type == "Expense").Sum(t => t.Amount);
+            stmt.ProcessedAt = DateTime.UtcNow;
+            return transactions;
         }
-
-        stmt.Status = payload.Status;
-        stmt.ErrorMessage = payload.ErrorMessage ?? "";
-        stmt.ProcessedAt = DateTime.UtcNow;
-        stmt.StatementMonth = payload.StatementMonth;
-        stmt.StatementYear = payload.StatementYear;
-        stmt.TotalAmount = payload.TotalAmount;
-
-        await ctx.SaveChangesAsync();
-        return Ok();
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            stmt.Status = "Failed";
+            stmt.ErrorMessage = ex is StatementProcessingBusinessException
+                ? ex.Message
+                : "No se pudo procesar el statement por un error técnico. Probá de nuevo en unos minutos.";
+            stmt.ProcessedAt = DateTime.UtcNow;
+            return null;
+        }
     }
 
-    // ── Dev-only: simulate webhook locally ────────────────────────────────
+    private static (int Month, int Year) ComputeStatementPeriod(List<ExtractedTransaction> transactions) =>
+        transactions
+            .GroupBy(t => (t.Date.Month, t.Date.Year))
+            .OrderByDescending(g => g.Count())
+            .Select(g => g.Key)
+            .First();
 
-    [HttpPost("statements/{id}/simulate-webhook")]
-    public async Task<IActionResult> SimulateWebhook(int id, [FromBody] WebhookPayload payload)
+    private void ReplaceTransactions(CreditCardStatement stmt, List<ExtractedTransaction>? transactions)
     {
-        var stmt = await ctx.CreditCardStatements.FirstOrDefaultAsync(s => s.Id == id && s.UserId == CurrentUserId);
-        if (stmt is null) return NotFound();
-
-        payload.StatementId = id;
-        payload.UserId = CurrentUserId;
-
-        // Reuse webhook logic via direct call — override header check with internal userId match
         var existing = ctx.CreditCardTransactions.Where(t => t.StatementId == stmt.Id);
         ctx.CreditCardTransactions.RemoveRange(existing);
 
-        if (payload.Transactions is not null)
+        if (transactions is not null)
         {
-            ctx.CreditCardTransactions.AddRange(payload.Transactions.Select(t => new CreditCardTransaction
+            ctx.CreditCardTransactions.AddRange(transactions.Select(t => new CreditCardTransaction
             {
                 StatementId = stmt.Id,
                 CreditCardId = stmt.CreditCardId,
@@ -297,48 +298,18 @@ public class CreditCardsController(
                 CreatedAt = DateTime.UtcNow
             }));
         }
-
-        stmt.Status = payload.Status;
-        stmt.ErrorMessage = payload.ErrorMessage ?? "";
-        stmt.ProcessedAt = DateTime.UtcNow;
-        stmt.StatementMonth = payload.StatementMonth;
-        stmt.StatementYear = payload.StatementYear;
-        stmt.TotalAmount = payload.TotalAmount;
-
-        await ctx.SaveChangesAsync();
-        return Ok();
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────
-
-    private static bool CryptographicEquals(string a, string b)
-    {
-        var aBytes = Encoding.UTF8.GetBytes(a.PadRight(b.Length));
-        var bBytes = Encoding.UTF8.GetBytes(b.PadRight(a.Length));
-        return CryptographicOperations.FixedTimeEquals(aBytes, bBytes);
-    }
+    private async Task<object?> BuildStatementResponseAsync(int id, CancellationToken ct) =>
+        await ctx.CreditCardStatements
+            .Where(s => s.Id == id)
+            .Select(s => new
+            {
+                s.Id, s.CreditCardId, s.FileName, s.Status, s.ErrorMessage,
+                s.UploadedAt, s.ProcessedAt, s.StatementMonth, s.StatementYear, s.TotalAmount,
+                TransactionCount = ctx.CreditCardTransactions.Count(t => t.StatementId == s.Id)
+            })
+            .FirstOrDefaultAsync(ct);
 }
 
 public record UpdateTransactionRequest(int? CreditCardCategoryId, string? Notes, string? Type);
-
-public class WebhookPayload
-{
-    public int StatementId { get; set; }
-    public string UserId { get; set; } = "";
-    public string Status { get; set; } = "Processed";
-    public string? ErrorMessage { get; set; }
-    public int? StatementMonth { get; set; }
-    public int? StatementYear { get; set; }
-    public decimal? TotalAmount { get; set; }
-    public List<WebhookTransaction>? Transactions { get; set; }
-}
-
-public class WebhookTransaction
-{
-    public DateOnly Date { get; set; }
-    public string Description { get; set; } = "";
-    public decimal Amount { get; set; }
-    public string Type { get; set; } = "Expense";
-    public int? CreditCardCategoryId { get; set; }
-    public string? Notes { get; set; }
-}

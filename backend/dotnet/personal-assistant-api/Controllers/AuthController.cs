@@ -20,10 +20,12 @@ public class AuthController(UserManager<IdentityUser> userManager, IConfiguratio
     {
         var user = new IdentityUser { UserName = dto.Email, Email = dto.Email, EmailConfirmed = true };
         var result = await userManager.CreateAsync(user, dto.Password);
+
         if (!result.Succeeded)
             return BadRequest(result.Errors.Select(e => e.Description));
 
         await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Name, dto.DisplayName));
+
         return Ok(new { token = GenerateJwt(user, dto.DisplayName) });
     }
 
@@ -31,6 +33,7 @@ public class AuthController(UserManager<IdentityUser> userManager, IConfiguratio
     public async Task<IActionResult> Login(LoginDto dto)
     {
         var user = await userManager.FindByEmailAsync(dto.Email);
+
         if (user is null || !await userManager.CheckPasswordAsync(user, dto.Password))
             return Unauthorized("Invalid email or password.");
 

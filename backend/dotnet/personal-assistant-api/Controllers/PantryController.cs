@@ -50,6 +50,7 @@ public class PantryController(PersonalAssistantDbContext db) : ControllerBase
     public async Task<IActionResult> Update(int id, PantryItem updated)
     {
         var item = await db.PantryItems.FirstOrDefaultAsync(p => p.Id == id && p.UserId == CurrentUserId);
+
         if (item is null) return NotFound();
 
         item.GroceryItemId = updated.GroceryItemId;
