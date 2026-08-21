@@ -49,6 +49,22 @@ public class CreditCardsControllerTests : IClassFixture<PersonalAssistantApiFact
     private int SeedCategoryId(string name = "Groceries") =>
         _factory.Seed(new CreditCardCategory { Name = name, Color = "#6c757d", Icon = "", UserId = TestAuthHandler.UserId });
 
+    private int SeedStatementId(int cardId, string userId = null!, string status = "Processed") =>
+        _factory.Seed(new CreditCardStatement
+        {
+            CreditCardId = cardId, UserId = userId ?? TestAuthHandler.UserId, FileName = "s.pdf",
+            BlobName = "statements/x/y.pdf", Status = status, UploadedAt = DateTime.UtcNow
+        });
+
+    private int SeedTransactionId(int statementId, int cardId, string userId = null!, DateOnly? date = null,
+        string description = "Coffee", decimal amount = 10m, string type = "Expense", int? categoryId = null) =>
+        _factory.Seed(new CreditCardTransaction
+        {
+            StatementId = statementId, CreditCardId = cardId, UserId = userId ?? TestAuthHandler.UserId,
+            Date = date ?? new DateOnly(2026, 8, 1), Description = description, Amount = amount, Type = type,
+            CreditCardCategoryId = categoryId, Notes = "", IsAiClassified = true, CreatedAt = DateTime.UtcNow
+        });
+
     private static MultipartFormDataContent BuildPdfUpload(string fileName = "statement.pdf")
     {
         var content = new MultipartFormDataContent();
@@ -224,6 +240,285 @@ public class CreditCardsControllerTests : IClassFixture<PersonalAssistantApiFact
         _factory.CountAll<CreditCardStatement>().Should().Be(0);
     }
 
+    // ── GetTransactions ──────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetTransactions_Returns404_WhenStatementNotOwned()
+    {
+        var otherCardId = SeedCardId(userId: "other-user");
+        var stmtId = SeedStatementId(otherCardId, userId: "other-user");
+
+        var response = await _client.GetAsync($"/api/credit-cards/statements/{stmtId}/transactions");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GetTransactions_ReturnsOrderedByDate_WithCategoryIncluded()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+        var categoryId = SeedCategoryId();
+        SeedTransactionId(stmtId, cardId, date: new DateOnly(2026, 8, 15), description: "Later", categoryId: categoryId);
+        SeedTransactionId(stmtId, cardId, date: new DateOnly(2026, 8, 1), description: "Earlier");
+
+        var response = await _client.GetAsync($"/api/credit-cards/statements/{stmtId}/transactions");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<List<TransactionResponse>>();
+        body!.Should().HaveCount(2);
+        body[0].description.Should().Be("Earlier");
+        body[1].description.Should().Be("Later");
+        body[1].creditCardCategory.Should().NotBeNull();
+        body[1].creditCardCategory!.id.Should().Be(categoryId);
+    }
+
+    // ── CreateTransaction ────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CreateTransaction_Returns404_WhenStatementNotOwned()
+    {
+        var otherCardId = SeedCardId(userId: "other-user");
+        var stmtId = SeedStatementId(otherCardId, userId: "other-user");
+
+        var response = await _client.PostAsJsonAsync($"/api/credit-cards/statements/{stmtId}/transactions",
+            new { date = "2026-08-01", description = "Coffee", amount = 5m, type = "Expense", creditCardCategoryId = (int?)null, notes = (string?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task CreateTransaction_ReturnsBadRequest_WhenDescriptionEmpty()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+
+        var response = await _client.PostAsJsonAsync($"/api/credit-cards/statements/{stmtId}/transactions",
+            new { date = "2026-08-01", description = "  ", amount = 5m, type = "Expense", creditCardCategoryId = (int?)null, notes = (string?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateTransaction_ReturnsBadRequest_WhenAmountNotPositive()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+
+        var response = await _client.PostAsJsonAsync($"/api/credit-cards/statements/{stmtId}/transactions",
+            new { date = "2026-08-01", description = "Coffee", amount = 0m, type = "Expense", creditCardCategoryId = (int?)null, notes = (string?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateTransaction_ReturnsBadRequest_WhenTypeInvalid()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+
+        var response = await _client.PostAsJsonAsync($"/api/credit-cards/statements/{stmtId}/transactions",
+            new { date = "2026-08-01", description = "Coffee", amount = 5m, type = "Refund", creditCardCategoryId = (int?)null, notes = (string?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateTransaction_ReturnsBadRequest_WhenCategoryNotOwned()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+        var otherCategoryId = _factory.Seed(new CreditCardCategory { Name = "Other", Color = "#000", Icon = "", UserId = "other-user" });
+
+        var response = await _client.PostAsJsonAsync($"/api/credit-cards/statements/{stmtId}/transactions",
+            new { date = "2026-08-01", description = "Coffee", amount = 5m, type = "Expense", creditCardCategoryId = otherCategoryId, notes = (string?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateTransaction_HappyPath_CreatesRow_AndRecomputesStatementAggregates()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+        var categoryId = SeedCategoryId();
+
+        var response = await _client.PostAsJsonAsync($"/api/credit-cards/statements/{stmtId}/transactions",
+            new { date = "2026-09-10", description = "New expense", amount = 42.50m, type = "Expense", creditCardCategoryId = categoryId, notes = "hand-entered" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var body = await response.Content.ReadFromJsonAsync<TransactionResponse>();
+        body!.description.Should().Be("New expense");
+        body.isAiClassified.Should().BeFalse();
+
+        var stmtResponse = await _client.GetAsync($"/api/credit-cards/statements/{stmtId}");
+        var stmt = await stmtResponse.Content.ReadFromJsonAsync<StatementResponse>();
+        stmt!.totalAmount.Should().Be(42.50m);
+        stmt.statementMonth.Should().Be(9);
+        stmt.statementYear.Should().Be(2026);
+        stmt.transactionCount.Should().Be(1);
+    }
+
+    // ── UpdateTransaction ────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task UpdateTransaction_Returns404_WhenNotOwned()
+    {
+        var otherCardId = SeedCardId(userId: "other-user");
+        var stmtId = SeedStatementId(otherCardId, userId: "other-user");
+        var txId = SeedTransactionId(stmtId, otherCardId, userId: "other-user");
+
+        var response = await _client.PutAsJsonAsync($"/api/credit-cards/transactions/{txId}",
+            new { date = "2026-08-01", description = "Coffee", amount = 5m, type = "Expense", creditCardCategoryId = (int?)null, notes = (string?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task UpdateTransaction_ReturnsBadRequest_WhenDescriptionEmpty()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+        var txId = SeedTransactionId(stmtId, cardId);
+
+        var response = await _client.PutAsJsonAsync($"/api/credit-cards/transactions/{txId}",
+            new { date = "2026-08-01", description = "", amount = 5m, type = "Expense", creditCardCategoryId = (int?)null, notes = (string?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task UpdateTransaction_ReturnsBadRequest_WhenAmountNotPositive()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+        var txId = SeedTransactionId(stmtId, cardId);
+
+        var response = await _client.PutAsJsonAsync($"/api/credit-cards/transactions/{txId}",
+            new { date = "2026-08-01", description = "Coffee", amount = -1m, type = "Expense", creditCardCategoryId = (int?)null, notes = (string?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task UpdateTransaction_ReturnsBadRequest_WhenTypeInvalid()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+        var txId = SeedTransactionId(stmtId, cardId);
+
+        var response = await _client.PutAsJsonAsync($"/api/credit-cards/transactions/{txId}",
+            new { date = "2026-08-01", description = "Coffee", amount = 5m, type = "Unknown", creditCardCategoryId = (int?)null, notes = (string?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task UpdateTransaction_ReturnsBadRequest_WhenCategoryNotOwned()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+        var txId = SeedTransactionId(stmtId, cardId);
+        var otherCategoryId = _factory.Seed(new CreditCardCategory { Name = "Other", Color = "#000", Icon = "", UserId = "other-user" });
+
+        var response = await _client.PutAsJsonAsync($"/api/credit-cards/transactions/{txId}",
+            new { date = "2026-08-01", description = "Coffee", amount = 5m, type = "Expense", creditCardCategoryId = otherCategoryId, notes = (string?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task UpdateTransaction_HappyPath_UpdatesAllFields_AndClearsIsAiClassified()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+        var categoryId = SeedCategoryId();
+        var txId = SeedTransactionId(stmtId, cardId, date: new DateOnly(2026, 8, 1), description: "Coffee", amount: 5m, type: "Expense");
+
+        var response = await _client.PutAsJsonAsync($"/api/credit-cards/transactions/{txId}",
+            new { date = "2026-08-20", description = "Edited coffee", amount = 7.25m, type = "Credit", creditCardCategoryId = categoryId, notes = "adjusted" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var txsResponse = await _client.GetAsync($"/api/credit-cards/statements/{stmtId}/transactions");
+        var txs = await txsResponse.Content.ReadFromJsonAsync<List<TransactionResponse>>();
+        var tx = txs!.Single(t => t.id == txId);
+        tx.description.Should().Be("Edited coffee");
+        tx.amount.Should().Be(7.25m);
+        tx.type.Should().Be("Credit");
+        tx.notes.Should().Be("adjusted");
+        tx.isAiClassified.Should().BeFalse();
+        tx.creditCardCategory!.id.Should().Be(categoryId);
+    }
+
+    [Fact]
+    public async Task UpdateTransaction_RecomputesStatementAggregates_WhenAmountAndDateChange()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+        var txId = SeedTransactionId(stmtId, cardId, date: new DateOnly(2026, 8, 1), amount: 10m, type: "Expense");
+
+        var response = await _client.PutAsJsonAsync($"/api/credit-cards/transactions/{txId}",
+            new { date = "2026-09-01", description = "Coffee", amount = 99m, type = "Expense", creditCardCategoryId = (int?)null, notes = (string?)null });
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var stmtResponse = await _client.GetAsync($"/api/credit-cards/statements/{stmtId}");
+        var stmt = await stmtResponse.Content.ReadFromJsonAsync<StatementResponse>();
+        stmt!.totalAmount.Should().Be(99m);
+        stmt.statementMonth.Should().Be(9);
+        stmt.statementYear.Should().Be(2026);
+    }
+
+    // ── DeleteTransaction ────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task DeleteTransaction_Returns404_WhenNotOwned()
+    {
+        var otherCardId = SeedCardId(userId: "other-user");
+        var stmtId = SeedStatementId(otherCardId, userId: "other-user");
+        var txId = SeedTransactionId(stmtId, otherCardId, userId: "other-user");
+
+        var response = await _client.DeleteAsync($"/api/credit-cards/transactions/{txId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteTransaction_RemovesRow_AndRecomputesTotal()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+        SeedTransactionId(stmtId, cardId, date: new DateOnly(2026, 8, 1), amount: 10m, type: "Expense");
+        var txId = SeedTransactionId(stmtId, cardId, date: new DateOnly(2026, 8, 2), amount: 20m, type: "Expense");
+
+        var response = await _client.DeleteAsync($"/api/credit-cards/transactions/{txId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var stmtResponse = await _client.GetAsync($"/api/credit-cards/statements/{stmtId}");
+        var stmt = await stmtResponse.Content.ReadFromJsonAsync<StatementResponse>();
+        stmt!.totalAmount.Should().Be(10m);
+        stmt.transactionCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task DeleteTransaction_ClearsStatementPeriod_WhenLastTransactionDeleted()
+    {
+        var cardId = SeedCardId();
+        var stmtId = SeedStatementId(cardId);
+        var txId = SeedTransactionId(stmtId, cardId, date: new DateOnly(2026, 8, 1), amount: 10m, type: "Expense");
+
+        var response = await _client.DeleteAsync($"/api/credit-cards/transactions/{txId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var stmtResponse = await _client.GetAsync($"/api/credit-cards/statements/{stmtId}");
+        var stmt = await stmtResponse.Content.ReadFromJsonAsync<StatementResponse>();
+        stmt!.totalAmount.Should().Be(0m);
+        stmt.statementMonth.Should().BeNull();
+        stmt.statementYear.Should().BeNull();
+        stmt.transactionCount.Should().Be(0);
+    }
+
     private class FakeBlobStorageService : IBlobStorageService
     {
         public string? UploadedBlobName { get; private set; }
@@ -268,4 +563,10 @@ public class CreditCardsControllerTests : IClassFixture<PersonalAssistantApiFact
     private record StatementResponse(int id, int creditCardId, string fileName, string status, string errorMessage,
         DateTime uploadedAt, DateTime? processedAt, int? statementMonth, int? statementYear, decimal? totalAmount,
         int transactionCount);
+
+    private record TransactionResponse(int id, int statementId, int creditCardId, DateOnly date, string description,
+        decimal amount, string type, int? creditCardCategoryId, CategoryResponse? creditCardCategory, string notes,
+        bool isAiClassified);
+
+    private record CategoryResponse(int id, string name, string color, string icon);
 }

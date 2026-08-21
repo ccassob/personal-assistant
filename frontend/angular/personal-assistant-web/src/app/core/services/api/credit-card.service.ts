@@ -40,6 +40,15 @@ export interface CreditCardTransaction {
   isAiClassified: boolean
 }
 
+export interface UpsertTransactionRequest {
+  date: string
+  description: string
+  amount: number
+  type: string
+  creditCardCategoryId?: number | null
+  notes?: string | null
+}
+
 @Injectable({ providedIn: 'root' })
 export class CreditCardService {
   private base = `${API_BASE}/api/credit-cards`
@@ -67,6 +76,7 @@ export class CreditCardService {
   }
 
   getTransactions(statementId: number): Observable<CreditCardTransaction[]> { return this.http.get<CreditCardTransaction[]>(`${this.base}/statements/${statementId}/transactions`) }
-  updateTransaction(id: number, body: { creditCardCategoryId?: number | null; notes: string; type: string }): Observable<void> { return this.http.put<void>(`${this.base}/transactions/${id}`, body) }
+  createTransaction(statementId: number, body: UpsertTransactionRequest): Observable<CreditCardTransaction> { return this.http.post<CreditCardTransaction>(`${this.base}/statements/${statementId}/transactions`, body) }
+  updateTransaction(id: number, body: UpsertTransactionRequest): Observable<void> { return this.http.put<void>(`${this.base}/transactions/${id}`, body) }
   deleteTransaction(id: number): Observable<void> { return this.http.delete<void>(`${this.base}/transactions/${id}`) }
 }

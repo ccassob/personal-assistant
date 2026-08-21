@@ -2,7 +2,7 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { DecimalPipe, DatePipe } from '@angular/common'
 import { RouterLink, RouterLinkActive } from '@angular/router'
-import { CreditCardService, CreditCard, CreditCardStatement, CreditCardTransaction } from '../../core/services/api/credit-card.service'
+import { CreditCardService, CreditCard, CreditCardStatement, CreditCardTransaction, UpsertTransactionRequest } from '../../core/services/api/credit-card.service'
 import { CreditCardCategoryService, CreditCardCategory } from '../../core/services/api/credit-card-category.service'
 
 @Component({
@@ -161,7 +161,7 @@ import { CreditCardCategoryService, CreditCardCategory } from '../../core/servic
                             </td>
                             <td>
                               <div class="d-flex gap-1 justify-content-end">
-                                @if (stmt.status === 'Processed' && stmt.transactionCount > 0) {
+                                @if (stmt.status === 'Processed') {
                                   <button class="btn btn-sm btn-outline-primary" (click)="selectStatement(stmt)">
                                     View
                                   </button>
@@ -205,9 +205,14 @@ import { CreditCardCategoryService, CreditCardCategory } from '../../core/servic
                     <small class="text-muted ms-1">({{ monthName(selectedStatement.statementMonth) }} {{ selectedStatement.statementYear }})</small>
                   }
                 </h5>
-                <button class="btn btn-sm btn-outline-secondary" (click)="selectedStatement = null">
-                  <iconify-icon icon="tabler:x" width="14"></iconify-icon>
-                </button>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-sm btn-primary" (click)="openTxForm()">
+                    <iconify-icon icon="tabler:plus" width="14"></iconify-icon> Add Transaction
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary" (click)="selectedStatement = null">
+                    <iconify-icon icon="tabler:x" width="14"></iconify-icon>
+                  </button>
+                </div>
               </div>
               <div class="card-body p-0">
                 <div class="table-responsive">
@@ -253,9 +258,14 @@ import { CreditCardCategoryService, CreditCardCategory } from '../../core/servic
                             }
                           </td>
                           <td>
-                            <button class="btn btn-sm btn-outline-secondary" (click)="openTxEdit(tx)">
-                              Edit
-                            </button>
+                            <div class="d-flex gap-1">
+                              <button class="btn btn-sm btn-outline-secondary" (click)="openTxForm(tx)">
+                                Edit
+                              </button>
+                              <button class="btn btn-sm btn-outline-danger" (click)="deleteTx(tx.id)">
+                                <iconify-icon icon="tabler:trash" width="14"></iconify-icon>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       }
@@ -314,17 +324,28 @@ import { CreditCardCategoryService, CreditCardCategory } from '../../core/servic
         </div>
       }
 
-      <!-- Edit Transaction Modal -->
+      <!-- Add/Edit Transaction Modal -->
       @if (showTxModal && txForm) {
         <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,.5)">
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">Edit Transaction</h5>
-                <button class="btn-close" (click)="closeTxEdit()"></button>
+                <h5 class="modal-title">{{ txForm.id ? 'Edit' : 'Add' }} Transaction</h5>
+                <button class="btn-close" (click)="closeTxForm()"></button>
               </div>
               <div class="modal-body">
-                <p class="text-muted small mb-3">{{ txForm.description }}</p>
+                <div class="mb-3">
+                  <label class="form-label">Date</label>
+                  <input type="date" class="form-control" [(ngModel)]="txForm.date" />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Description</label>
+                  <input class="form-control" [(ngModel)]="txForm.description" placeholder="e.g. Coffee shop" />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Amount</label>
+                  <input type="number" step="0.01" class="form-control" [(ngModel)]="txForm.amount" />
+                </div>
                 <div class="mb-3">
                   <label class="form-label">Type</label>
                   <select class="form-select" [(ngModel)]="txForm.type">
@@ -347,8 +368,8 @@ import { CreditCardCategoryService, CreditCardCategory } from '../../core/servic
                 </div>
               </div>
               <div class="modal-footer">
-                <button class="btn btn-secondary" (click)="closeTxEdit()">Cancel</button>
-                <button class="btn btn-primary" (click)="saveTxEdit()">Save</button>
+                <button class="btn btn-secondary" (click)="closeTxForm()">Cancel</button>
+                <button class="btn btn-primary" (click)="saveTxForm()">Save</button>
               </div>
             </div>
           </div>
@@ -369,7 +390,7 @@ export class CreditCards implements OnInit {
   showCardModal = false
   showTxModal = false
   cardForm: Partial<CreditCard> = {}
-  txForm: (Partial<CreditCardTransaction> & { id: number }) | null = null
+  txForm: (UpsertTransactionRequest & { id?: number }) | null = null
 
   uploading: Record<number, boolean> = {}
   retrying: Record<number, boolean> = {}
@@ -491,28 +512,67 @@ export class CreditCards implements OnInit {
     })
   }
 
-  // ── Transaction editing ────────────────────────────────────────────────
+  // ── Transaction CRUD ───────────────────────────────────────────────────
 
-  openTxEdit(tx: CreditCardTransaction) {
-    this.txForm = { ...tx, creditCardCategoryId: tx.creditCardCategoryId ?? undefined }
+  openTxForm(tx?: CreditCardTransaction) {
+    this.txForm = tx
+      ? {
+          id: tx.id,
+          date: tx.date.substring(0, 10),
+          description: tx.description,
+          amount: tx.amount,
+          type: tx.type,
+          creditCardCategoryId: tx.creditCardCategoryId ?? null,
+          notes: tx.notes
+        }
+      : {
+          date: new Date().toISOString().substring(0, 10),
+          description: '',
+          amount: 0,
+          type: 'Expense',
+          creditCardCategoryId: null,
+          notes: ''
+        }
     this.showTxModal = true
   }
 
-  closeTxEdit() {
+  closeTxForm() {
     this.showTxModal = false
     this.txForm = null
   }
 
-  saveTxEdit() {
-    if (!this.txForm) return
-    this.svc.updateTransaction(this.txForm.id, {
+  saveTxForm() {
+    if (!this.txForm || !this.selectedStatement) return
+    const body: UpsertTransactionRequest = {
+      date: this.txForm.date,
+      description: this.txForm.description,
+      amount: this.txForm.amount,
+      type: this.txForm.type,
       creditCardCategoryId: this.txForm.creditCardCategoryId ?? null,
-      notes: this.txForm.notes ?? '',
-      type: this.txForm.type ?? 'Expense'
-    }).subscribe(() => {
-      if (this.selectedStatement) this.svc.getTransactions(this.selectedStatement.id).subscribe(txs => this.transactions = txs)
-      this.closeTxEdit()
-    })
+      notes: this.txForm.notes ?? ''
+    }
+    const onSaved = () => {
+      this.refreshAfterTxMutation()
+      this.closeTxForm()
+    }
+    if (this.txForm.id) {
+      this.svc.updateTransaction(this.txForm.id, body).subscribe(onSaved)
+    } else {
+      this.svc.createTransaction(this.selectedStatement.id, body).subscribe(onSaved)
+    }
+  }
+
+  deleteTx(id: number) {
+    if (!confirm('Delete this transaction?')) return
+    this.svc.deleteTransaction(id).subscribe(() => this.refreshAfterTxMutation())
+  }
+
+  private refreshAfterTxMutation() {
+    if (!this.selectedStatement) return
+    const stmtId = this.selectedStatement.id
+    this.svc.getTransactions(stmtId).subscribe(txs => this.transactions = txs)
+    this.svc.getStatement(stmtId).subscribe(stmt => this.selectedStatement = stmt)
+    if (this.selectedCard) this.loadStatements(this.selectedCard.id)
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────

@@ -211,26 +211,78 @@ public class CreditCardsController(
         return Ok(txs);
     }
 
-    [HttpPut("transactions/{id}")]
-    public async Task<IActionResult> UpdateTransaction(int id, [FromBody] UpdateTransactionRequest req)
+    [HttpPost("statements/{statementId}/transactions")]
+    public async Task<IActionResult> CreateTransaction(int statementId, [FromBody] UpsertTransactionRequest req, CancellationToken ct)
     {
-        var tx = await ctx.CreditCardTransactions.FirstOrDefaultAsync(t => t.Id == id && t.UserId == CurrentUserId);
+        var stmt = await ctx.CreditCardStatements.FirstOrDefaultAsync(s => s.Id == statementId && s.UserId == CurrentUserId, ct);
+        if (stmt is null) return NotFound();
+
+        var error = await ValidateTransactionRequestAsync(req, ct);
+        if (error is not null) return BadRequest(error);
+
+        var tx = new CreditCardTransaction
+        {
+            StatementId = stmt.Id,
+            CreditCardId = stmt.CreditCardId,
+            UserId = CurrentUserId,
+            Date = req.Date,
+            Description = req.Description.Trim(),
+            Amount = req.Amount,
+            Type = req.Type,
+            CreditCardCategoryId = req.CreditCardCategoryId,
+            Notes = req.Notes ?? "",
+            IsAiClassified = false,
+            CreatedAt = DateTime.UtcNow
+        };
+        ctx.CreditCardTransactions.Add(tx);
+        await ctx.SaveChangesAsync(ct);
+
+        await RecomputeStatementAggregatesAsync(statementId, ct);
+        await ctx.SaveChangesAsync(ct);
+
+        if (tx.CreditCardCategoryId.HasValue)
+            await ctx.Entry(tx).Reference(t => t.CreditCardCategory).LoadAsync(ct);
+
+        return CreatedAtAction(nameof(GetTransactions), new { statementId }, tx);
+    }
+
+    [HttpPut("transactions/{id}")]
+    public async Task<IActionResult> UpdateTransaction(int id, [FromBody] UpsertTransactionRequest req, CancellationToken ct)
+    {
+        var tx = await ctx.CreditCardTransactions.FirstOrDefaultAsync(t => t.Id == id && t.UserId == CurrentUserId, ct);
         if (tx is null) return NotFound();
+
+        var error = await ValidateTransactionRequestAsync(req, ct);
+        if (error is not null) return BadRequest(error);
+
+        tx.Date = req.Date;
+        tx.Description = req.Description.Trim();
+        tx.Amount = req.Amount;
+        tx.Type = req.Type;
         tx.CreditCardCategoryId = req.CreditCardCategoryId;
-        tx.Notes = req.Notes ?? tx.Notes;
-        tx.Type = req.Type ?? tx.Type;
+        tx.Notes = req.Notes ?? "";
         tx.IsAiClassified = false;
-        await ctx.SaveChangesAsync();
+        await ctx.SaveChangesAsync(ct);
+
+        await RecomputeStatementAggregatesAsync(tx.StatementId, ct);
+        await ctx.SaveChangesAsync(ct);
+
         return NoContent();
     }
 
     [HttpDelete("transactions/{id}")]
-    public async Task<IActionResult> DeleteTransaction(int id)
+    public async Task<IActionResult> DeleteTransaction(int id, CancellationToken ct)
     {
-        var tx = await ctx.CreditCardTransactions.FirstOrDefaultAsync(t => t.Id == id && t.UserId == CurrentUserId);
+        var tx = await ctx.CreditCardTransactions.FirstOrDefaultAsync(t => t.Id == id && t.UserId == CurrentUserId, ct);
         if (tx is null) return NotFound();
+
+        var statementId = tx.StatementId;
         ctx.CreditCardTransactions.Remove(tx);
-        await ctx.SaveChangesAsync();
+        await ctx.SaveChangesAsync(ct);
+
+        await RecomputeStatementAggregatesAsync(statementId, ct);
+        await ctx.SaveChangesAsync(ct);
+
         return NoContent();
     }
 
@@ -248,7 +300,7 @@ public class CreditCardsController(
         try
         {
             var transactions = await pipeline.ProcessAsync(pdfBytes, categories, ct);
-            var (month, year) = ComputeStatementPeriod(transactions);
+            var (month, year) = ComputeStatementPeriod(transactions.Select(t => t.Date));
 
             stmt.Status = "Processed";
             stmt.ErrorMessage = "";
@@ -269,12 +321,55 @@ public class CreditCardsController(
         }
     }
 
-    private static (int Month, int Year) ComputeStatementPeriod(List<ExtractedTransaction> transactions) =>
-        transactions
-            .GroupBy(t => (t.Date.Month, t.Date.Year))
+    private static (int Month, int Year) ComputeStatementPeriod(IEnumerable<DateOnly> dates) =>
+        dates
+            .GroupBy(d => (d.Month, d.Year))
             .OrderByDescending(g => g.Count())
             .Select(g => g.Key)
             .First();
+
+    private static readonly string[] ValidTransactionTypes = ["Expense", "Credit"];
+
+    private async Task<string?> ValidateTransactionRequestAsync(UpsertTransactionRequest req, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(req.Description)) return "Description is required.";
+        if (req.Amount <= 0) return "Amount must be greater than zero.";
+        if (!ValidTransactionTypes.Contains(req.Type)) return "Type must be 'Expense' or 'Credit'.";
+        if (req.CreditCardCategoryId.HasValue)
+        {
+            var ownsCategory = await ctx.CreditCardCategories.AnyAsync(
+                c => c.Id == req.CreditCardCategoryId.Value && c.UserId == CurrentUserId, ct);
+            if (!ownsCategory) return "Category not found.";
+        }
+        return null;
+    }
+
+    // Recomputes TotalAmount/StatementMonth/StatementYear for a statement from its current
+    // CreditCardTransaction rows. Previously only RunPipelineAsync set these fields (right after the
+    // AI pipeline replaced all transactions), so a statement's totals silently went stale the moment
+    // a transaction was manually created/edited/deleted — this closes that gap.
+    private async Task RecomputeStatementAggregatesAsync(int statementId, CancellationToken ct = default)
+    {
+        var stmt = await ctx.CreditCardStatements.FirstOrDefaultAsync(s => s.Id == statementId, ct);
+        if (stmt is null) return;
+
+        var txs = await ctx.CreditCardTransactions
+            .Where(t => t.StatementId == statementId)
+            .Select(t => new { t.Date, t.Amount, t.Type })
+            .ToListAsync(ct);
+
+        stmt.TotalAmount = txs.Where(t => t.Type == "Expense").Sum(t => t.Amount);
+
+        if (txs.Count == 0)
+        {
+            stmt.StatementMonth = null;
+            stmt.StatementYear = null;
+        }
+        else
+        {
+            (stmt.StatementMonth, stmt.StatementYear) = ComputeStatementPeriod(txs.Select(t => t.Date));
+        }
+    }
 
     private void ReplaceTransactions(CreditCardStatement stmt, List<ExtractedTransaction>? transactions)
     {
@@ -312,4 +407,6 @@ public class CreditCardsController(
             .FirstOrDefaultAsync(ct);
 }
 
-public record UpdateTransactionRequest(int? CreditCardCategoryId, string? Notes, string? Type);
+public record UpsertTransactionRequest(
+    DateOnly Date, string Description, decimal Amount, string Type,
+    int? CreditCardCategoryId, string? Notes);
