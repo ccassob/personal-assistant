@@ -116,7 +116,10 @@ public class CreditCardsController(
         return Ok(stmt);
     }
 
+    private const long MaxStatementFileSizeBytes = 5 * 1024 * 1024;
+
     [HttpPost("{cardId}/statements")]
+    [RequestSizeLimit(MaxStatementFileSizeBytes)]
     public async Task<IActionResult> UploadStatement(int cardId, IFormFile file, CancellationToken ct)
     {
         var card = await ctx.CreditCards.FirstOrDefaultAsync(c => c.Id == cardId && c.UserId == CurrentUserId, ct);
@@ -124,6 +127,9 @@ public class CreditCardsController(
 
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (ext != ".pdf") return BadRequest("Only PDF files are accepted.");
+
+        if (file.Length > MaxStatementFileSizeBytes)
+            return BadRequest("The file exceeds the 5 MB size limit.");
 
         var categories = await ctx.CreditCardCategories
             .Where(c => c.UserId == CurrentUserId)

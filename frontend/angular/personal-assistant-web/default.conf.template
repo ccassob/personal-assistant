@@ -5,6 +5,9 @@ server {
 
     location /api/ {
         proxy_pass ${API_UPSTREAM};
+        # nginx defaults to 1m; credit card statement uploads allow up to 5 MB (see
+        # CreditCardsController.UploadStatement's RequestSizeLimit).
+        client_max_body_size 5m;
         # min-replicas:0 cold starts (API container start + possible SQL serverless
         # auto-resume) can take longer than nginx's ~60s default; keep this comfortably
         # above the 45s client-side timeout in auth.service.ts so the Angular "waking up"

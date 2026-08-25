@@ -466,10 +466,18 @@ export class CreditCards implements OnInit {
     el?.click()
   }
 
+  private readonly maxStatementFileSizeBytes = 5 * 1024 * 1024
+
   onFileSelected(cardId: number, event: Event) {
     const input = event.target as HTMLInputElement
     const file = input.files?.[0]
     if (!file) return
+
+    if (file.size > this.maxStatementFileSizeBytes) {
+      alert('The file exceeds the 5 MB size limit.')
+      input.value = ''
+      return
+    }
 
     this.uploading[cardId] = true
     this.svc.uploadStatement(cardId, file).subscribe({
