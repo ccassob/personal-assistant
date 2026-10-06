@@ -13,5 +13,6 @@ public class Book
     public string Notes { get; set; } = "";
     public string BookType { get; set; } = "Literature"; // "Technology" | "Literature"
     public DateOnly LastUpdated { get; set; }
+    public DateOnly? CompletedDate { get; set; }
     public string UserId { get; set; } = "";
 }

@@ -45,6 +45,39 @@ import { Book, BookProgress, BookTask, BookService } from '../../core/services/a
             </div>
           </div>
         </div>
+
+        <div class="row mb-3">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body pb-0">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                  <h6 class="text-muted mb-0">{{ periodMetric === 'pages' ? 'Pages Read' : 'Books Completed' }} Per {{ periodMode === 'month' ? 'Month' : 'Year' }}</h6>
+                  <div class="d-flex flex-wrap gap-2">
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn" [class.btn-primary]="periodMode === 'month'" [class.btn-outline-primary]="periodMode !== 'month'" (click)="setPeriodMode('month')">Month</button>
+                      <button class="btn" [class.btn-primary]="periodMode === 'year'" [class.btn-outline-primary]="periodMode !== 'year'" (click)="setPeriodMode('year')">Year</button>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn" [class.btn-primary]="periodMetric === 'pages'" [class.btn-outline-primary]="periodMetric !== 'pages'" (click)="setPeriodMetric('pages')">Pages</button>
+                      <button class="btn" [class.btn-primary]="periodMetric === 'books'" [class.btn-outline-primary]="periodMetric !== 'books'" (click)="setPeriodMetric('books')">Books</button>
+                    </div>
+                  </div>
+                </div>
+                <apx-chart
+                  [series]="periodSeries"
+                  [chart]="periodOpts.chart"
+                  [plotOptions]="periodOpts.plotOptions"
+                  [dataLabels]="periodOpts.dataLabels"
+                  [xaxis]="periodOpts.xaxis"
+                  [yaxis]="periodOpts.yaxis"
+                  [colors]="periodOpts.colors"
+                  [grid]="periodOpts.grid"
+                  [tooltip]="periodOpts.tooltip"
+                ></apx-chart>
+              </div>
+            </div>
+          </div>
+        </div>
       }
 
       <div class="row g-3">
@@ -357,6 +390,11 @@ export class Books implements OnInit {
   histSeries: any[] = []
   histOpts: any = {}
 
+  periodMode: 'month' | 'year' = 'month'
+  periodMetric: 'pages' | 'books' = 'pages'
+  periodSeries: any[] = []
+  periodOpts: any = {}
+
   expandedUpdate = new Set<number>()
   expandedHistory = new Set<number>()
   expandedLabs = new Set<number>()
@@ -381,8 +419,80 @@ export class Books implements OnInit {
       forkJoin(data.map(b => this.svc.getProgress(b.id))).subscribe(results => {
         data.forEach((b, i) => this.histories.set(b.id, results[i]))
         this.buildHistoryChart()
+        this.buildPeriodChart()
       })
     })
+  }
+
+  setPeriodMode(mode: 'month' | 'year') {
+    this.periodMode = mode
+    this.buildPeriodChart()
+  }
+
+  setPeriodMetric(metric: 'pages' | 'books') {
+    this.periodMetric = metric
+    this.buildPeriodChart()
+  }
+
+  private pagesReadEntries(history: BookProgress[]): { date: string; pagesRead: number }[] {
+    return history.map((entry, i) => ({
+      date: entry.date,
+      pagesRead: i === 0 ? entry.currentPage : Math.max(entry.currentPage - history[i - 1].currentPage, 0),
+    }))
+  }
+
+  private lastMonthKeys(count: number): string[] {
+    const keys: string[] = []
+    const now = new Date()
+    for (let i = count - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      keys.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
+    }
+
+    return keys
+  }
+
+  buildPeriodChart() {
+    const keyLength = this.periodMode === 'month' ? 7 : 4
+    const totals = new Map<string, number>()
+
+    if (this.periodMetric === 'pages') {
+      this.books.forEach(b => {
+        this.pagesReadEntries(this.histories.get(b.id) ?? []).forEach(e => {
+          const key = e.date.slice(0, keyLength)
+          totals.set(key, (totals.get(key) ?? 0) + e.pagesRead)
+        })
+      })
+    } else {
+      this.books.filter(b => b.status === 'Completed' && b.completedDate).forEach(b => {
+        const key = b.completedDate!.slice(0, keyLength)
+        totals.set(key, (totals.get(key) ?? 0) + 1)
+      })
+    }
+
+    let keys: string[]
+    if (this.periodMode === 'month') {
+      keys = this.lastMonthKeys(12)
+    } else {
+      keys = Array.from(totals.keys()).sort()
+      if (keys.length === 0) keys = [String(new Date().getFullYear())]
+    }
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const labels = keys.map(k => this.periodMode === 'month' ? `${monthNames[+k.slice(5, 7) - 1]} ${k.slice(0, 4)}` : k)
+    const unit = this.periodMetric === 'pages' ? ' pages' : ' books'
+
+    this.periodSeries = [{ name: this.periodMetric === 'pages' ? 'Pages Read' : 'Books Completed', data: keys.map(k => totals.get(k) ?? 0) }]
+    this.periodOpts = {
+      chart: { type: 'bar', height: 220, toolbar: { show: false } },
+      plotOptions: { bar: { borderRadius: 3, columnWidth: '55%' } },
+      dataLabels: { enabled: false },
+      xaxis: { categories: labels, labels: { rotate: -30, style: { fontSize: '11px' } } },
+      yaxis: { labels: { style: { fontSize: '11px' } }, min: 0, forceNiceScale: true },
+      colors: [this.periodMetric === 'pages' ? '#0d6efd' : '#198754'],
+      grid: { borderColor: '#e9ecef' },
+      tooltip: { y: { formatter: (v: number) => v + unit } },
+    }
   }
 
   private weekStart(dateStr: string): string {
@@ -403,11 +513,9 @@ export class Books implements OnInit {
   buildHistoryChart() {
     const weeklyMap = new Map<string, number>()
     this.books.forEach(b => {
-      const history = this.histories.get(b.id) ?? []
-      history.forEach((entry, i) => {
-        const pagesRead = i === 0 ? entry.currentPage : Math.max(entry.currentPage - history[i - 1].currentPage, 0)
-        const week = this.weekStart(entry.date)
-        weeklyMap.set(week, (weeklyMap.get(week) ?? 0) + pagesRead)
+      this.pagesReadEntries(this.histories.get(b.id) ?? []).forEach(e => {
+        const week = this.weekStart(e.date)
+        weeklyMap.set(week, (weeklyMap.get(week) ?? 0) + e.pagesRead)
       })
     })
 

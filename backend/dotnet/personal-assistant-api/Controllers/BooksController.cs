@@ -33,6 +33,16 @@ public class BooksController(PersonalAssistantDbContext db) : ControllerBase
     {
         book.UserId = CurrentUserId;
         book.LastUpdated = DateOnly.FromDateTime(DateTime.Today);
+
+        if (book.Status == "Completed")
+        {
+            book.CompletedDate ??= book.LastUpdated;
+        }
+        else
+        {
+            book.CompletedDate = null;
+        }
+
         db.Books.Add(book);
         await db.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { id = book.Id }, book);
@@ -44,6 +54,17 @@ public class BooksController(PersonalAssistantDbContext db) : ControllerBase
         if (id != book.Id) return BadRequest();
         var existing = await db.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == CurrentUserId);
         if (existing is null) return NotFound();
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
+        if (book.Status != "Completed")
+        {
+            existing.CompletedDate = null;
+        }
+        else if (existing.Status != "Completed" || existing.CompletedDate is null)
+        {
+            existing.CompletedDate = book.CompletedDate ?? today;
+        }
+
         existing.Title = book.Title;
         existing.Author = book.Author;
         existing.TotalPages = book.TotalPages;

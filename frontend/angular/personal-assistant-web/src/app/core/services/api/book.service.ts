@@ -13,6 +13,7 @@ export interface Book {
   bookType: string
   lastUpdated?: string
   targetDate?: string
+  completedDate?: string | null
   notes: string
 }
 

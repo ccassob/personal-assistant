@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PersonalAssistant.Api.Data;
 
@@ -11,9 +12,11 @@ using PersonalAssistant.Api.Data;
 namespace PersonalAssistant.Api.Migrations
 {
     [DbContext(typeof(PersonalAssistantDbContext))]
-    partial class PersonalAssistantDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261006151249_AddBookCompletedDate")]
+    partial class AddBookCompletedDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
