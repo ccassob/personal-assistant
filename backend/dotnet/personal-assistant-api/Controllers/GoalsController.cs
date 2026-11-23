@@ -16,12 +16,12 @@ public class GoalsController(PersonalAssistantDbContext db) : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
-        Ok(await db.Goals.Where(g => g.UserId == CurrentUserId).ToListAsync());
+        Ok(await db.Goals.AsNoTracking().Where(g => g.UserId == CurrentUserId).ToListAsync());
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var goal = await db.Goals.FirstOrDefaultAsync(g => g.Id == id && g.UserId == CurrentUserId);
+        var goal = await db.Goals.AsNoTracking().FirstOrDefaultAsync(g => g.Id == id && g.UserId == CurrentUserId);
         return goal is null ? NotFound() : Ok(goal);
     }
 

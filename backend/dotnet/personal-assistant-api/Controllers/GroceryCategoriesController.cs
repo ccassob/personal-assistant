@@ -16,12 +16,12 @@ public class GroceryCategoriesController(PersonalAssistantDbContext db) : Contro
 
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
-        Ok(await db.GroceryCategories.Where(c => c.UserId == CurrentUserId).OrderBy(c => c.Name).ToListAsync());
+        Ok(await db.GroceryCategories.AsNoTracking().Where(c => c.UserId == CurrentUserId).OrderBy(c => c.Name).ToListAsync());
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var c = await db.GroceryCategories.FirstOrDefaultAsync(c => c.Id == id && c.UserId == CurrentUserId);
+        var c = await db.GroceryCategories.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id && c.UserId == CurrentUserId);
         return c is null ? NotFound() : Ok(c);
     }
 

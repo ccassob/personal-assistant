@@ -17,25 +17,25 @@ public class CreditCardCategoryLimitsController(PersonalAssistantDbContext ctx) 
     [HttpGet("year-summary")]
     public async Task<IActionResult> GetYearSummary([FromQuery] int year)
     {
-        var categories = await ctx.CreditCardCategories
+        var categories = await ctx.CreditCardCategories.AsNoTracking()
             .Where(c => c.UserId == CurrentUserId)
             .ToListAsync();
 
-        var limits = await ctx.CreditCardCategoryLimits
+        var limits = await ctx.CreditCardCategoryLimits.AsNoTracking()
             .Where(l => l.UserId == CurrentUserId && l.Year == year)
             .ToListAsync();
 
-        var txs = await ctx.CreditCardTransactions
+        var spending = await ctx.CreditCardTransactions.AsNoTracking()
             .Where(t => t.UserId == CurrentUserId &&
                         t.Date.Year == year &&
                         t.Type == "Expense" &&
                         t.CreditCardCategoryId != null)
+            .GroupBy(t => new { CategoryId = t.CreditCardCategoryId!.Value, Month = t.Date.Month })
+            .Select(g => new { g.Key.CategoryId, g.Key.Month, Total = g.Sum(t => t.Amount) })
             .ToListAsync();
 
         var limitMap = limits.ToDictionary(l => (l.CreditCardCategoryId, l.Month), l => l.Amount);
-        var spendMap = txs
-            .GroupBy(t => (t.CreditCardCategoryId!.Value, t.Date.Month))
-            .ToDictionary(g => g.Key, g => g.Sum(t => t.Amount));
+        var spendMap = spending.ToDictionary(x => (x.CategoryId, x.Month), x => x.Total);
 
         var result = categories.SelectMany(cat =>
             Enumerable.Range(1, 12).Select(month => new
@@ -55,7 +55,7 @@ public class CreditCardCategoryLimitsController(PersonalAssistantDbContext ctx) 
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? month, [FromQuery] int? year)
     {
-        var query = ctx.CreditCardCategoryLimits
+        var query = ctx.CreditCardCategoryLimits.AsNoTracking()
             .Include(l => l.CreditCardCategory)
             .Where(l => l.UserId == CurrentUserId);
         if (month.HasValue) query = query.Where(l => l.Month == month);

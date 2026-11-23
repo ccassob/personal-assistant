@@ -17,9 +17,10 @@ public class GroceryItemsController(PersonalAssistantDbContext db) : ControllerB
     private async Task PopulateSupermarketIds(List<GroceryItem> items)
     {
         var ids = items.Select(i => i.Id).ToList();
-        var joins = await db.GroceryItemSupermarkets.Where(x => ids.Contains(x.GroceryItemId)).ToListAsync();
+        var joins = await db.GroceryItemSupermarkets.AsNoTracking().Where(x => ids.Contains(x.GroceryItemId)).ToListAsync();
+        var joinsByItem = joins.ToLookup(x => x.GroceryItemId, x => x.SupermarketId);
         foreach (var item in items)
-            item.SupermarketIds = joins.Where(x => x.GroceryItemId == item.Id).Select(x => x.SupermarketId).ToList();
+            item.SupermarketIds = joinsByItem[item.Id].ToList();
     }
 
     private async Task SyncSupermarkets(int itemId, List<int> supermarketIds)
@@ -33,7 +34,7 @@ public class GroceryItemsController(PersonalAssistantDbContext db) : ControllerB
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] bool? onList, [FromQuery] int? supermarketId)
     {
-        var query = db.GroceryItems.Where(i => i.UserId == CurrentUserId);
+        var query = db.GroceryItems.AsNoTracking().Where(i => i.UserId == CurrentUserId);
         if (onList == true) query = query.Where(i => i.IsOnList);
         if (supermarketId.HasValue)
             query = query.Where(i => db.GroceryItemSupermarkets
@@ -46,7 +47,7 @@ public class GroceryItemsController(PersonalAssistantDbContext db) : ControllerB
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var item = await db.GroceryItems.FirstOrDefaultAsync(i => i.Id == id && i.UserId == CurrentUserId);
+        var item = await db.GroceryItems.AsNoTracking().FirstOrDefaultAsync(i => i.Id == id && i.UserId == CurrentUserId);
         if (item is null) return NotFound();
         await PopulateSupermarketIds([item]);
         return Ok(item);
@@ -133,7 +134,7 @@ public class GroceryItemsController(PersonalAssistantDbContext db) : ControllerB
     public async Task<IActionResult> GetItemPurchases(int id)
     {
         if (!await db.GroceryItems.AnyAsync(i => i.Id == id && i.UserId == CurrentUserId)) return NotFound();
-        return Ok(await db.GroceryPurchases
+        return Ok(await db.GroceryPurchases.AsNoTracking()
             .Where(p => p.GroceryItemId == id)
             .OrderByDescending(p => p.PurchasedAt)
             .ToListAsync());
@@ -141,7 +142,7 @@ public class GroceryItemsController(PersonalAssistantDbContext db) : ControllerB
 
     [HttpGet("purchases")]
     public async Task<IActionResult> GetAllPurchases() =>
-        Ok(await db.GroceryPurchases
+        Ok(await db.GroceryPurchases.AsNoTracking()
             .Where(p => p.UserId == CurrentUserId)
             .OrderByDescending(p => p.PurchasedAt)
             .ToListAsync());

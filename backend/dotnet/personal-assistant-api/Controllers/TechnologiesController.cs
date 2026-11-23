@@ -20,7 +20,7 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var technologies = await db.Technologies
+        var technologies = await db.Technologies.AsNoTracking()
             .Where(t => t.UserId == CurrentUserId)
             .ToListAsync();
         return Ok(await BuildResponses(technologies));
@@ -32,7 +32,7 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 100);
 
-        var query = db.Technologies.Where(t => t.UserId == CurrentUserId);
+        var query = db.Technologies.AsNoTracking().Where(t => t.UserId == CurrentUserId);
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim().ToLower();
@@ -51,16 +51,16 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
     {
         var ids = technologies.Select(t => t.Id).ToList();
 
-        var practiceSections = await db.TechnologyPracticeSections.Where(s => ids.Contains(s.TechnologyId)).ToListAsync();
+        var practiceSections = await db.TechnologyPracticeSections.AsNoTracking().Where(s => ids.Contains(s.TechnologyId)).ToListAsync();
         var practiceSectionIds = practiceSections.Select(s => s.Id).ToList();
-        var practiceItems = await db.TechnologyPracticeItems.Where(p => practiceSectionIds.Contains(p.SectionId)).ToListAsync();
+        var practiceItems = await db.TechnologyPracticeItems.AsNoTracking().Where(p => practiceSectionIds.Contains(p.SectionId)).ToListAsync();
 
-        var theorySections = await db.TechnologyTheorySections.Where(s => ids.Contains(s.TechnologyId)).ToListAsync();
+        var theorySections = await db.TechnologyTheorySections.AsNoTracking().Where(s => ids.Contains(s.TechnologyId)).ToListAsync();
         var theorySectionIds = theorySections.Select(s => s.Id).ToList();
-        var theoryQuestions = await db.TechnologyTheoryQuestions.Where(q => theorySectionIds.Contains(q.SectionId)).ToListAsync();
+        var theoryQuestions = await db.TechnologyTheoryQuestions.AsNoTracking().Where(q => theorySectionIds.Contains(q.SectionId)).ToListAsync();
 
         var categoryIds = technologies.Where(t => t.CategoryId.HasValue).Select(t => t.CategoryId!.Value).Distinct().ToList();
-        var categories = await db.TechnologyCategories.Where(c => categoryIds.Contains(c.Id)).ToListAsync();
+        var categories = await db.TechnologyCategories.AsNoTracking().Where(c => categoryIds.Contains(c.Id)).ToListAsync();
 
         return technologies.Select(t =>
         {
@@ -77,17 +77,17 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var technology = await db.Technologies.FirstOrDefaultAsync(t => t.Id == id && t.UserId == CurrentUserId);
+        var technology = await db.Technologies.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id && t.UserId == CurrentUserId);
         if (technology is null) return NotFound();
 
         var sectionIds = await db.TechnologyPracticeSections.Where(s => s.TechnologyId == id).Select(s => s.Id).ToListAsync();
-        var practiceItems = await db.TechnologyPracticeItems.Where(p => sectionIds.Contains(p.SectionId)).ToListAsync();
+        var practiceItems = await db.TechnologyPracticeItems.AsNoTracking().Where(p => sectionIds.Contains(p.SectionId)).ToListAsync();
 
         var theorySectionIds = await db.TechnologyTheorySections.Where(s => s.TechnologyId == id).Select(s => s.Id).ToListAsync();
-        var theoryQuestions = await db.TechnologyTheoryQuestions.Where(q => theorySectionIds.Contains(q.SectionId)).ToListAsync();
+        var theoryQuestions = await db.TechnologyTheoryQuestions.AsNoTracking().Where(q => theorySectionIds.Contains(q.SectionId)).ToListAsync();
 
         TechnologyCategory? category = technology.CategoryId.HasValue
-            ? await db.TechnologyCategories.FirstOrDefaultAsync(c => c.Id == technology.CategoryId)
+            ? await db.TechnologyCategories.AsNoTracking().FirstOrDefaultAsync(c => c.Id == technology.CategoryId)
             : null;
 
         return Ok(BuildResponse(technology, practiceItems, theoryQuestions, category));
@@ -142,7 +142,7 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
     public async Task<IActionResult> GetHistory()
     {
         var technologyIds = await db.Technologies.Where(t => t.UserId == CurrentUserId).Select(t => t.Id).ToListAsync();
-        var entries = await db.TechnologyCompletionHistories
+        var entries = await db.TechnologyCompletionHistories.AsNoTracking()
             .Where(h => technologyIds.Contains(h.TechnologyId))
             .OrderByDescending(h => h.CompletedDate)
             .Select(h => new
@@ -196,7 +196,7 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
     public async Task<IActionResult> GetPracticeSections(int id)
     {
         if (!await OwnsTechnology(id)) return NotFound();
-        return Ok(await db.TechnologyPracticeSections.Where(s => s.TechnologyId == id).OrderBy(s => s.Id).ToListAsync());
+        return Ok(await db.TechnologyPracticeSections.AsNoTracking().Where(s => s.TechnologyId == id).OrderBy(s => s.Id).ToListAsync());
     }
 
     [HttpPost("{id}/practice-sections")]
@@ -238,8 +238,8 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
     public async Task<IActionResult> GetPracticeItems(int id)
     {
         if (!await OwnsTechnology(id)) return NotFound();
-        var sectionIds = await db.TechnologyPracticeSections.Where(s => s.TechnologyId == id).Select(s => s.Id).ToListAsync();
-        return Ok(await db.TechnologyPracticeItems.Where(p => sectionIds.Contains(p.SectionId)).OrderBy(p => p.Order).ToListAsync());
+        var sectionIds = db.TechnologyPracticeSections.Where(s => s.TechnologyId == id).Select(s => s.Id);
+        return Ok(await db.TechnologyPracticeItems.AsNoTracking().Where(p => sectionIds.Contains(p.SectionId)).OrderBy(p => p.Order).ToListAsync());
     }
 
     [HttpPost("{id}/practice-items")]
@@ -262,7 +262,7 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
 
     private async Task<int> NextPracticeOrder(int technologyId)
     {
-        var sectionIds = await db.TechnologyPracticeSections.Where(s => s.TechnologyId == technologyId).Select(s => s.Id).ToListAsync();
+        var sectionIds = db.TechnologyPracticeSections.Where(s => s.TechnologyId == technologyId).Select(s => s.Id);
         var maxOrder = await db.TechnologyPracticeItems.Where(p => sectionIds.Contains(p.SectionId)).Select(p => (int?)p.Order).MaxAsync();
         return (maxOrder ?? -1) + 1;
     }
@@ -310,7 +310,7 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
     public async Task<IActionResult> GetTheorySections(int id)
     {
         if (!await OwnsTechnology(id)) return NotFound();
-        return Ok(await db.TechnologyTheorySections.Where(s => s.TechnologyId == id).OrderBy(s => s.Id).ToListAsync());
+        return Ok(await db.TechnologyTheorySections.AsNoTracking().Where(s => s.TechnologyId == id).OrderBy(s => s.Id).ToListAsync());
     }
 
     [HttpPost("{id}/theory-sections")]
@@ -352,8 +352,8 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
     public async Task<IActionResult> GetTheoryQuestions(int id)
     {
         if (!await OwnsTechnology(id)) return NotFound();
-        var sectionIds = await db.TechnologyTheorySections.Where(s => s.TechnologyId == id).Select(s => s.Id).ToListAsync();
-        return Ok(await db.TechnologyTheoryQuestions.Where(q => sectionIds.Contains(q.SectionId)).OrderBy(q => q.Order).ToListAsync());
+        var sectionIds = db.TechnologyTheorySections.Where(s => s.TechnologyId == id).Select(s => s.Id);
+        return Ok(await db.TechnologyTheoryQuestions.AsNoTracking().Where(q => sectionIds.Contains(q.SectionId)).OrderBy(q => q.Order).ToListAsync());
     }
 
     [HttpPost("{id}/theory-questions")]
@@ -376,7 +376,7 @@ public class TechnologiesController(PersonalAssistantDbContext db) : ControllerB
 
     private async Task<int> NextTheoryOrder(int technologyId)
     {
-        var sectionIds = await db.TechnologyTheorySections.Where(s => s.TechnologyId == technologyId).Select(s => s.Id).ToListAsync();
+        var sectionIds = db.TechnologyTheorySections.Where(s => s.TechnologyId == technologyId).Select(s => s.Id);
         var maxOrder = await db.TechnologyTheoryQuestions.Where(q => sectionIds.Contains(q.SectionId)).Select(q => (int?)q.Order).MaxAsync();
         return (maxOrder ?? -1) + 1;
     }

@@ -20,6 +20,9 @@ public class CategoriesControllerTests : IClassFixture<PersonalAssistantApiFacto
     private static Category Cat(string name, string type = "Income") =>
         new() { Name = name, Type = type, Color = "#00ff00", Icon = "cash", UserId = TestAuthHandler.UserId };
 
+    private static Category OtherUserCat(string name) =>
+        new() { Name = name, Type = "Income", Color = "#0000ff", Icon = "cash", UserId = "other-user" };
+
     // ── GET /api/categories ─────────────────────────────────────────────────
 
     [Fact]
@@ -47,7 +50,28 @@ public class CategoriesControllerTests : IClassFixture<PersonalAssistantApiFacto
         categories.Should().ContainSingle(c => c.Name == "Food");
     }
 
+    [Fact]
+    public async Task GetAll_DoesNotReturnOtherUsersCategories()
+    {
+        _factory.SeedMany([Cat("Mine"), OtherUserCat("Theirs")]);
+
+        var categories = await _client.GetFromJsonAsync<Category[]>("/api/categories");
+
+        categories.Should().ContainSingle();
+        categories![0].Name.Should().Be("Mine");
+    }
+
     // ── GET /api/categories/{id} ────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetById_ReturnsNotFound_WhenOwnedByAnotherUser()
+    {
+        var id = _factory.Seed(OtherUserCat("Theirs"));
+
+        var response = await _client.GetAsync($"/api/categories/{id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 
     [Fact]
     public async Task GetById_ReturnsCategory_WhenExists()
@@ -133,7 +157,29 @@ public class CategoriesControllerTests : IClassFixture<PersonalAssistantApiFacto
         fetched.Color.Should().Be("#ff0000");
     }
 
+    [Fact]
+    public async Task Update_ReturnsNotFound_WhenOwnedByAnotherUser()
+    {
+        var id = _factory.Seed(OtherUserCat("Theirs"));
+        var payload = new Category { Id = id, Name = "Hijacked", Type = "Expense", Color = "#ff0000", Icon = "tag" };
+
+        var response = await _client.PutAsJsonAsync($"/api/categories/{id}", payload);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     // ── DELETE /api/categories/{id} ─────────────────────────────────────────
+
+    [Fact]
+    public async Task Delete_ReturnsNotFound_AndKeepsCategory_WhenOwnedByAnotherUser()
+    {
+        var id = _factory.Seed(OtherUserCat("Theirs"));
+
+        var response = await _client.DeleteAsync($"/api/categories/{id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        _factory.CountAll<Category>().Should().Be(1);
+    }
 
     [Fact]
     public async Task Delete_ReturnsNoContent_WhenSuccessful()

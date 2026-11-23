@@ -78,19 +78,23 @@ public class NotificationsController(
         var count = 0;
 
         // 1. Expired transactions — one notification per transaction, sent once ever
-        var expiredTxs = await db.Transactions
+        var expiredTxs = await db.Transactions.AsNoTracking()
             .Where(t => t.UserId == CurrentUserId && !t.IsExecuted && t.Date < today)
             .ToListAsync();
+
+        var expiredEntityIds = expiredTxs.Select(t => t.Id.ToString()).ToList();
+        var alreadySentIds = (await db.NotificationLogs.AsNoTracking()
+            .Where(l => l.UserId == CurrentUserId &&
+                        l.Type == "expired-transaction" &&
+                        expiredEntityIds.Contains(l.EntityId))
+            .Select(l => l.EntityId)
+            .ToListAsync()).ToHashSet();
 
         foreach (var tx in expiredTxs)
         {
             var entityId = tx.Id.ToString();
-            var alreadySent = await db.NotificationLogs.AnyAsync(l =>
-                l.UserId == CurrentUserId &&
-                l.Type == "expired-transaction" &&
-                l.EntityId == entityId);
 
-            if (alreadySent) continue;
+            if (alreadySentIds.Contains(entityId)) continue;
 
             await push.SendToUserAsync(
                 CurrentUserId,

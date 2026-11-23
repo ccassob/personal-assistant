@@ -24,19 +24,19 @@ public class StudyAudioController(PersonalAssistantDbContext db, StudyAudioServi
     {
         if (!await OwnsTechnology(technologyId)) return NotFound();
 
-        var sections = await db.TechnologyTheorySections
+        var sections = await db.TechnologyTheorySections.AsNoTracking()
             .Where(s => s.TechnologyId == technologyId)
             .OrderBy(s => s.Id)
             .ToListAsync();
         var sectionIds = sections.Select(s => s.Id).ToList();
 
-        var questionCounts = await db.TechnologyTheoryQuestions
+        var questionCounts = await db.TechnologyTheoryQuestions.AsNoTracking()
             .Where(q => sectionIds.Contains(q.SectionId))
             .GroupBy(q => q.SectionId)
             .Select(g => new { SectionId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.SectionId, x => x.Count);
 
-        var rows = await db.StudyAudioSessions
+        var rows = await db.StudyAudioSessions.AsNoTracking()
             .Where(a => a.TechnologyId == technologyId && a.UserId == CurrentUserId)
             .ToListAsync();
         var bySection = rows.ToDictionary(a => a.TheorySectionId, a => a);

@@ -21,7 +21,7 @@ public class TransactionsController(PersonalAssistantDbContext db) : ControllerB
         [FromQuery] int? month,
         [FromQuery] int? year)
     {
-        var query = db.Transactions.Include(t => t.Category)
+        var query = db.Transactions.AsNoTracking().Include(t => t.Category)
             .Where(t => t.UserId == CurrentUserId);
 
         if (categoryId.HasValue) query = query.Where(t => t.CategoryId == categoryId);
@@ -29,7 +29,7 @@ public class TransactionsController(PersonalAssistantDbContext db) : ControllerB
 
         if (month.HasValue && year.HasValue)
         {
-            var settings = await db.AppSettings.FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
+            var settings = await db.AppSettings.AsNoTracking().FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
             var cutoffDay = settings?.CutoffDay ?? 1;
             var (startDate, endDate) = GetPeriod(cutoffDay, month.Value, year.Value);
             query = query.Where(t => t.Date >= startDate && t.Date <= endDate);
@@ -43,7 +43,7 @@ public class TransactionsController(PersonalAssistantDbContext db) : ControllerB
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var transaction = await db.Transactions.Include(t => t.Category)
+        var transaction = await db.Transactions.AsNoTracking().Include(t => t.Category)
             .FirstOrDefaultAsync(t => t.Id == id && t.UserId == CurrentUserId);
         return transaction is null ? NotFound() : Ok(transaction);
     }

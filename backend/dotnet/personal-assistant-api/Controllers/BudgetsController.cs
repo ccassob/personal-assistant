@@ -17,7 +17,7 @@ public class BudgetsController(PersonalAssistantDbContext db) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? month, [FromQuery] int? year)
     {
-        var query = db.Budgets.Include(b => b.Category)
+        var query = db.Budgets.AsNoTracking().Include(b => b.Category)
             .Where(b => b.UserId == CurrentUserId);
         if (month.HasValue) query = query.Where(b => b.Month == month);
         if (year.HasValue) query = query.Where(b => b.Year == year);
@@ -27,7 +27,7 @@ public class BudgetsController(PersonalAssistantDbContext db) : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var budget = await db.Budgets.Include(b => b.Category)
+        var budget = await db.Budgets.AsNoTracking().Include(b => b.Category)
             .FirstOrDefaultAsync(b => b.Id == id && b.UserId == CurrentUserId);
         return budget is null ? NotFound() : Ok(budget);
     }
@@ -68,22 +68,22 @@ public class BudgetsController(PersonalAssistantDbContext db) : ControllerBase
     [HttpGet("year-summary")]
     public async Task<IActionResult> GetYearSummary([FromQuery] int year)
     {
-        var categories = await db.Categories
+        var categories = await db.Categories.AsNoTracking()
             .Where(c => c.UserId == CurrentUserId && c.Type == "Expense")
             .ToListAsync();
 
-        var budgets = await db.Budgets
+        var budgets = await db.Budgets.AsNoTracking()
             .Where(b => b.UserId == CurrentUserId && b.Year == year)
             .ToListAsync();
 
-        var transactions = await db.Transactions
+        var spending = await db.Transactions.AsNoTracking()
             .Where(t => t.UserId == CurrentUserId && t.Date.Year == year && t.Type == "Expense")
+            .GroupBy(t => new { t.CategoryId, Month = t.Date.Month })
+            .Select(g => new { g.Key.CategoryId, g.Key.Month, Total = g.Sum(t => t.Amount) })
             .ToListAsync();
 
         var budgetMap = budgets.ToDictionary(b => (b.CategoryId, b.Month), b => b.TargetAmount);
-        var spendMap = transactions
-            .GroupBy(t => (t.CategoryId, t.Date.Month))
-            .ToDictionary(g => g.Key, g => g.Sum(t => t.Amount));
+        var spendMap = spending.ToDictionary(x => (x.CategoryId, x.Month), x => x.Total);
 
         var result = categories.SelectMany(cat =>
             Enumerable.Range(1, 12).Select(month => new

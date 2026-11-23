@@ -17,14 +17,14 @@ public class BooksController(PersonalAssistantDbContext db) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var books = await db.Books.Where(b => b.UserId == CurrentUserId).ToListAsync();
+        var books = await db.Books.AsNoTracking().Where(b => b.UserId == CurrentUserId).ToListAsync();
         return Ok(books.OrderByDescending(b => b.LastUpdated).ThenBy(b => b.Title));
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var book = await db.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == CurrentUserId);
+        var book = await db.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Id == id && b.UserId == CurrentUserId);
         return book is null ? NotFound() : Ok(book);
     }
 
@@ -94,7 +94,7 @@ public class BooksController(PersonalAssistantDbContext db) : ControllerBase
     {
         if (!await db.Books.AnyAsync(b => b.Id == id && b.UserId == CurrentUserId)) return NotFound();
 
-        return Ok(await db.BookProgresses
+        return Ok(await db.BookProgresses.AsNoTracking()
             .Where(p => p.BookId == id)
             .OrderBy(p => p.Date)
             .ToListAsync());
@@ -124,7 +124,7 @@ public class BooksController(PersonalAssistantDbContext db) : ControllerBase
     public async Task<IActionResult> GetTasks(int id)
     {
         if (!await db.Books.AnyAsync(b => b.Id == id && b.UserId == CurrentUserId)) return NotFound();
-        return Ok(await db.BookTasks.Where(t => t.BookId == id).OrderBy(t => t.Id).ToListAsync());
+        return Ok(await db.BookTasks.AsNoTracking().Where(t => t.BookId == id).OrderBy(t => t.Id).ToListAsync());
     }
 
     [HttpPost("{id}/tasks")]

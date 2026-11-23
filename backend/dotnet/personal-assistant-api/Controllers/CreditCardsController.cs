@@ -22,7 +22,7 @@ public class CreditCardsController(
 
     [HttpGet]
     public async Task<IActionResult> GetCards() =>
-        Ok(await ctx.CreditCards
+        Ok(await ctx.CreditCards.AsNoTracking()
             .Where(c => c.UserId == CurrentUserId)
             .OrderBy(c => c.Name)
             .ToListAsync());
@@ -82,8 +82,7 @@ public class CreditCardsController(
     [HttpGet("{cardId}/statements")]
     public async Task<IActionResult> GetStatements(int cardId)
     {
-        var card = await ctx.CreditCards.FirstOrDefaultAsync(c => c.Id == cardId && c.UserId == CurrentUserId);
-        if (card is null) return NotFound();
+        if (!await ctx.CreditCards.AnyAsync(c => c.Id == cardId && c.UserId == CurrentUserId)) return NotFound();
 
         var statements = await ctx.CreditCardStatements
             .Where(s => s.CreditCardId == cardId && s.UserId == CurrentUserId)
@@ -205,10 +204,9 @@ public class CreditCardsController(
     [HttpGet("statements/{statementId}/transactions")]
     public async Task<IActionResult> GetTransactions(int statementId)
     {
-        var stmt = await ctx.CreditCardStatements.FirstOrDefaultAsync(s => s.Id == statementId && s.UserId == CurrentUserId);
-        if (stmt is null) return NotFound();
+        if (!await ctx.CreditCardStatements.AnyAsync(s => s.Id == statementId && s.UserId == CurrentUserId)) return NotFound();
 
-        var txs = await ctx.CreditCardTransactions
+        var txs = await ctx.CreditCardTransactions.AsNoTracking()
             .Include(t => t.CreditCardCategory)
             .Where(t => t.StatementId == statementId)
             .OrderBy(t => t.Date)

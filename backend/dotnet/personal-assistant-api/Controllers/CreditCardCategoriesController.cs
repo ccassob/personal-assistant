@@ -16,7 +16,7 @@ public class CreditCardCategoriesController(PersonalAssistantDbContext ctx) : Co
 
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
-        Ok(await ctx.CreditCardCategories
+        Ok(await ctx.CreditCardCategories.AsNoTracking()
             .Where(c => c.UserId == CurrentUserId)
             .OrderBy(c => c.Name)
             .ToListAsync());

@@ -18,12 +18,12 @@ public class VehiclesController(PersonalAssistantDbContext db) : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
-        Ok(await db.Vehicles.Where(v => v.UserId == CurrentUserId).OrderBy(v => v.Name).ToListAsync());
+        Ok(await db.Vehicles.AsNoTracking().Where(v => v.UserId == CurrentUserId).OrderBy(v => v.Name).ToListAsync());
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var vehicle = await db.Vehicles.FirstOrDefaultAsync(v => v.Id == id && v.UserId == CurrentUserId);
+        var vehicle = await db.Vehicles.AsNoTracking().FirstOrDefaultAsync(v => v.Id == id && v.UserId == CurrentUserId);
         return vehicle is null ? NotFound() : Ok(vehicle);
     }
 
@@ -74,7 +74,7 @@ public class VehiclesController(PersonalAssistantDbContext db) : ControllerBase
     public async Task<IActionResult> GetMaintenance(int id)
     {
         if (!await db.Vehicles.AnyAsync(v => v.Id == id && v.UserId == CurrentUserId)) return NotFound();
-        return Ok(await db.VehicleMaintenances
+        return Ok(await db.VehicleMaintenances.AsNoTracking()
             .Where(m => m.VehicleId == id)
             .OrderByDescending(m => m.Date)
             .ToListAsync());
@@ -138,7 +138,7 @@ public class VehiclesController(PersonalAssistantDbContext db) : ControllerBase
     public async Task<IActionResult> GetFuel(int id)
     {
         if (!await db.Vehicles.AnyAsync(v => v.Id == id && v.UserId == CurrentUserId)) return NotFound();
-        return Ok(await db.VehicleFuels
+        return Ok(await db.VehicleFuels.AsNoTracking()
             .Where(f => f.VehicleId == id)
             .OrderByDescending(f => f.Date)
             .ToListAsync());
@@ -190,7 +190,7 @@ public class VehiclesController(PersonalAssistantDbContext db) : ControllerBase
     public async Task<IActionResult> GetMileageHistory(int id)
     {
         if (!await db.Vehicles.AnyAsync(v => v.Id == id && v.UserId == CurrentUserId)) return NotFound();
-        return Ok(await db.VehicleMileageHistories
+        return Ok(await db.VehicleMileageHistories.AsNoTracking()
             .Where(h => h.VehicleId == id)
             .OrderBy(h => h.Date)
             .ToListAsync());
@@ -202,7 +202,7 @@ public class VehiclesController(PersonalAssistantDbContext db) : ControllerBase
     public async Task<IActionResult> GetTodos(int id)
     {
         if (!await db.Vehicles.AnyAsync(v => v.Id == id && v.UserId == CurrentUserId)) return NotFound();
-        return Ok(await db.VehicleTodos.Where(t => t.VehicleId == id).OrderBy(t => t.Id).ToListAsync());
+        return Ok(await db.VehicleTodos.AsNoTracking().Where(t => t.VehicleId == id).OrderBy(t => t.Id).ToListAsync());
     }
 
     [HttpPost("{id}/todos")]
@@ -243,7 +243,7 @@ public class VehiclesController(PersonalAssistantDbContext db) : ControllerBase
     public async Task<IActionResult> GetReminders(int id)
     {
         if (!await db.Vehicles.AnyAsync(v => v.Id == id && v.UserId == CurrentUserId)) return NotFound();
-        return Ok(await db.VehicleReminders.Where(r => r.VehicleId == id).OrderBy(r => r.Id).ToListAsync());
+        return Ok(await db.VehicleReminders.AsNoTracking().Where(r => r.VehicleId == id).OrderBy(r => r.Id).ToListAsync());
     }
 
     [HttpPut("{id}/reminders/{rid}")]

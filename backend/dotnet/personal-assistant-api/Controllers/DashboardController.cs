@@ -17,7 +17,7 @@ public class DashboardController(PersonalAssistantDbContext db) : ControllerBase
     public async Task<IActionResult> GetTrend([FromQuery] int months = 6, [FromQuery] int? month = null, [FromQuery] int? year = null)
     {
         var now = DateTime.Now;
-        var settings = await db.AppSettings.FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
+        var settings = await db.AppSettings.AsNoTracking().FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
         var cutoffDay = settings?.CutoffDay ?? 1;
 
         var m = month ?? now.Month;
@@ -35,8 +35,9 @@ public class DashboardController(PersonalAssistantDbContext db) : ControllerBase
 
         var allStart = periods.First().start;
         var allEnd = periods.Last().end;
-        var transactions = await db.Transactions
+        var transactions = await db.Transactions.AsNoTracking()
             .Where(t => t.UserId == CurrentUserId && t.Date >= allStart && t.Date <= allEnd)
+            .Select(t => new { t.Date, t.Type, t.Amount })
             .ToListAsync();
 
         var result = periods.Select(p => new
@@ -59,11 +60,13 @@ public class DashboardController(PersonalAssistantDbContext db) : ControllerBase
         var m = month ?? now.Month;
         var y = year ?? now.Year;
 
-        var settings = await db.AppSettings.FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
+        var settings = await db.AppSettings.AsNoTracking().FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
         var cutoffDay = settings?.CutoffDay ?? 1;
         var (startDate, endDate) = GetPeriod(cutoffDay, m, y);
 
+        // Identity resolution keeps one Category instance per key, which the GroupBy(t.Category) below relies on.
         var transactions = await db.Transactions
+            .AsNoTrackingWithIdentityResolution()
             .Include(t => t.Category)
             .Where(t => t.UserId == CurrentUserId && t.Date >= startDate && t.Date <= endDate)
             .ToListAsync();
@@ -83,7 +86,7 @@ public class DashboardController(PersonalAssistantDbContext db) : ControllerBase
                 amount = g.Sum(t => t.Amount)
             });
 
-        var budgets = await db.Budgets
+        var budgets = await db.Budgets.AsNoTracking()
             .Include(b => b.Category)
             .Where(b => b.UserId == CurrentUserId && b.Month == m && b.Year == y)
             .ToListAsync();
@@ -98,7 +101,7 @@ public class DashboardController(PersonalAssistantDbContext db) : ControllerBase
                 .Sum(t => t.Amount)
         });
 
-        var goals = await db.Goals.Where(g => g.UserId == CurrentUserId).ToListAsync();
+        var goals = await db.Goals.AsNoTracking().Where(g => g.UserId == CurrentUserId).ToListAsync();
 
         return Ok(new
         {

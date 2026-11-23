@@ -16,7 +16,7 @@ public class TechnologyCategoriesController(PersonalAssistantDbContext ctx) : Co
 
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
-        Ok(await ctx.TechnologyCategories
+        Ok(await ctx.TechnologyCategories.AsNoTracking()
             .Where(c => c.UserId == CurrentUserId)
             .OrderBy(c => c.Name)
             .ToListAsync());

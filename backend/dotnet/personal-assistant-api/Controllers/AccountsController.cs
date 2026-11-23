@@ -16,12 +16,12 @@ public class AccountsController(PersonalAssistantDbContext db) : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
-        Ok(await db.Accounts.Where(a => a.UserId == CurrentUserId).OrderBy(a => a.Name).ToListAsync());
+        Ok(await db.Accounts.AsNoTracking().Where(a => a.UserId == CurrentUserId).OrderBy(a => a.Name).ToListAsync());
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var account = await db.Accounts.FirstOrDefaultAsync(a => a.Id == id && a.UserId == CurrentUserId);
+        var account = await db.Accounts.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id && a.UserId == CurrentUserId);
 
         return account is null ? NotFound() : Ok(account);
     }
@@ -51,7 +51,7 @@ public class AccountsController(PersonalAssistantDbContext db) : ControllerBase
             .ToListAsync();
 
         var since = DateOnly.FromDateTime(DateTime.Today.AddMonths(-6));
-        var result = await db.AccountHistories
+        var result = await db.AccountHistories.AsNoTracking()
             .Where(h => userAccountIds.Contains(h.AccountId) && h.Date >= since)
             .GroupBy(h => h.Date)
             .Select(g => new { Date = g.Key, TotalAmount = g.Sum(h => h.Amount) })

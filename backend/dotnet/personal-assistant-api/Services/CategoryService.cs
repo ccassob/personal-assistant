@@ -19,7 +19,7 @@ public class CategoryService(PersonalAssistantDbContext dbContext) : ICategorySe
 
     public async Task<Result<CategoryDto>> GetByIdAsync(int id, string userId)
     {
-        var category = await dbContext.Categories.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
+        var category = await dbContext.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
 
         if (category is null)
         {

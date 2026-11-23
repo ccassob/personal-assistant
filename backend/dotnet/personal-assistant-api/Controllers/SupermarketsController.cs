@@ -16,12 +16,12 @@ public class SupermarketsController(PersonalAssistantDbContext db) : ControllerB
 
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
-        Ok(await db.Supermarkets.Where(s => s.UserId == CurrentUserId).OrderBy(s => s.Name).ToListAsync());
+        Ok(await db.Supermarkets.AsNoTracking().Where(s => s.UserId == CurrentUserId).OrderBy(s => s.Name).ToListAsync());
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var s = await db.Supermarkets.FirstOrDefaultAsync(s => s.Id == id && s.UserId == CurrentUserId);
+        var s = await db.Supermarkets.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id && s.UserId == CurrentUserId);
         return s is null ? NotFound() : Ok(s);
     }
 

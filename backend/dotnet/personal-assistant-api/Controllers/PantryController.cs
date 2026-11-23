@@ -17,14 +17,17 @@ public class PantryController(PersonalAssistantDbContext db) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] string? filter)
     {
-        var items = await db.PantryItems.Where(p => p.UserId == CurrentUserId).ToListAsync();
-
         var today = DateOnly.FromDateTime(DateTime.Today);
+        var weekAhead = today.AddDays(7);
+
+        var query = db.PantryItems.AsNoTracking().Where(p => p.UserId == CurrentUserId);
 
         if (filter == "expiring")
-            items = items.Where(p => p.ExpiresAt.HasValue && p.ExpiresAt >= today && p.ExpiresAt <= today.AddDays(7)).ToList();
+            query = query.Where(p => p.ExpiresAt.HasValue && p.ExpiresAt >= today && p.ExpiresAt <= weekAhead);
         else if (filter == "expired")
-            items = items.Where(p => p.ExpiresAt.HasValue && p.ExpiresAt < today).ToList();
+            query = query.Where(p => p.ExpiresAt.HasValue && p.ExpiresAt < today);
+
+        var items = await query.ToListAsync();
 
         items = items.OrderBy(p => ExpiryOrder(p, today)).ThenBy(p => p.Name).ToList();
         return Ok(items);
@@ -33,7 +36,7 @@ public class PantryController(PersonalAssistantDbContext db) : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var item = await db.PantryItems.FirstOrDefaultAsync(p => p.Id == id && p.UserId == CurrentUserId);
+        var item = await db.PantryItems.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id && p.UserId == CurrentUserId);
         return item is null ? NotFound() : Ok(item);
     }
 

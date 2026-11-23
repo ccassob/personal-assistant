@@ -16,12 +16,12 @@ public class LoansController(PersonalAssistantDbContext db) : ControllerBase
 
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
-        Ok(await db.Loans.Where(l => l.UserId == CurrentUserId).OrderBy(l => l.Name).ToListAsync());
+        Ok(await db.Loans.AsNoTracking().Where(l => l.UserId == CurrentUserId).OrderBy(l => l.Name).ToListAsync());
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var loan = await db.Loans.FirstOrDefaultAsync(l => l.Id == id && l.UserId == CurrentUserId);
+        var loan = await db.Loans.AsNoTracking().FirstOrDefaultAsync(l => l.Id == id && l.UserId == CurrentUserId);
         return loan is null ? NotFound() : Ok(loan);
     }
 
@@ -69,9 +69,8 @@ public class LoansController(PersonalAssistantDbContext db) : ControllerBase
     [HttpGet("{id}/payments")]
     public async Task<IActionResult> GetPayments(int id)
     {
-        var loan = await db.Loans.FirstOrDefaultAsync(l => l.Id == id && l.UserId == CurrentUserId);
-        if (loan is null) return NotFound();
-        var payments = await db.LoanPayments
+        if (!await db.Loans.AnyAsync(l => l.Id == id && l.UserId == CurrentUserId)) return NotFound();
+        var payments = await db.LoanPayments.AsNoTracking()
             .Where(p => p.LoanId == id)
             .OrderByDescending(p => p.Date)
             .ToListAsync();

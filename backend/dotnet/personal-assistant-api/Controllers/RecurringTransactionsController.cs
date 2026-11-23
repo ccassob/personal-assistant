@@ -17,9 +17,9 @@ public class RecurringTransactionsController(PersonalAssistantDbContext db) : Co
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var settings = await db.AppSettings.FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
+        var settings = await db.AppSettings.AsNoTracking().FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
         var cutoffDay = settings?.CutoffDay ?? 1;
-        var items = await db.RecurringTransactions.Include(r => r.Category)
+        var items = await db.RecurringTransactions.AsNoTracking().Include(r => r.Category)
             .Where(r => r.UserId == CurrentUserId).ToListAsync();
         return Ok(items.OrderBy(r => (r.DayOfMonth - cutoffDay + 31) % 31));
     }
@@ -27,7 +27,7 @@ public class RecurringTransactionsController(PersonalAssistantDbContext db) : Co
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var item = await db.RecurringTransactions.Include(r => r.Category)
+        var item = await db.RecurringTransactions.AsNoTracking().Include(r => r.Category)
             .FirstOrDefaultAsync(r => r.Id == id && r.UserId == CurrentUserId);
         return item is null ? NotFound() : Ok(item);
     }
@@ -75,12 +75,12 @@ public class RecurringTransactionsController(PersonalAssistantDbContext db) : Co
     {
         if (month < 1 || month > 12 || year < 2000) return BadRequest("Invalid month or year.");
 
-        var settings = await db.AppSettings.FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
+        var settings = await db.AppSettings.AsNoTracking().FirstOrDefaultAsync(s => s.UserId == CurrentUserId);
         var cutoffDay = settings?.CutoffDay ?? 1;
         var nextMonth = month % 12 + 1;
         var nextYear = month == 12 ? year + 1 : year;
 
-        var templates = await db.RecurringTransactions
+        var templates = await db.RecurringTransactions.AsNoTracking()
             .Where(r => r.IsActive && r.UserId == CurrentUserId).ToListAsync();
         var created = new List<Transaction>();
 
