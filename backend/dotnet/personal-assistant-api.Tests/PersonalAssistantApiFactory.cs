@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace PersonalAssistant.Tests;
@@ -14,6 +15,14 @@ public class PersonalAssistantApiFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Jwt:Key is a secret that is not in appsettings*.json, so CI has none. Supply a fixed test key
+        // (added last, so it also overrides any local user-secret/env value) to keep token issuance hermetic.
+        builder.ConfigureAppConfiguration((_, config) =>
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt:Key"] = "test-only-signing-key-0123456789-abcdefghij",
+            }));
+
         builder.ConfigureServices(services =>
         {
             var toRemove = services
