@@ -31,6 +31,11 @@ public class BooksController(PersonalAssistantDbContext db) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(Book book)
     {
+        if (!IsValidRating(book.Rating))
+        {
+            return BadRequest("Rating must be between 1 and 10.");
+        }
+
         book.UserId = CurrentUserId;
         book.LastUpdated = DateOnly.FromDateTime(DateTime.Today);
 
@@ -52,6 +57,11 @@ public class BooksController(PersonalAssistantDbContext db) : ControllerBase
     public async Task<IActionResult> Update(int id, Book book)
     {
         if (id != book.Id) return BadRequest();
+        if (!IsValidRating(book.Rating))
+        {
+            return BadRequest("Rating must be between 1 and 10.");
+        }
+
         var existing = await db.Books.FirstOrDefaultAsync(b => b.Id == id && b.UserId == CurrentUserId);
         if (existing is null) return NotFound();
         var today = DateOnly.FromDateTime(DateTime.Today);
@@ -74,6 +84,7 @@ public class BooksController(PersonalAssistantDbContext db) : ControllerBase
         existing.TargetDate = book.TargetDate;
         existing.Notes = book.Notes;
         existing.BookType = book.BookType;
+        existing.Rating = book.Rating;
         existing.LastUpdated = DateOnly.FromDateTime(DateTime.Today);
         await db.SaveChangesAsync();
         return NoContent();
@@ -157,6 +168,16 @@ public class BooksController(PersonalAssistantDbContext db) : ControllerBase
         db.BookTasks.Remove(task);
         await db.SaveChangesAsync();
         return NoContent();
+    }
+
+    private static bool IsValidRating(int? rating)
+    {
+        if (rating is null)
+        {
+            return true;
+        }
+
+        return rating >= 1 && rating <= 10;
     }
 }
 

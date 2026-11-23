@@ -14,6 +14,7 @@ export interface Book {
   lastUpdated?: string
   targetDate?: string
   completedDate?: string | null
+  rating?: number | null
   notes: string
 }
 

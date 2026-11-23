@@ -14,5 +14,6 @@ public class Book
     public string BookType { get; set; } = "Literature"; // "Technology" | "Literature"
     public DateOnly LastUpdated { get; set; }
     public DateOnly? CompletedDate { get; set; }
+    public int? Rating { get; set; } // 1–10, null = not rated
     public string UserId { get; set; } = "";
 }

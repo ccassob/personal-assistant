@@ -95,6 +95,11 @@ import { Book, BookProgress, BookTask, BookService } from '../../core/services/a
                         <iconify-icon icon="tabler:cpu" width="11"></iconify-icon> Tech
                       </span>
                     }
+                    @if (b.rating) {
+                      <span class="badge bg-warning text-dark" title="Rating">
+                        <iconify-icon icon="tabler:star-filled" width="11"></iconify-icon> {{ b.rating }}/10
+                      </span>
+                    }
                     <span class="badge"
                       [class.bg-primary]="b.status === 'Reading'"
                       [class.bg-success]="b.status === 'Completed'"
@@ -368,6 +373,15 @@ import { Book, BookProgress, BookTask, BookService } from '../../core/services/a
                 </div>
               }
               <div class="mb-3">
+                <label class="form-label">Rating <span class="text-muted">(optional, 1–10)</span></label>
+                <select class="form-select" [(ngModel)]="form.rating">
+                  <option [ngValue]="null">No rating</option>
+                  @for (n of ratingOptions; track n) {
+                    <option [ngValue]="n">{{ n }} / 10</option>
+                  }
+                </select>
+              </div>
+              <div class="mb-3">
                 <label class="form-label">Notes <span class="text-muted">(optional)</span></label>
                 <textarea class="form-control" [(ngModel)]="form.notes" rows="2" placeholder="Thoughts, quotes, reminders..."></textarea>
               </div>
@@ -385,6 +399,7 @@ import { Book, BookProgress, BookTask, BookService } from '../../core/services/a
 export class Books implements OnInit {
   books: Book[] = []
   showModal = false
+  readonly ratingOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   form: Partial<Book> = this.emptyForm()
 
   histSeries: any[] = []
@@ -558,6 +573,7 @@ export class Books implements OnInit {
       status: 'Reading',
       bookType: 'Literature',
       targetDate: undefined,
+      rating: null,
       notes: '',
     }
   }
